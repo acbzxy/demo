@@ -1,0 +1,149 @@
+// User and Authentication types
+export interface User {
+  id: string
+  username: string
+  email: string
+  fullName: string
+  companyName: string
+  taxCode: string
+  phone: string
+  address: string
+  userType: 'enterprise' | 'agent' | 'individual' | 'dev'
+  status: 'active' | 'inactive' | 'locked'
+  createdAt: string
+  lastLoginAt?: string
+}
+
+export interface LoginCredentials {
+  username: string
+  password: string
+  captcha: string
+  rememberMe?: boolean
+}
+
+export interface RegisterData {
+  username: string
+  password: string
+  confirmPassword: string
+  fullName: string
+  email: string
+  phone: string
+  mobile?: string
+  address: string
+  accountType: 'enterprise' | 'agent' | 'individual'
+  enableDigitalSignature?: boolean
+  note?: string
+}
+
+// Notification types
+export type NotificationType = 'success' | 'error' | 'warning' | 'info'
+
+export interface Notification {
+  id: string
+  type: NotificationType
+  title?: string
+  message: string
+  duration?: number
+  autoClose?: boolean
+}
+
+// Navigation types
+export interface NavItem {
+  id: string
+  label: string
+  path: string
+  icon: string
+  children?: NavItem[]
+  badge?: string
+}
+
+// Payment and Fee types
+export interface FeeDeclaration {
+  id: string
+  declarationNumber: string
+  customsDeclarationNumber?: string
+  companyTaxCode: string
+  companyName: string
+  vesselName?: string
+  voyageNumber?: string
+  portCode: string
+  feeType: string
+  feeAmount: number
+  currency: 'VND' | 'USD'
+  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid'
+  createdAt: string
+  submittedAt?: string
+  approvedAt?: string
+  paidAt?: string
+  digitalSignature?: {
+    signed: boolean
+    signedAt?: string
+    certificateSerial?: string
+  }
+}
+
+export interface Receipt {
+  id: string
+  receiptCode: string
+  declarationId: string
+  amount: number
+  currency: 'VND' | 'USD'
+  paymentMethod: 'bank_transfer' | 'qr_code' | 'ecom'
+  bankName?: string
+  transactionId?: string
+  issuedAt: string
+  status: 'issued' | 'cancelled'
+}
+
+// Guide and Help types
+export interface GuideDocument {
+  id: string
+  title: string
+  description: string
+  type: 'pdf' | 'doc' | 'video' | 'link'
+  url: string
+  category: 'installation' | 'declaration' | 'payment' | 'signature' | 'general'
+  isNew?: boolean
+}
+
+// API Response types
+export interface ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  message?: string
+  errors?: Record<string, string[]>
+}
+
+// Form validation types
+export interface ValidationError {
+  field: string
+  message: string
+}
+
+export interface FormState<T> {
+  values: T
+  errors: Record<keyof T, string>
+  touched: Record<keyof T, boolean>
+  isSubmitting: boolean
+  isValid: boolean
+}
+
+// Theme and UI types
+export interface ThemeConfig {
+  primaryColor: string
+  secondaryColor: string
+  sidebarCollapsed: boolean
+  darkMode: boolean
+}
+
+// System notification types
+export interface SystemNotification {
+  id: string
+  title: string
+  content: string
+  type: 'maintenance' | 'update' | 'announcement'
+  isActive: boolean
+  startDate?: string
+  endDate?: string
+  priority: 'low' | 'medium' | 'high'
+}

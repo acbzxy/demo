@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hệ thống thu phí TPHCM</title>
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-bars" id="menu-toggle"></i>
+                <h1>HỆ THỐNG THU PHÍ THÀNH PHỐ HỒ CHÍ MINH</h1>
+            </div>
+            <div class="header-right">
+                <span class="user-info">
+                    <i class="fas fa-phone"></i> Xin chào: <span id="current-user">0109844160</span>
+                </span>
+                <button class="btn-logout" id="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <img src="images/cangvu-hcm-logo.png" alt="Logo" class="profile-img">
+                    <div class="user-details">
+                        <span class="user-status">0109844160 - Online</span>
+                        <span class="user-role">Doanh nghiệp nộp phí</span>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-menu">
+                    <li class="nav-item active">
+                        <a href="#" class="nav-link" data-page="dashboard">
+                            <i class="fas fa-home"></i>
+                            <span>TRANG CHỦ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="payment">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>NỘP PHÍ CƠ SỞ HẠ TẦNG</span>
+                        </a>
+                        <ul class="sub-menu">
+                            <li><a href="#" class="sub-nav-link">Thiết lập</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="account">
+                            <i class="fas fa-user-circle"></i>
+                            <span>THÔNG TIN TÀI KHOẢN</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="password">
+                            <i class="fas fa-key"></i>
+                            <span>ĐỔI MẬT KHẨU</span>
+                        </a>
+                        <ul class="sub-menu">
+                            <li><a href="#" class="sub-nav-link">Khác</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" data-page="guide">
+                            <i class="fas fa-question-circle"></i>
+                            <span>HƯỚNG DẪN</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" id="sidebar-logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>ĐĂNG XUẤT</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <div class="content-wrapper">
+                <!-- Main Content -->
+                <section class="main-content">
+                    <div class="hero-section">
+                        <div class="hero-content">
+                            <h1 class="hero-title">
+                                <span class="title-line">SỞ XÂY DỰNG</span>
+                                <span class="title-line">THÀNH PHỐ HỒ CHÍ MINH</span>
+                                <span class="title-line highlight">CẢNG VỤ ĐƯỜNG THỦY NỘI ĐỊA</span>
+                            </h1>
+                            
+                            <h2 class="hero-subtitle">
+                                KHAI BÁO NỘP PHÍ SỬ DỤNG KẾT CẤU HẠ TẦNG, CÔNG TRÌNH DỊCH VỤ, TIỆN ÍCH CÔNG CỘNG<br>
+                                TRONG KHU VỰC CỬA KHẨU CẢNG BIỂN TRÊN ĐỊA BÀN<br>
+                                THÀNH PHỐ HỒ CHÍ MINH
+                            </h2>
+                        </div>
+                        
+                        <div class="hero-image">
+                            <img src="images/tphcm-bkg.jpg" alt="Cảng Sài Gòn" class="port-image">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sidebar Right -->
+                <aside class="sidebar-right">
+                    <div class="info-panel">
+                        <div class="panel-header">
+                            <i class="fas fa-info-circle"></i>
+                            <h3>HƯỚNG DẪN SỬ DỤNG</h3>
+                        </div>
+                        
+                        <div class="panel-content">
+                            <div class="guide-section">
+                                <h4>I: Cài đặt môi trường sử dụng</h4>
+                                <p>Để thực hiện đăng ký chữ ký số và khai báo nộp phí trên website bạn vui lòng tải và cài đặt các file sau:</p>
+                                
+                                <div class="download-links">
+                                    <a href="#" class="download-link">
+                                        1. File cài đặt ký số
+                                    </a>
+                                    <p class="note">(Nếu máy tính của bạn có phiên bản hệ điều hành nhỏ hơn windows 8 <a href="#" class="download-link">Tải file cài đặt tại đây</a>)</p>
+                                    
+                                    <a href="#" class="download-link">
+                                        2. Tiện ích hỗ trợ ký số trên Google Chrome » <strong>Ecustsd signature on website</strong>
+                                    </a>
+                                    
+                                    <a href="#" class="download-link">
+                                        3. Microsoft .NET Framework version >= 4.6 <em>(Nếu chưa được cài đặt trên máy tính của bạn)</em>
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="guide-section">
+                                <h4>II: Hướng dẫn khai báo nộp phí</h4>
+                                <p>Nếu chưa biết cách khai báo nộp phí trên website bạn vui lòng tải file hướng dẫn bên dưới:</p>
+                                
+                                <div class="download-links">
+                                    <a href="#" class="download-link">1. Tài liệu hướng dẫn sử dụng.docx</a>
+                                    <a href="#" class="download-link">2. Video hướng dẫn khai phí trên ECUS</a>
+                                    <a href="#" class="download-link">3. Video hướng dẫn khai phí trên Website</a>
+                                </div>
+                            </div>
+                            
+                            <div class="guide-section">
+                                <h4>III: Các bước nộp phí</h4>
+                                <p>Để hoàn thành việc nộp phí, doanh nghiệp phải thực hiện đủ các bước sau:</p>
+                                
+                                <div class="process-steps">
+                                    <div class="step active">
+                                        <span class="step-number">1</span>
+                                        <span class="step-text">TẠO TỜ KHAI PHÍ</span>
+                                    </div>
+                                    <div class="step active">
+                                        <span class="step-number">2</span>
+                                        <span class="step-text">KÝ SỐ(KHAI BÁO NỘP PHÍ)</span>
+                                    </div>
+                                    <div class="step active">
+                                        <span class="step-number">3</span>
+                                        <span class="step-text">LẤY THÔNG BÁO PHÍ</span>
+                                    </div>
+                                    <div class="step active">
+                                        <span class="step-number">4</span>
+                                        <span class="step-text">THỰC HIỆN NỘP PHÍ</span>
+                                    </div>
+                                    <div class="step active">
+                                        <span class="step-number">5</span>
+                                        <span class="step-text">HOÀN THÀNH</span>
+                                    </div>
+                                </div>
+                                
+                                <p class="note">Chi tiết các bước có trong file tải về: <strong>1. Tài liệu hướng dẫn sử dụng.docx</strong> bên trên.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-footer">
+                            <div class="contact-info">
+                                <img src="images/logoTSD.png" alt="Logo TSD" class="footer-logo">
+                                <div class="contact-details">
+                                    <p>Tổng đài hỗ trợ Thu phí Thành phố Hồ Chí Minh <strong>1900 1286</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p><strong>Copyright &copy; 2025</strong> - Công Ty TNHH Phát Triển Công Nghệ Thái Sơn</p>
+        </div>
+    </footer>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
