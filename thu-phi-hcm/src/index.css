@@ -19,6 +19,7 @@ html, body, #root {
     @apply font-sans text-gray-900;
     line-height: 1.6;
     background: transparent !important;
+    overflow-x: hidden;
   }
   
   * {

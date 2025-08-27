@@ -15,6 +15,30 @@ const GuidePage = lazy(() => import('./pages/GuidePage'))
 const ReceiptLookupPage = lazy(() => import('./pages/ReceiptLookupPage'))
 const WelcomePage = lazy(() => import('./pages/WelcomePage'))
 const SystemPage = lazy(() => import('./pages/SystemPage'))
+const DataTablePage = lazy(() => import('./pages/DataTablePage'))
+const ReceiptApprovalPage = lazy(() => import('./pages/ReceiptApprovalPage'))
+
+// Reports Pages
+const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
+const ReceiptListPage = lazy(() => import('./pages/reports/ReceiptListPage'))
+const SummaryByWarehousePage = lazy(() => import('./pages/reports/SummaryByWarehousePage'))
+const SummaryByServicePage = lazy(() => import('./pages/reports/SummaryByServicePage'))
+const SummaryByEnterprisePage = lazy(() => import('./pages/reports/SummaryByEnterprisePage'))
+const DetailedReportPage = lazy(() => import('./pages/reports/DetailedReportPage'))
+const ReceiptUsageHistoryPage = lazy(() => import('./pages/reports/ReceiptUsageHistoryPage'))
+const CollectionSummaryPage = lazy(() => import('./pages/reports/CollectionSummaryPage'))
+
+// Debt Management Pages
+const DebtManagementPage = lazy(() => import('./pages/debt-management/DebtManagementPage'))
+const DebtStatusPage = lazy(() => import('./pages/debt-management/DebtStatusPage'))
+const BusinessServicesPage = lazy(() => import('./pages/debt-management/BusinessServicesPage'))
+const CreateQRCodePage = lazy(() => import('./pages/debt-management/CreateQRCodePage'))
+
+// Data Reconciliation Pages
+const DataReconciliationPage = lazy(() => import('./pages/data-reconciliation/DataReconciliationPage'))
+const InitializePage = lazy(() => import('./pages/data-reconciliation/InitializePage'))
+const ManageListPage = lazy(() => import('./pages/data-reconciliation/ManageListPage'))
+const CustomsReportPage = lazy(() => import('./pages/data-reconciliation/CustomsReportPage'))
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -64,6 +88,31 @@ function App() {
                       <Route path="/system/container-types" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
                       <Route path="/system/units" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
           
+          {/* Reports routes */}
+          <Route path="/reports" element={<ProtectedRoute><ReportsPage /></ProtectedRoute>} />
+          <Route path="/reports/receipt-list" element={<ProtectedRoute><ReceiptListPage /></ProtectedRoute>} />
+          <Route path="/reports/summary-by-warehouse" element={<ProtectedRoute><SummaryByWarehousePage /></ProtectedRoute>} />
+          <Route path="/reports/summary-by-service" element={<ProtectedRoute><SummaryByServicePage /></ProtectedRoute>} />
+          <Route path="/reports/summary-by-enterprise" element={<ProtectedRoute><SummaryByEnterprisePage /></ProtectedRoute>} />
+          <Route path="/reports/detailed-report" element={<ProtectedRoute><DetailedReportPage /></ProtectedRoute>} />
+          <Route path="/reports/receipt-usage-history" element={<ProtectedRoute><ReceiptUsageHistoryPage /></ProtectedRoute>} />
+          <Route path="/reports/collection-summary" element={<ProtectedRoute><CollectionSummaryPage /></ProtectedRoute>} />
+          
+          {/* Debt Management routes */}
+          <Route path="/debt-management" element={<ProtectedRoute><DebtManagementPage /></ProtectedRoute>} />
+          <Route path="/debt-management/debt-status" element={<ProtectedRoute><DebtStatusPage /></ProtectedRoute>} />
+          <Route path="/debt-management/business-services" element={<ProtectedRoute><BusinessServicesPage /></ProtectedRoute>} />
+          <Route path="/debt-management/create-qr-code" element={<ProtectedRoute><CreateQRCodePage /></ProtectedRoute>} />
+          
+          {/* Data Reconciliation routes */}
+          <Route path="/data-reconciliation" element={<ProtectedRoute><DataReconciliationPage /></ProtectedRoute>} />
+          <Route path="/data-reconciliation/initialize" element={<ProtectedRoute><InitializePage /></ProtectedRoute>} />
+          <Route path="/data-reconciliation/manage-list" element={<ProtectedRoute><ManageListPage /></ProtectedRoute>} />
+          <Route path="/data-reconciliation/customs-report" element={<ProtectedRoute><CustomsReportPage /></ProtectedRoute>} />
+          
+          <Route path="/data-table" element={<ProtectedRoute><DataTablePage /></ProtectedRoute>} />
+          <Route path="/payment/process" element={<ProtectedRoute><ReceiptApprovalPage /></ProtectedRoute>} />
+
           {/* Default redirects */}
           <Route 
             path="/" 
