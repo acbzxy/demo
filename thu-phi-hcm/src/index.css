@@ -109,7 +109,7 @@ html, body, #root {
   }
 }
 
-/* Custom animations */
+/* Modern Custom Animations */
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -143,17 +143,120 @@ html, body, #root {
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Animation Classes */
 .animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+  animation: slideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 .animate-slide-out {
-  animation: slideOut 0.3s ease-in;
+  animation: slideOut 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.6s ease-out;
+  animation: fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.animate-pulse-custom {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Staggered animations */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
 
 /* Vietnamese text support */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');

@@ -1,104 +1,66 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Suspense, lazy } from 'react'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/layout/Layout'
-import LoginPage from './pages/LoginPage'
-import DashboardPage from './pages/DashboardPage'
-import PaymentPage from './pages/PaymentPage'
-import AccountPage from './pages/AccountPage'
-import PasswordPage from './pages/PasswordPage'
-import GuidePage from './pages/GuidePage'
-import ReceiptLookupPage from './pages/ReceiptLookupPage'
-import WelcomePage from './pages/WelcomePage'
 import { NotificationProvider } from './context/NotificationContext'
+import LoadingSpinner from './components/ui/LoadingSpinner'
+
+// Lazy load components for better performance
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const PaymentPage = lazy(() => import('./pages/PaymentPage'))
+const AccountPage = lazy(() => import('./pages/AccountPage'))
+const PasswordPage = lazy(() => import('./pages/PasswordPage'))
+const GuidePage = lazy(() => import('./pages/GuidePage'))
+const ReceiptLookupPage = lazy(() => import('./pages/ReceiptLookupPage'))
+const WelcomePage = lazy(() => import('./pages/WelcomePage'))
+
+// Protected Route Component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuth()
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+  
+  return <Layout>{children}</Layout>
+}
 
 function App() {
   const { isAuthenticated } = useAuth()
 
   return (
     <NotificationProvider>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/welcome" element={<WelcomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/receipt-lookup" element={<ReceiptLookupPage />} />
-        
-        {/* Protected routes */}
-        <Route 
-          path="/dashboard" 
-          element={
-            isAuthenticated ? (
-              <Layout>
-                <DashboardPage />
-              </Layout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/payment" 
-          element={
-            isAuthenticated ? (
-              <Layout>
-                <PaymentPage />
-              </Layout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/account" 
-          element={
-            isAuthenticated ? (
-              <Layout>
-                <AccountPage />
-              </Layout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/password" 
-          element={
-            isAuthenticated ? (
-              <Layout>
-                <PasswordPage />
-              </Layout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        <Route 
-          path="/guide" 
-          element={
-            isAuthenticated ? (
-              <Layout>
-                <GuidePage />
-              </Layout>
-            ) : (
-              <Navigate to="/login" replace />
-            )
-          } 
-        />
-        
-        {/* Default redirects */}
-        <Route 
-          path="/" 
-          element={
-            isAuthenticated ? (
-              <Navigate to="/dashboard" replace />
-            ) : (
-              <Navigate to="/welcome" replace />
-            )
-          } 
-        />
-        
-        {/* 404 fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <Suspense fallback={<LoadingSpinner />}>
+        <Routes>
+          {/* Public routes */}
+          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/receipt-lookup" element={<ReceiptLookupPage />} />
+          
+          {/* Protected routes */}
+          <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+          <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
+          <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />
+          <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
+          
+          {/* Default redirects */}
+          <Route 
+            path="/" 
+            element={
+              isAuthenticated ? (
+                <Navigate to="/dashboard" replace />
+              ) : (
+                <Navigate to="/welcome" replace />
+              )
+            } 
+          />
+          
+          {/* 404 fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
     </NotificationProvider>
   )
 }
