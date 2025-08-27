@@ -28,6 +28,125 @@ html, body, #root {
 }
 
 @layer components {
+  /* Original Sidebar Styles */
+  .original-main-container {
+    @apply flex min-h-screen bg-gray-50;
+  }
+  
+  .original-sidebar {
+    @apply fixed left-0 top-0 h-full w-64 bg-blue-900 text-white shadow-lg z-40 transition-transform duration-300;
+  }
+  
+  .original-sidebar.collapsed {
+    @apply -translate-x-full;
+  }
+  
+  .original-main-content {
+    @apply flex-1 ml-64 pt-16 min-h-screen transition-all duration-300;
+  }
+  
+  .original-main-content.sidebar-collapsed {
+    @apply ml-0;
+  }
+  
+  .original-sidebar-header {
+    @apply p-4 border-b border-blue-800;
+  }
+  
+  .original-user-profile {
+    @apply flex items-center space-x-3;
+  }
+  
+  .original-profile-img {
+    @apply w-10 h-10 rounded-full;
+  }
+  
+  .original-user-details {
+    @apply flex-1;
+  }
+  
+  .original-user-status {
+    @apply text-sm font-medium;
+  }
+  
+  .original-user-role {
+    @apply text-xs text-blue-300;
+  }
+  
+  .original-sidebar-nav {
+    @apply flex-1 overflow-y-auto;
+  }
+  
+  .original-nav-menu {
+    @apply space-y-1 p-2;
+  }
+  
+  .original-nav-item {
+    @apply list-none;
+  }
+  
+  .original-nav-link {
+    @apply flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-blue-100 hover:text-white hover:bg-blue-800 transition-colors duration-200 cursor-pointer;
+  }
+  
+  .original-nav-link.active {
+    @apply bg-blue-700 text-white;
+  }
+  
+  .original-submenu {
+    @apply ml-6 mt-1 space-y-1 overflow-hidden transition-all duration-300;
+  }
+  
+  .original-submenu.show {
+    @apply block;
+  }
+  
+  .original-submenu-item {
+    @apply list-none;
+  }
+  
+  .original-submenu-link {
+    @apply flex items-center px-3 py-2 text-sm text-blue-200 hover:text-white hover:bg-blue-800 rounded-md transition-colors duration-200;
+  }
+  
+  .original-submenu-link.active {
+    @apply bg-blue-600 text-white;
+  }
+
+  /* Header Styles */
+  .original-header {
+    @apply fixed top-0 left-64 right-0 bg-white shadow-sm border-b border-gray-200 z-30 transition-all duration-300;
+  }
+  
+  .original-header-content {
+    @apply flex items-center justify-between px-6 py-3;
+  }
+  
+  .original-header-left {
+    @apply flex items-center space-x-4;
+  }
+  
+  .original-menu-toggle {
+    @apply p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors duration-200;
+  }
+  
+  .original-header-right {
+    @apply flex items-center space-x-4;
+  }
+  
+  .original-user-info {
+    @apply text-sm text-gray-700;
+  }
+  
+  .original-btn-logout {
+    @apply px-3 py-2 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors duration-200;
+  }
+  
+  /* Responsive header when sidebar is collapsed */
+  .sidebar-collapsed .original-header {
+    @apply left-0;
+  }
+
   /* Button variants */
   .btn {
     @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;

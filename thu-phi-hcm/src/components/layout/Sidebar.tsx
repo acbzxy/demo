@@ -4,12 +4,10 @@ import { useAuth } from '../../context/AuthContext'
 
 interface SidebarProps {
   isCollapsed: boolean
-  onClose?: () => void
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const { user, logout } = useAuth()
-  const [openSubmenus, setOpenSubmenus] = useState<string[]>([])
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 
   const toggleSubmenu = (path: string) => {
@@ -119,34 +117,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
     },
   ]
 
-  const toggleSubmenu = (menuPath: string) => {
-    setOpenSubmenus(prev => 
-      prev.includes(menuPath) 
-        ? prev.filter(path => path !== menuPath)
-        : [...prev, menuPath]
-    )
-  }
-
-  const isSubmenuOpen = (menuPath: string) => {
-    return openSubmenus.includes(menuPath)
-  }
-
   const handleLogout = () => {
     logout()
-    if (onClose) onClose()
   }
 
   return (
-    <>
-      {/* Overlay for mobile */}
-      {!isCollapsed && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={onClose}
-        ></div>
-      )}
-      
-      <aside className={`original-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`original-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* User Profile */}
         <div className="original-sidebar-header">
           <div className="original-user-profile">
@@ -168,16 +144,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
             {navItems.map((item) => (
               <li key={item.path} className="original-nav-item">
                 {item.hasSubmenu ? (
-                  <div
-                    className="original-nav-link"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => toggleSubmenu(item.path)}
-                  >
-                    <i className={item.icon}></i>
-                    <span>{item.label}</span>
-                    <i className={`fas fa-angle-down ${isSubmenuOpen(item.path) ? 'rotate-180' : ''}`} 
-                       style={{ marginLeft: 'auto', transition: 'transform 0.2s' }}></i>
-                  </div>
                   <>
                     <div
                       className={`original-nav-link ${openSubmenu === item.path ? 'active' : ''}`}
@@ -209,7 +175,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
                               className={({ isActive }) => 
                                 `original-submenu-link ${isActive ? 'active' : ''}`
                               }
-                              onClick={onClose}
                             >
                               <i className="fas fa-circle" style={{ fontSize: '6px', marginRight: '10px' }}></i>
                               <span>{subItem.label}</span>
@@ -225,29 +190,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
                     className={({ isActive }) => 
                       `original-nav-link ${isActive ? 'active' : ''}`
                     }
-                    onClick={onClose}
                   >
                     <i className={item.icon}></i>
                     <span>{item.label}</span>
                   </NavLink>
-                )}
-                
-                {/* Submenu */}
-                {item.hasSubmenu && item.submenu && isSubmenuOpen(item.path) && (
-                  <ul className="original-submenu">
-                    {item.submenu.map((subItem) => (
-                      <li key={subItem.path} className="original-submenu-item">
-                        <NavLink
-                          to={subItem.path}
-                          className={({ isActive }) => 
-                            `original-submenu-link ${isActive ? 'active' : ''}`
-                          }
-                        >
-                          <span>{subItem.label}</span>
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
                 )}
               </li>
             ))}
@@ -266,7 +212,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
           </ul>
         </nav>
       </aside>
-    </>
   )
 }
 

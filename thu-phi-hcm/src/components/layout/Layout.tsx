@@ -15,14 +15,15 @@ const Layout: React.FC<LayoutProps> = ({ children, showFooter = false }) => {
     setSidebarCollapsed(!sidebarCollapsed)
   }
 
-  const closeSidebar = () => {
-    setSidebarCollapsed(true)
-  }
+  // Remove closeSidebar - sidebar should stay open unless manually collapsed
+  // const closeSidebar = () => {
+  //   setSidebarCollapsed(true)
+  // }
 
   return (
     <div className="original-main-container">
       <Header onToggleSidebar={toggleSidebar} />
-      <Sidebar isCollapsed={sidebarCollapsed} onClose={closeSidebar} />
+      <Sidebar isCollapsed={sidebarCollapsed} />
       
       <main className={`original-main-content ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         {children}
