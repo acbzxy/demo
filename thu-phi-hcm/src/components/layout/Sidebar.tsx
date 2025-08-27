@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -9,6 +9,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
   const { user, logout } = useAuth()
+  const [openSubmenus, setOpenSubmenus] = useState<string[]>([])
 
   const navItems = [
     {
@@ -25,6 +26,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
         { path: '/payment/setup', label: 'Thiết lập' }
       ]
     },
+                            {
+                  path: '/system',
+                  label: 'HỆ THỐNG',
+                  icon: 'fas fa-cogs',
+                  hasSubmenu: true,
+                  submenu: [
+                    { path: '/system/users', label: 'Quản lý người dùng' },
+                    { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
+                    { path: '/system/password', label: 'Đổi mật khẩu' },
+                    { path: '/system/customs', label: 'Danh mục hải quan' },
+                    { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
+                    { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
+                    { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
+                    { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
+                    { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
+                    { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
+                    { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
+                    { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
+                    { path: '/system/tariffs', label: 'Danh mục biểu cước' },
+                    { path: '/system/form-types', label: 'Danh mục loại hình' },
+                    { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
+                    { path: '/system/container-types', label: 'Danh mục loại container' },
+                    { path: '/system/units', label: 'Danh mục đơn vị tính' }
+                  ]
+                },
     {
       path: '/account',
       label: 'THÔNG TIN TÀI KHOẢN',
@@ -45,6 +71,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
       ]
     },
   ]
+
+  const toggleSubmenu = (menuPath: string) => {
+    setOpenSubmenus(prev => 
+      prev.includes(menuPath) 
+        ? prev.filter(path => path !== menuPath)
+        : [...prev, menuPath]
+    )
+  }
+
+  const isSubmenuOpen = (menuPath: string) => {
+    return openSubmenus.includes(menuPath)
+  }
 
   const handleLogout = () => {
     logout()
@@ -82,20 +120,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
           <ul className="original-nav-menu">
             {navItems.map((item) => (
               <li key={item.path} className="original-nav-item">
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) => 
-                    `original-nav-link ${isActive ? 'active' : ''}`
-                  }
-                  onClick={onClose}
-                >
-                  <i className={item.icon}></i>
-                  <span>{item.label}</span>
-                  {item.hasSubmenu && <i className="fas fa-angle-down" style={{ marginLeft: 'auto' }}></i>}
-                </NavLink>
+                {item.hasSubmenu ? (
+                  <div
+                    className="original-nav-link"
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => toggleSubmenu(item.path)}
+                  >
+                    <i className={item.icon}></i>
+                    <span>{item.label}</span>
+                    <i className={`fas fa-angle-down ${isSubmenuOpen(item.path) ? 'rotate-180' : ''}`} 
+                       style={{ marginLeft: 'auto', transition: 'transform 0.2s' }}></i>
+                  </div>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => 
+                      `original-nav-link ${isActive ? 'active' : ''}`
+                    }
+                    onClick={onClose}
+                  >
+                    <i className={item.icon}></i>
+                    <span>{item.label}</span>
+                  </NavLink>
+                )}
                 
                 {/* Submenu */}
-                {item.hasSubmenu && item.submenu && (
+                {item.hasSubmenu && item.submenu && isSubmenuOpen(item.path) && (
                   <ul className="original-submenu">
                     {item.submenu.map((subItem) => (
                       <li key={subItem.path} className="original-submenu-item">
@@ -104,7 +154,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
                           className={({ isActive }) => 
                             `original-submenu-link ${isActive ? 'active' : ''}`
                           }
-                          onClick={onClose}
                         >
                           <span>{subItem.label}</span>
                         </NavLink>

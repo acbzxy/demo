@@ -264,3 +264,8 @@ html, body, #root {
 body {
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+/* Submenu toggle animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}

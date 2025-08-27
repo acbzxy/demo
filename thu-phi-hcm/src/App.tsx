@@ -14,6 +14,7 @@ const PasswordPage = lazy(() => import('./pages/PasswordPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
 const ReceiptLookupPage = lazy(() => import('./pages/ReceiptLookupPage'))
 const WelcomePage = lazy(() => import('./pages/WelcomePage'))
+const SystemPage = lazy(() => import('./pages/SystemPage'))
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,6 +45,24 @@ function App() {
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />
           <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
+                                <Route path="/system" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/users" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/business" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/password" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/customs" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/banks" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/warehouses" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/toll-stations" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/storage-locations" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/enterprises" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/transport-methods" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/receipt-templates" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/tariff-types" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/tariffs" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/form-types" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/payment-types" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/container-types" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
+                      <Route path="/system/units" element={<ProtectedRoute><SystemPage /></ProtectedRoute>} />
           
           {/* Default redirects */}
           <Route 
