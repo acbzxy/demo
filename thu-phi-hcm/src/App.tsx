@@ -14,6 +14,8 @@ const PasswordPage = lazy(() => import('./pages/PasswordPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
 const ReceiptLookupPage = lazy(() => import('./pages/ReceiptLookupPage'))
 const WelcomePage = lazy(() => import('./pages/WelcomePage'))
+const DataTablePage = lazy(() => import('./pages/DataTablePage'))
+const ReceiptApprovalPage = lazy(() => import('./pages/ReceiptApprovalPage'))
 
 // Reports Pages
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
@@ -89,6 +91,9 @@ function App() {
           <Route path="/data-reconciliation/manage-list" element={<ProtectedRoute><ManageListPage /></ProtectedRoute>} />
           <Route path="/data-reconciliation/customs-report" element={<ProtectedRoute><CustomsReportPage /></ProtectedRoute>} />
           
+          <Route path="/data-table" element={<ProtectedRoute><DataTablePage /></ProtectedRoute>} />
+          <Route path="/payment/process" element={<ProtectedRoute><ReceiptApprovalPage /></ProtectedRoute>} />
+
           {/* Default redirects */}
           <Route 
             path="/" 
