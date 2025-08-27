@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -9,6 +9,11 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
   const { user, logout } = useAuth()
+  const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
+
+  const toggleSubmenu = (path: string) => {
+    setOpenSubmenu(openSubmenu === path ? null : path)
+  }
 
   const navItems = [
     {
@@ -23,6 +28,43 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
       hasSubmenu: true,
       submenu: [
         { path: '/payment/setup', label: 'Thiết lập' }
+      ]
+    },
+    {
+      path: '/reports',
+      label: 'BÁO CÁO THỐNG KÊ',
+      icon: 'fas fa-chart-bar',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/reports/receipt-list', label: 'Bảng kê BL thu' },
+        { path: '/reports/summary-by-warehouse', label: 'Tổng hợp theo kho' },
+        { path: '/reports/summary-by-service', label: 'Tổng hợp thu dịch vụ' },
+        { path: '/reports/summary-by-enterprise', label: 'Tổng hợp theo DN' },
+        { path: '/reports/detailed-report', label: 'Báo cáo ấn chỉ' },
+        { path: '/reports/receipt-usage-history', label: 'Tình hình sử dụng BL' },
+        { path: '/reports/collection-summary', label: 'Tổng hợp thu theo CB lập' }
+      ]
+    },
+    {
+      path: '/debt-management',
+      label: 'Q.LÝ XỬ LÝ NỢ PHÍ',
+      icon: 'fas fa-exclamation-triangle',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/debt-management/debt-status', label: 'Tra cứu tình trạng nợ phí' },
+        { path: '/debt-management/business-services', label: 'Thực hiện nghiệp vụ' },
+        { path: '/debt-management/create-qr-code', label: 'Tạo lập QĐ cưỡng chế' }
+      ]
+    },
+    {
+      path: '/data-reconciliation',
+      label: 'ĐỐI SOÁT DỮ LIỆU',
+      icon: 'fas fa-sync-alt',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/data-reconciliation/initialize', label: 'Khởi tạo' },
+        { path: '/data-reconciliation/manage-list', label: 'Quản lý danh sách đối soát' },
+        { path: '/data-reconciliation/customs-report', label: 'Báo cáo đối soát Hải Quan' }
       ]
     },
     {
@@ -82,35 +124,59 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
           <ul className="original-nav-menu">
             {navItems.map((item) => (
               <li key={item.path} className="original-nav-item">
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) => 
-                    `original-nav-link ${isActive ? 'active' : ''}`
-                  }
-                  onClick={onClose}
-                >
-                  <i className={item.icon}></i>
-                  <span>{item.label}</span>
-                  {item.hasSubmenu && <i className="fas fa-angle-down" style={{ marginLeft: 'auto' }}></i>}
-                </NavLink>
-                
-                {/* Submenu */}
-                {item.hasSubmenu && item.submenu && (
-                  <ul className="original-submenu">
-                    {item.submenu.map((subItem) => (
-                      <li key={subItem.path} className="original-submenu-item">
-                        <NavLink
-                          to={subItem.path}
-                          className={({ isActive }) => 
-                            `original-submenu-link ${isActive ? 'active' : ''}`
-                          }
-                          onClick={onClose}
-                        >
-                          <span>{subItem.label}</span>
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
+                {item.hasSubmenu ? (
+                  <>
+                    <div
+                      className={`original-nav-link ${openSubmenu === item.path ? 'active' : ''}`}
+                      onClick={() => toggleSubmenu(item.path)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <i className={item.icon}></i>
+                      <span>{item.label}</span>
+                      <i 
+                        className={`fas fa-angle-${openSubmenu === item.path ? 'up' : 'down'}`}
+                        style={{ marginLeft: 'auto', transition: 'transform 0.3s ease' }}
+                      ></i>
+                    </div>
+                    
+                    {/* Submenu */}
+                    {item.submenu && (
+                      <ul 
+                        className={`original-submenu ${openSubmenu === item.path ? 'show' : ''}`}
+                        style={{
+                          maxHeight: openSubmenu === item.path ? `${item.submenu.length * 45}px` : '0',
+                          overflow: 'hidden',
+                          transition: 'max-height 0.3s ease'
+                        }}
+                      >
+                        {item.submenu.map((subItem) => (
+                          <li key={subItem.path} className="original-submenu-item">
+                            <NavLink
+                              to={subItem.path}
+                              className={({ isActive }) => 
+                                `original-submenu-link ${isActive ? 'active' : ''}`
+                              }
+                              onClick={onClose}
+                            >
+                              <i className="fas fa-circle" style={{ fontSize: '6px', marginRight: '10px' }}></i>
+                              <span>{subItem.label}</span>
+                            </NavLink>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </>
+                ) : (
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) => 
+                      `original-nav-link ${isActive ? 'active' : ''}`
+                    }
+                    onClick={onClose}
+                  >
+                    <i className={item.icon}></i>
+                    <span>{item.label}</span>
+                  </NavLink>
                 )}
               </li>
             ))}
