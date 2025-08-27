@@ -19,10 +19,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
     {
       path: '/payment',
       label: 'NỘP PHÍ CƠ SỞ HẠ TẦNG',
-      icon: 'fas fa-credit-card',
+      icon: 'fas fa-building',
       hasSubmenu: true,
       submenu: [
-        { path: '/payment/setup', label: 'Thiết lập' }
+        { path: '/payment/declare', label: '1. Khai báo nộp phí' },
+        { path: '/payment/order', label: '2. Đơn hàng thanh toán QR, Ecor' },
+        { path: '/data-table', label: '3. Danh sách biên lai' },
+        { path: '/payment/process', label: '4. Trình ký xử lý biên lai' },
+        { path: '/payment/lookup', label: '5. Tra cứu biên lai' },
+        { path: '/payment/debt', label: '6. Tra cứu nợ phí' }
       ]
     },
     {

@@ -14,6 +14,8 @@ const PasswordPage = lazy(() => import('./pages/PasswordPage'))
 const GuidePage = lazy(() => import('./pages/GuidePage'))
 const ReceiptLookupPage = lazy(() => import('./pages/ReceiptLookupPage'))
 const WelcomePage = lazy(() => import('./pages/WelcomePage'))
+const DataTablePage = lazy(() => import('./pages/DataTablePage'))
+const ReceiptApprovalPage = lazy(() => import('./pages/ReceiptApprovalPage'))
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -44,7 +46,9 @@ function App() {
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />
           <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
-          
+          <Route path="/data-table" element={<ProtectedRoute><DataTablePage /></ProtectedRoute>} />
+          <Route path="/payment/process" element={<ProtectedRoute><ReceiptApprovalPage /></ProtectedRoute>} />
+
           {/* Default redirects */}
           <Route 
             path="/" 
