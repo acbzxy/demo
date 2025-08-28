@@ -41,6 +41,8 @@ const InitializePage = lazy(() => import('./pages/data-reconciliation/Initialize
 const ManageListPage = lazy(() => import('./pages/data-reconciliation/ManageListPage'))
 const CustomsReportPage = lazy(() => import('./pages/data-reconciliation/CustomsReportPage'))
 
+//Payment Pages
+const DeclarePage = lazy(() => import("./pages/payment/declare/Declare"));
 // Payment Management Pages
 const PaymentManagementPage = lazy(() => import('./pages/payment-management/PaymentManagementPage'))
 
@@ -102,7 +104,14 @@ function App() {
           <Route path="/reports/receipt-usage-history" element={<ProtectedRoute><ReceiptUsageHistoryPage /></ProtectedRoute>} />
           <Route path="/reports/collection-summary" element={<ProtectedRoute><CollectionSummaryPage /></ProtectedRoute>} />
           <Route path="/reports/receipt-lookup" element={<ProtectedRoute><ReceiptLookupDetailPage /></ProtectedRoute>} />
-          
+          <Route
+            path="/payment/declare"
+            element={
+              <ProtectedRoute>
+                <DeclarePage />
+              </ProtectedRoute>
+            }
+          />
           {/* Debt Management routes */}
           <Route path="/debt-management" element={<ProtectedRoute><DebtManagementPage /></ProtectedRoute>} />
           <Route path="/debt-management/debt-status" element={<ProtectedRoute><DebtStatusPage /></ProtectedRoute>} />

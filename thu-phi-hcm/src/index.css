@@ -389,3 +389,19 @@ body {
 .rotate-180 {
   transform: rotate(180deg);
 }
+
+.frame-body {
+  @apply overflow-y-auto w-full bg-white relative;
+}
+
+.item-search {
+  @apply w-[120px] mb-[5px] inline-block mr-[2px] h-[33px] border border-[#c1c1c1] py-[3px] px-[5px];
+}
+
+.table-header {
+  @apply py-[10px] px-[3px] border-r text-center font-bold uppercase text-[13px];
+}
+
+.sticky-header {
+  @apply border-t border-[#e6e6e6] sticky top-[-1px] bg-[#f5f5f5] z-[1];
+}
