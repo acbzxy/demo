@@ -292,7 +292,7 @@ const ReceiptLookupPage: React.FC = () => {
       <footer className="bg-gray-800 text-white py-8 mt-12">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm">
-            <strong>Copyright &copy; 2025</strong> - Công Ty TNHH Phát Triển Công Nghệ Thái Sơn
+            <strong>Copyright &copy; 2025</strong> - DEMO HỆ THỐNG THU PHÍ
           </p>
           <div className="mt-2 text-xs text-gray-400">
             <span>Sở Xây Dựng Thành phố Hồ Chí Minh</span><br />

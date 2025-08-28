@@ -45,7 +45,7 @@ export const ORG_INFO = {
   department: 'Sở Xây Dựng',
   city: 'Thành phố Hồ Chí Minh',
   port: 'Cảng vụ đường thủy nội địa',
-  company: 'Công Ty TNHH Phát Triển Công Nghệ Thái Sơn',
+  company: 'Demo web thu phí',
 } as const
 
 // System settings

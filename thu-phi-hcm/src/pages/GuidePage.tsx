@@ -401,7 +401,7 @@ const GuidePage: React.FC = () => {
                 <p className="text-lg font-semibold text-gray-800">
                   Tổng đài hỗ trợ Thu phí Thành phố Hồ Chí Minh
                 </p>
-                <p className="text-blue-600">Công Ty TNHH Phát Triển Công Nghệ Thái Sơn</p>
+                <p className="text-blue-600">Demo web thu phí</p>
               </div>
             </div>
           </div>

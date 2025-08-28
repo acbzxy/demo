@@ -4,10 +4,9 @@ import { useAuth } from '../../context/AuthContext'
 
 interface SidebarProps {
   isCollapsed: boolean
-  onClose?: () => void
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const { user, logout } = useAuth()
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null)
 
@@ -73,6 +72,45 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
       ]
     },
     {
+      path: '/payment-management',
+      label: 'QUẢN LÝ THANH TOÁN',
+      icon: 'fas fa-credit-card',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/payment-management/manage', label: 'Quản lý thanh toán' },
+        { path: '/payment-management/cancel', label: 'Hủy thanh toán' },
+        { path: '/payment-management/restore', label: 'Khôi phục thanh toán' },
+        { path: '/payment-management/notify-transfer', label: 'TB chuyển tiền về KB' },
+        { path: '/payment-management/manage-transfer', label: 'QL chuyển tiền về KB' },
+        { path: '/payment-management/bank-reconciliation', label: 'Đối soát dữ liệu thanh toán từ ngân hàng' }
+      ]
+    },
+                            {
+                  path: '/system',
+                  label: 'HỆ THỐNG',
+                  icon: 'fas fa-cogs',
+                  hasSubmenu: true,
+                  submenu: [
+                    { path: '/system/users', label: 'Quản lý người dùng' },
+                    { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
+                    { path: '/system/password', label: 'Đổi mật khẩu' },
+                    { path: '/system/customs', label: 'Danh mục hải quan' },
+                    { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
+                    { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
+                    { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
+                    { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
+                    { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
+                    { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
+                    { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
+                    { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
+                    { path: '/system/tariffs', label: 'Danh mục biểu cước' },
+                    { path: '/system/form-types', label: 'Danh mục loại hình' },
+                    { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
+                    { path: '/system/container-types', label: 'Danh mục loại container' },
+                    { path: '/system/units', label: 'Danh mục đơn vị tính' }
+                  ]
+                },
+    {
       path: '/account',
       label: 'THÔNG TIN TÀI KHOẢN',
       icon: 'fas fa-user-circle',
@@ -95,20 +133,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
 
   const handleLogout = () => {
     logout()
-    if (onClose) onClose()
   }
 
   return (
-    <>
-      {/* Overlay for mobile */}
-      {!isCollapsed && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-          onClick={onClose}
-        ></div>
-      )}
-      
-      <aside className={`original-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`original-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         {/* User Profile */}
         <div className="original-sidebar-header">
           <div className="original-user-profile">
@@ -161,7 +189,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
                               className={({ isActive }) => 
                                 `original-submenu-link ${isActive ? 'active' : ''}`
                               }
-                              onClick={onClose}
                             >
                               <i className="fas fa-circle" style={{ fontSize: '6px', marginRight: '10px' }}></i>
                               <span>{subItem.label}</span>
@@ -177,7 +204,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
                     className={({ isActive }) => 
                       `original-nav-link ${isActive ? 'active' : ''}`
                     }
-                    onClick={onClose}
                   >
                     <i className={item.icon}></i>
                     <span>{item.label}</span>
@@ -200,7 +226,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onClose }) => {
           </ul>
         </nav>
       </aside>
-    </>
   )
 }
 
