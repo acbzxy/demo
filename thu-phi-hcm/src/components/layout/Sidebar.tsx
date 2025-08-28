@@ -85,31 +85,39 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         { path: '/payment-management/bank-reconciliation', label: 'Đối soát dữ liệu thanh toán từ ngân hàng' }
       ]
     },
-                            {
-                  path: '/system',
-                  label: 'HỆ THỐNG',
-                  icon: 'fas fa-cogs',
-                  hasSubmenu: true,
-                  submenu: [
-                    { path: '/system/users', label: 'Quản lý người dùng' },
-                    { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
-                    { path: '/system/password', label: 'Đổi mật khẩu' },
-                    { path: '/system/customs', label: 'Danh mục hải quan' },
-                    { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
-                    { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
-                    { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
-                    { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
-                    { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
-                    { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
-                    { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
-                    { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
-                    { path: '/system/tariffs', label: 'Danh mục biểu cước' },
-                    { path: '/system/form-types', label: 'Danh mục loại hình' },
-                    { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
-                    { path: '/system/container-types', label: 'Danh mục loại container' },
-                    { path: '/system/units', label: 'Danh mục đơn vị tính' }
-                  ]
-                },
+    {
+      path: '/categories',
+      label: 'DANH MỤC DÙNG CHUNG',
+      icon: 'fas fa-list',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/system/customs', label: 'Danh mục hải quan' },
+        { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
+        { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
+        { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
+        { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
+        { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
+        { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
+        { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
+        { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
+        { path: '/system/tariffs', label: 'Danh mục biểu cước' },
+        { path: '/system/form-types', label: 'Danh mục loại hình' },
+        { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
+        { path: '/system/container-types', label: 'Danh mục loại container' },
+        { path: '/system/units', label: 'Danh mục đơn vị tính' }
+      ]
+    },
+    {
+      path: '/system',
+      label: 'HỆ THỐNG',
+      icon: 'fas fa-cogs',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/system/users', label: 'Quản lý người dùng' },
+        { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
+        { path: '/system/password', label: 'Đổi mật khẩu' }
+      ]
+    },
     {
       path: '/account',
       label: 'THÔNG TIN TÀI KHOẢN',

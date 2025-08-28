@@ -103,7 +103,7 @@ body {
 
 /* ====== Sidebar (giống code gốc) ====== */
 .original-sidebar {
-    width: 280px;
+    width: 320px;
     background: rgba(255,255,255,0.95);
     color: #000000;
     position: fixed;

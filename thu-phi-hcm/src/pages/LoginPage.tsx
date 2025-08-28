@@ -24,6 +24,7 @@ const LoginPage: React.FC = () => {
   
   // Register modal states
   const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [accountType, setAccountType] = useState('Doanh nghiệp')
   const [registerData, setRegisterData] = useState({
     username: '',
     password: '',
@@ -216,7 +217,7 @@ const LoginPage: React.FC = () => {
     }
     
     if (!registerData.companyName.trim()) {
-      newErrors.companyName = 'Vui lòng nhập tên doanh nghiệp'
+      newErrors.companyName = accountType === 'Cá nhân' ? 'Vui lòng nhập tên cá nhân' : 'Vui lòng nhập tên doanh nghiệp'
     }
     
     if (!registerData.address.trim()) {
@@ -251,6 +252,7 @@ const LoginPage: React.FC = () => {
 
   const closeRegisterModal = () => {
     setShowRegisterModal(false)
+    setAccountType('Doanh nghiệp')
     setRegisterData({
       username: '',
       password: '',
@@ -1168,7 +1170,7 @@ const LoginPage: React.FC = () => {
         }}>
           <div style={{
             backgroundColor: '#ffffff',
-            width: '800px',
+            width: '900px',
             maxWidth: '95vw',
             maxHeight: '95vh',
             borderRadius: '8px',
@@ -1197,16 +1199,23 @@ const LoginPage: React.FC = () => {
               }}>
                 Đăng Ký Tài Khoản
               </h3>
-              <select style={{
-                marginLeft: 'auto',
-                marginRight: '40px',
-                padding: '4px 8px',
-                border: '1px solid #d1d5db',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: '#f9fafb'
-              }}>
-                <option>Doanh nghiệp</option>
+              <select 
+                value={accountType}
+                onChange={(e) => setAccountType(e.target.value)}
+                style={{
+                  marginLeft: 'auto',
+                  marginRight: '40px',
+                  padding: '4px 8px',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: '#f9fafb',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="Doanh nghiệp">Doanh nghiệp</option>
+                <option value="Đại lý">Đại lý</option>
+                <option value="Cá nhân">Cá nhân</option>
               </select>
               <button
                 onClick={closeRegisterModal}
@@ -1348,7 +1357,7 @@ const LoginPage: React.FC = () => {
                         color: '#374151',
                         fontWeight: '500'
                       }}>
-                        Tên doanh nghiệp:
+                        {accountType === 'Cá nhân' ? 'Tên cá nhân:' : 'Tên doanh nghiệp:'}
                         <span style={{ color: '#ef4444', marginLeft: '2px' }}>*</span>
                       </label>
                       <input
@@ -1356,7 +1365,7 @@ const LoginPage: React.FC = () => {
                         name="companyName"
                         value={registerData.companyName}
                         onChange={handleRegisterInputChange}
-                        placeholder="Nhập tên..."
+                        placeholder={accountType === 'Cá nhân' ? 'Nhập tên cá nhân...' : 'Nhập tên...'}
                         style={{
                           width: '100%',
                           height: '40px',
