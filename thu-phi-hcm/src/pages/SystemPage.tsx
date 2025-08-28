@@ -77,12 +77,46 @@ const SystemPage: React.FC = () => {
   ])
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(5)
+  
+  // Search states cho danh mục hải quan
+  const [customsSearchCode, setCustomsSearchCode] = useState('')
+  const [customsSearchName, setCustomsSearchName] = useState('')
+  
+  // Search states cho danh mục ngân hàng TM  
+  const [banksSearchCode, setBanksSearchCode] = useState('')
+  const [banksSearchName, setBanksSearchName] = useState('')
+
+  // Search states cho quản lý người dùng
+  const [userSearchDepartment, setUserSearchDepartment] = useState('')
+  const [userSearchOffice, setUserSearchOffice] = useState('')
+  const [userSearchPosition, setUserSearchPosition] = useState('')
+  const [userSearchUsername, setUserSearchUsername] = useState('')
+  const [userSearchFullName, setUserSearchFullName] = useState('')
+
+  // Search states cho quản lý thông tin doanh nghiệp
+  const [businessSearchStatus, setBusinessSearchStatus] = useState('')
+  const [businessSearchCode, setBusinessSearchCode] = useState('')
+  const [businessSearchName, setBusinessSearchName] = useState('')
+
+  // Detail View Modal states
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [detailModalData, setDetailModalData] = useState<any>(null)
+  const [detailModalTitle, setDetailModalTitle] = useState('')
 
   // Danh mục ngân hàng TM
   const [banksList, setBanksList] = useState([
     { id: 1, code: 'VCB', name: 'Vietcombank', description: 'Ngân hàng TMCP Ngoại thương Việt Nam', isActive: true },
     { id: 2, code: 'VTB', name: 'Vietinbank', description: 'Ngân hàng TMCP Công thương Việt Nam', isActive: true },
-    { id: 3, code: 'BIDV', name: 'BIDV', description: 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam', isActive: true }
+    { id: 3, code: 'BIDV', name: 'BIDV', description: 'Ngân hàng TMCP Đầu tư và Phát triển Việt Nam', isActive: true },
+    { id: 4, code: 'VPB', name: 'VPBank', description: 'Ngân hàng TMCP Việt Nam Thịnh vượng', isActive: true },
+    { id: 5, code: 'TPB', name: 'TPBank', description: 'Ngân hàng TMCP Tiền Phong', isActive: false },
+    { id: 6, code: 'MSB', name: 'MSB', description: 'Ngân hàng TMCP Hàng Hải Việt Nam', isActive: true },
+    { id: 7, code: 'SCB', name: 'SCB', description: 'Ngân hàng TMCP Sài Gòn', isActive: true },
+    { id: 8, code: 'OCB', name: 'OCB', description: 'Ngân hàng TMCP Phương Đông', isActive: false },
+    { id: 9, code: 'TCB', name: 'Techcombank', description: 'Ngân hàng TMCP Kỹ thương Việt Nam', isActive: true },
+    { id: 10, code: 'MBB', name: 'MBBank', description: 'Ngân hàng TMCP Quân Đội', isActive: true },
+    { id: 11, code: 'ACB', name: 'ACB', description: 'Ngân hàng TMCP Á Châu', isActive: true },
+    { id: 12, code: 'SHB', name: 'SHB', description: 'Ngân hàng TMCP Sài Gòn - Hà Nội', isActive: false }
   ])
 
   // Kho/Bãi/Cảng
@@ -463,8 +497,199 @@ const SystemPage: React.FC = () => {
       functionGroup: 'Nhóm IT',
       position: 'Chuyên viên IT',
       isActive: false
+    },
+    {
+      id: 7,
+      username: 'analyst456',
+      fullName: 'Ngô Thị Lan',
+      department: '07PT - Phòng Phân tích',
+      functionGroup: 'Nhóm nghiệp vụ',
+      position: 'Chuyên viên',
+      isActive: true
+    },
+    {
+      id: 8,
+      username: 'quality123',
+      fullName: 'Đặng Văn Minh',
+      department: '08CL - Phòng Chất lượng',
+      functionGroup: 'Nhóm quản lý',
+      position: 'Trưởng phòng',
+      isActive: true
+    },
+    {
+      id: 9,
+      username: 'support789',
+      fullName: 'Bùi Thị Linh',
+      department: '09HT - Phòng Hỗ trợ',
+      functionGroup: 'Nhóm kỹ thuật',
+      position: 'Nhân viên',
+      isActive: false
+    },
+    {
+      id: 10,
+      username: 'security001',
+      fullName: 'Trương Văn An',
+      department: '10AT - Phòng An toàn',
+      functionGroup: 'Nhóm bảo vệ',
+      position: 'Trưởng ca',
+      isActive: true
+    },
+    {
+      id: 11,
+      username: 'legal456',
+      fullName: 'Phan Thị Luật',
+      department: '11PL - Phòng Pháp lý',
+      functionGroup: 'Nhóm pháp chế',
+      position: 'Chuyên viên',
+      isActive: false
+    },
+    {
+      id: 12,
+      username: 'archive789',
+      fullName: 'Lý Văn Tài',
+      department: '12LT - Phòng Lưu trữ',
+      functionGroup: 'Nhóm tài liệu',
+      position: 'Thủ kho',
+      isActive: true
     }
   ])
+  
+  // Danh sách doanh nghiệp
+  const [businessList, setBusinessList] = useState([
+    {
+      id: 1,
+      code: 'DN001',
+      name: 'Công ty TNHH XNK Sài Gòn',
+      username: 'saigonimport',
+      fullName: 'Trần Văn An',
+      position: 'Giám đốc',
+      department: 'Phòng Xuất nhập khẩu',
+      status: 'Đã cấp quyền',
+      isActive: true
+    },
+    {
+      id: 2,
+      code: 'DN002', 
+      name: 'Tập đoàn Logistics Việt Nam',
+      username: 'vnlogistics',
+      fullName: 'Nguyễn Thị Bình',
+      position: 'Trưởng phòng',
+      department: 'Phòng Vận tải',
+      status: 'Chờ quyết',
+      isActive: true
+    },
+    {
+      id: 3,
+      code: 'DN003',
+      name: 'Công ty CP Cảng Cát Lái',
+      username: 'catlaiport',
+      fullName: 'Lê Văn Cường',
+      position: 'Chủ tịch HĐQT',
+      department: 'Ban Điều hành',
+      status: 'Đã cấp quyền',
+      isActive: false
+    },
+    {
+      id: 4,
+      code: 'DN004',
+      name: 'Công ty TNHH Kho vận ABC',
+      username: 'abcstorage',
+      fullName: 'Phạm Thị Dung',
+      position: 'Giám đốc',
+      department: 'Phòng Kinh doanh',
+      status: 'Đã cấp quyền',
+      isActive: true
+    },
+    {
+      id: 5,
+      code: 'DN005',
+      name: 'Công ty CP Vận tải Biển Đông',
+      username: 'eastseatrans',
+      fullName: 'Võ Văn Em',
+      position: 'Phó Giám đốc',
+      department: 'Phòng Vận hành',
+      status: 'Chờ quyết',
+      isActive: true
+    },
+    {
+      id: 6,
+      code: 'DN006',
+      name: 'Công ty TNHH Hàng hóa Quốc tế',
+      username: 'intlcargo',
+      fullName: 'Đặng Thị Phương',
+      position: 'Chuyên viên',
+      department: 'Phòng Xuất nhập khẩu',
+      status: 'Đã cấp quyền',
+      isActive: false
+    },
+    {
+      id: 7,
+      code: 'DN007',
+      name: 'Tổng Công ty Cảng Sài Gòn',
+      username: 'saigonport',
+      fullName: 'Hoàng Văn Giang',
+      position: 'Trưởng phòng',
+      department: 'Phòng Kế hoạch',
+      status: 'Đã cấp quyền',
+      isActive: true
+    },
+    {
+      id: 8,
+      code: 'DN008',
+      name: 'Công ty CP Đầu tư Phát triển',
+      username: 'devgroup',
+      fullName: 'Trịnh Thị Hảo',
+      position: 'Giám đốc',
+      department: 'Phòng Đầu tư',
+      status: 'Chờ quyết',
+      isActive: true
+    },
+    {
+      id: 9,
+      code: 'DN009',
+      name: 'Công ty TNHH Dịch vụ Hải quan',
+      username: 'customsservice',
+      fullName: 'Bùi Văn Ích',
+      position: 'Chuyên viên',
+      department: 'Phòng Nghiệp vụ',
+      status: 'Đã cấp quyền',
+      isActive: false
+    },
+    {
+      id: 10,
+      code: 'DN010',
+      name: 'Công ty CP Logistics Miền Nam',
+      username: 'southlogistics',
+      fullName: 'Ngô Thị Kim',
+      position: 'Phó Giám đốc',
+      department: 'Phòng Vận hành',
+      status: 'Chờ quyết',
+      isActive: true
+    },
+    {
+      id: 11,
+      code: 'DN011',
+      name: 'Công ty TNHH Xuất khẩu Thuỷ sản',
+      username: 'seafoodexport',
+      fullName: 'Lý Văn Long',
+      position: 'Giám đốc',
+      department: 'Phòng Sản xuất',
+      status: 'Đã cấp quyền',
+      isActive: true
+    },
+    {
+      id: 12,
+      code: 'DN012',
+      name: 'Tập đoàn Dệt may Việt Nam',
+      username: 'textilegroup',
+      fullName: 'Mai Thị Minh',
+      position: 'Trưởng phòng',
+      department: 'Phòng Xuất khẩu',
+      status: 'Đã cấp quyền',
+      isActive: true
+    }
+  ])
+
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -481,9 +706,24 @@ const SystemPage: React.FC = () => {
     address: ''
   })
   
+  // Universal detail view function
+  const showDetailView = (title: string, data: any) => {
+    setDetailModalTitle(title)
+    setDetailModalData(data)
+    setShowDetailModal(true)
+  }
+
+  const closeDetailModal = () => {
+    setShowDetailModal(false)
+    setDetailModalData(null)
+    setDetailModalTitle('')
+  }
+
   const handleViewDetail = (userId: string, userName: string) => {
-    alert(`Xem chi tiết tài khoản: ${userId} - ${userName}`)
-    // TODO: Implement modal hoặc navigate to detail page
+    const user = users.find(u => u.username === userId && u.fullName === userName)
+    if (user) {
+      showDetailView('Chi tiết tài khoản người dùng', user)
+    }
   }
 
   const handleDeleteUser = (userId: string, userName: string) => {
@@ -536,7 +776,7 @@ const SystemPage: React.FC = () => {
     
     // Tạo user mới
     const newUser = {
-      id: users.length + 1,
+      id: Date.now(), // Sử dụng timestamp để đảm bảo unique ID
       username: formData.username,
       fullName: formData.fullName,
       department: formData.department,
@@ -545,8 +785,11 @@ const SystemPage: React.FC = () => {
       isActive: true // Mặc định active
     }
     
-    // Thêm user mới vào danh sách
-    setUsers(prev => [...prev, newUser])
+    // Thêm user mới vào đầu danh sách
+    setUsers(prev => [newUser, ...prev])
+    
+    // Reset về trang 1 để hiển thị user mới
+    setCurrentPage(1)
     
     console.log('Form data:', formData)
     alert('Tạo tài khoản thành công!')
@@ -617,20 +860,86 @@ const SystemPage: React.FC = () => {
     }))
   }
 
+  // Search handler cho danh mục hải quan
+  const handleCustomsSearch = () => {
+    // Reset về trang 1 khi tìm kiếm
+    setCurrentPage(1)
+  }
+
+
+
+  // Filtered list cho danh mục hải quan
+  const filteredCustomsList = customsList.filter(customs => {
+    const codeMatch = customsSearchCode === '' || 
+      customs.code.toLowerCase().includes(customsSearchCode.toLowerCase())
+    const nameMatch = customsSearchName === '' || 
+      customs.name.toLowerCase().includes(customsSearchName.toLowerCase())
+    return codeMatch && nameMatch
+  })
+
+  // Search handler cho danh mục ngân hàng TM
+  const handleBanksSearch = () => {
+    setCurrentPage(1)
+  }
+
+  // Filtered list cho danh mục ngân hàng TM
+  const filteredBanksList = banksList.filter(bank => {
+    const codeMatch = banksSearchCode === '' || 
+      bank.code.toLowerCase().includes(banksSearchCode.toLowerCase())
+    const nameMatch = banksSearchName === '' || 
+      bank.name.toLowerCase().includes(banksSearchName.toLowerCase())
+    return codeMatch && nameMatch
+  })
+
+  // Search handler cho quản lý người dùng
+  const handleUsersSearch = () => {
+    setCurrentPage(1)
+  }
+
+  // Filtered list cho quản lý người dùng
+  const filteredUsersList = users.filter(user => {
+    const departmentMatch = userSearchDepartment === '' || 
+      user.department.toLowerCase().includes(userSearchDepartment.toLowerCase())
+    const officeMatch = userSearchOffice === '' || 
+      user.department.toLowerCase().includes(userSearchOffice.toLowerCase())
+    const positionMatch = userSearchPosition === '' || 
+      user.position.toLowerCase().includes(userSearchPosition.toLowerCase())
+    const usernameMatch = userSearchUsername === '' || 
+      user.username.toLowerCase().includes(userSearchUsername.toLowerCase())
+    const fullNameMatch = userSearchFullName === '' || 
+      user.fullName.toLowerCase().includes(userSearchFullName.toLowerCase())
+    return departmentMatch && officeMatch && positionMatch && usernameMatch && fullNameMatch
+  })
+
+  // Search handler cho quản lý thông tin doanh nghiệp
+  const handleBusinessSearch = () => {
+    setCurrentPage(1)
+  }
+
+  // Filtered list cho quản lý thông tin doanh nghiệp
+  const filteredBusinessList = businessList.filter(business => {
+    const statusMatch = businessSearchStatus === '' || business.status === businessSearchStatus
+    const codeMatch = businessSearchCode === '' || 
+      business.code.toLowerCase().includes(businessSearchCode.toLowerCase())
+    const nameMatch = businessSearchName === '' || 
+      business.name.toLowerCase().includes(businessSearchName.toLowerCase())
+    return statusMatch && codeMatch && nameMatch
+  })
+
   const handleSubmitCustomsForm = (e: React.FormEvent) => {
     e.preventDefault()
     
     // Tạo customs mới
     const newCustoms = {
-      id: customsList.length + 1,
+      id: Date.now(), // Sử dụng timestamp để đảm bảo unique ID
       code: customsFormData.code,
       name: customsFormData.name,
       description: `${customsFormData.name} - ${customsFormData.address}`,
       isActive: customsFormData.status === 'Hoạt động'
     }
     
-    // Thêm vào danh sách
-    setCustomsList(prev => [...prev, newCustoms])
+    // Thêm vào đầu danh sách
+    setCustomsList(prev => [newCustoms, ...prev])
     
     // Reset về trang 1 để hiển thị item mới
     setCurrentPage(1)
@@ -687,7 +996,10 @@ const SystemPage: React.FC = () => {
   }
 
   const handleViewCustomsDetail = (customsName: string) => {
-    alert(`Xem chi tiết: ${customsName}`)
+    const customs = customsList.find(c => c.name === customsName)
+    if (customs) {
+      showDetailView('Chi tiết danh mục hải quan', customs)
+    }
   }
 
   // Helper function để tạo handlers cho từng danh mục
@@ -738,15 +1050,73 @@ const SystemPage: React.FC = () => {
       }
     }
 
-    const handleViewDetail = (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+    const handleViewDetail = (itemName: string, list: any[]) => {
+      const item = list.find(i => i.name === itemName || i.tenLoaiHinh === itemName || i.tenLoaiThanhToan === itemName || i.tenLoaiContainer === itemName || i.tenDonViTinh === itemName)
+      if (item) {
+        showDetailView(`Chi tiết ${title.toLowerCase()}`, item)
+      }
     }
 
     return { handleFormChange, handleSubmit, handleClose, handleDelete, handleViewDetail }
   }
 
-  // Tạo handlers cho tất cả danh mục
-  const bankHandlers = createHandlers(setBanksList, setShowAddBankModal, setBankFormData, bankFormData, 'Danh mục ngân hàng TM')
+  // Custom handlers cho banks với add new item ở đầu danh sách
+  const bankHandlers = {
+    handleFormChange: (field: string, value: string) => {
+      setBankFormData((prev: any) => ({ ...prev, [field]: value }))
+    },
+    handleSubmit: (e: React.FormEvent) => {
+      e.preventDefault()
+      const newItem = {
+        id: Date.now(), // Sử dụng timestamp để đảm bảo unique ID
+        code: bankFormData.code,
+        name: bankFormData.name,
+        description: `${bankFormData.name} - ${bankFormData.address}`,
+        isActive: bankFormData.status === 'Hoạt động'
+      }
+      
+      setBanksList((prev: any[]) => [newItem, ...prev]) // Thêm vào đầu danh sách
+      setCurrentPage(1) // Reset về trang 1 để hiển thị item mới
+      
+      alert('Đã thêm ngân hàng mới thành công!')
+      
+      // Reset form
+      setBankFormData({
+        code: '', name: '', level: '', address: '', phone: '', fax: '', note: '', status: 'Hoạt động'
+      })
+      
+      setShowAddBankModal(false)
+    },
+    handleClose: () => {
+      setShowAddBankModal(false)
+      setBankFormData({
+        code: '', name: '', level: '', address: '', phone: '', fax: '', note: '', status: 'Hoạt động'
+      })
+    },
+    handleDelete: (itemId: number, itemName: string) => {
+      const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa "${itemName}"?`)
+      if (confirmed) {
+        setBanksList((prev: any[]) => {
+          const newList = prev.filter((item: any) => item.id !== itemId)
+          
+          // Điều chỉnh trang nếu trang hiện tại không còn items
+          const newTotalPages = Math.ceil(newList.length / itemsPerPage)
+          if (currentPage > newTotalPages && newTotalPages > 0) {
+            setCurrentPage(newTotalPages)
+          }
+          
+          return newList
+        })
+        alert(`Đã xóa: ${itemName}`)
+      }
+    },
+    handleViewDetail: (itemName: string) => {
+      const item = banksList.find(i => i.name === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục ngân hàng TM', item)
+      }
+    }
+  }
   
   // Custom handlers cho warehouses với structure khác
   const warehouseHandlers = {
@@ -796,7 +1166,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = warehousesList.find(i => i.name === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục Kho/Bãi/Cảng', item)
+      }
     }
   }
   
@@ -847,7 +1220,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = tollStationsList.find(i => i.name === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục trạm thu phí', item)
+      }
     }
   }
   
@@ -917,7 +1293,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = storageLocationsList.find(i => i.name === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục địa điểm lưu kho', item)
+      }
     }
   }
   
@@ -986,7 +1365,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = transportMethodsList.find(i => i.name === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục phương thức vận chuyển', item)
+      }
     }
   }
   
@@ -1066,7 +1448,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = receiptTemplatesList.find(i => i.kyHieuBL === itemName || i.mauBL === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục mẫu ký hiệu biên lai', item)
+      }
     }
   }
   
@@ -1153,7 +1538,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = tariffsList.find(i => i.tenBieuCuoc === itemName || i.maBieuCuoc === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục biểu cước', item)
+      }
     }
   }
 
@@ -1230,7 +1618,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = formTypesList.find(i => i.tenLoaiHinh === itemName || i.maLoaiHinh === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục loại hình', item)
+      }
     }
   }
   // Filter function for payment types search
@@ -1296,7 +1687,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = paymentTypesList.find(i => i.tenLoaiThanhToan === itemName || i.maLoaiThanhToan === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục loại thanh toán', item)
+      }
     }
   }
   // Filter function for container types search
@@ -1362,7 +1756,10 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = containerTypesList.find(i => i.tenLoaiContainer === itemName || i.maLoaiContainer === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục loại container', item)
+      }
     }
   }
   // Filter function for units search
@@ -1435,15 +1832,18 @@ const SystemPage: React.FC = () => {
       }
     },
     handleViewDetail: (itemName: string) => {
-      alert(`Xem chi tiết: ${itemName}`)
+      const item = unitsList.find(i => i.tenDonViTinh === itemName || i.maDonViTinh === itemName)
+      if (item) {
+        showDetailView('Chi tiết danh mục đơn vị tính', item)
+      }
     }
   }
 
-  // Pagination logic
-  const totalPages = Math.ceil(customsList.length / itemsPerPage)
+  // Pagination logic - sử dụng filteredCustomsList
+  const totalPages = Math.ceil(filteredCustomsList.length / itemsPerPage)
   const indexOfLastItem = currentPage * itemsPerPage
   const indexOfFirstItem = indexOfLastItem - itemsPerPage
-  const currentItems = customsList.slice(indexOfFirstItem, indexOfLastItem)
+  const currentItems = filteredCustomsList.slice(indexOfFirstItem, indexOfLastItem)
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber)
@@ -1811,34 +2211,62 @@ const SystemPage: React.FC = () => {
               <div className="flex flex-wrap items-center gap-3 justify-end">
                 {/* Text thông báo sát với controls */}
                 <div className="text-sm font-medium text-gray-700">
-                  (Có {users.length} Tài khoản)
+                  (Có {filteredUsersList.length}/{users.length} Tài khoản)
                 </div>
                 
-                <select className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-60">
-                  <option>-- Cục quản lý --</option>
+                <select 
+                  value={userSearchDepartment}
+                  onChange={(e) => setUserSearchDepartment(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-60"
+                >
+                  <option value="">-- Cục quản lý --</option>
+                  {[...new Set(users.map(u => u.department.split(' - ')[1] || u.department))].map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
                 </select>
                 
-                <select className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-60">
-                  <option>-- Phòng ban --</option>
+                <select 
+                  value={userSearchOffice}
+                  onChange={(e) => setUserSearchOffice(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-60"
+                >
+                  <option value="">-- Phòng ban --</option>
+                  {[...new Set(users.map(u => u.department.split(' - ')[0] || u.department))].map(office => (
+                    <option key={office} value={office}>{office}</option>
+                  ))}
                 </select>
                 
-                <select className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-52">
-                  <option>-- Chức vụ --</option>
+                <select 
+                  value={userSearchPosition}
+                  onChange={(e) => setUserSearchPosition(e.target.value)}
+                  className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-52"
+                >
+                  <option value="">-- Chức vụ --</option>
+                  {[...new Set(users.map(u => u.position))].map(position => (
+                    <option key={position} value={position}>{position}</option>
+                  ))}
                 </select>
                 
                 <input 
                   type="text" 
                   placeholder="Tài khoản"
+                  value={userSearchUsername}
+                  onChange={(e) => setUserSearchUsername(e.target.value)}
                   className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-32"
                 />
                 
                 <input 
                   type="text" 
                   placeholder="Tên tài khoản"
+                  value={userSearchFullName}
+                  onChange={(e) => setUserSearchFullName(e.target.value)}
                   className="border border-gray-300 rounded px-3 py-1 text-sm bg-white w-36"
                 />
                 
-                <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
+                <button 
+                  onClick={handleUsersSearch}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+                >
                   <i className="fas fa-search mr-2"></i>
                   Tìm kiếm
                 </button>
@@ -1862,9 +2290,16 @@ const SystemPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map((user, index) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm text-gray-900">{index + 1}</td>
+                    {(() => {
+                      // Pagination logic cho users
+                      const usersTotalPages = Math.ceil(filteredUsersList.length / itemsPerPage)
+                      const usersIndexOfLastItem = currentPage * itemsPerPage
+                      const usersIndexOfFirstItem = usersIndexOfLastItem - itemsPerPage
+                      const currentUsers = filteredUsersList.slice(usersIndexOfFirstItem, usersIndexOfLastItem)
+                      
+                      return currentUsers.map((user, index) => (
+                        <tr key={user.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">{usersIndexOfFirstItem + index + 1}</td>
                         <td className="px-4 py-3 text-sm">
                           <div className="flex gap-2">
                             <button 
@@ -1872,7 +2307,7 @@ const SystemPage: React.FC = () => {
                               title="Xem chi tiết"
                               onClick={() => handleViewDetail(user.username, user.fullName)}
                             >
-                              <i className="fas fa-sticky-note"></i>
+                              <i className="fas fa-eye"></i>
                             </button>
                             <button 
                               className="text-red-500 hover:text-red-700" 
@@ -1892,15 +2327,61 @@ const SystemPage: React.FC = () => {
                           <i className={`fas ${user.isActive ? 'fa-check text-green-500' : 'fa-times text-red-500'}`} 
                              title={user.isActive ? 'Hoạt động' : 'Không hoạt động'}></i>
                         </td>
-                      </tr>
-                    ))}
+                        </tr>
+                      ))
+                    })()}
                   </tbody>
                 </table>
                 
-                {/* Pagination info */}
-                <div className="bg-gray-50 px-4 py-3 border-t">
+                {/* Pagination */}
+                <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    Có {users.length} bản ghi
+                    Có {filteredUsersList.length}/{users.length} bản ghi - Trang: {currentPage}/{(() => {
+                      const usersTotalPages = Math.ceil(filteredUsersList.length / itemsPerPage)
+                      return usersTotalPages
+                    })()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={handlePrevPage}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Trước
+                    </button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.min((() => {
+                        const usersTotalPages = Math.ceil(filteredUsersList.length / itemsPerPage)
+                        return usersTotalPages
+                      })(), 5) }, (_, i) => {
+                        const page = i + 1
+                        return (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-1 text-sm rounded ${
+                              currentPage === page
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-white border hover:bg-gray-50'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    
+                    <button
+                      onClick={handleNextPage}
+                      disabled={(() => {
+                        const usersTotalPages = Math.ceil(filteredUsersList.length / itemsPerPage)
+                        return currentPage === usersTotalPages
+                      })()}
+                      className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Sau
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1967,7 +2448,7 @@ const SystemPage: React.FC = () => {
                                                 <button 
                                                   className="text-blue-500 hover:text-blue-700" 
                                                   title="Xem chi tiết"
-                                                  onClick={() => alert(`Xem chi tiết nhóm: ${group.groupName}`)}
+                                                  onClick={() => showDetailView('Chi tiết nhóm chức năng', group)}
                                                 >
                                                   <i className="fas fa-eye text-xs"></i>
                                                 </button>
@@ -2035,8 +2516,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">1</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2055,8 +2540,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">2</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2075,8 +2564,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">3</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2095,8 +2588,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">4</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2115,8 +2612,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">5</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2135,8 +2636,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">6</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2155,8 +2660,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">7</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2175,8 +2684,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">8</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2195,8 +2708,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">9</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2215,8 +2732,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">10</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2235,8 +2756,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">11</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2255,8 +2780,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">12</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2275,8 +2804,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">13</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2295,8 +2828,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">14</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2315,8 +2852,12 @@ const SystemPage: React.FC = () => {
                               <td className="px-4 py-3 text-sm text-gray-900">15</td>
                               <td className="px-4 py-3 text-sm">
                                 <div className="flex gap-2">
-                                  <button className="text-blue-500 hover:text-blue-700" title="Xem chi tiết">
-                                    <i className="fas fa-sticky-note"></i>
+                                  <button 
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Xem chi tiết"
+                                    onClick={() => alert('Tính năng này đang phát triển')}
+                                  >
+                                    <i className="fas fa-eye"></i>
                                   </button>
                                   <button className="text-red-500 hover:text-red-700" title="Xóa">
                                     <i className="fas fa-trash"></i>
@@ -2733,6 +3274,11 @@ const SystemPage: React.FC = () => {
           </div>
         )
                     case '/system/business':
+                const businessTotalPages = Math.ceil(filteredBusinessList.length / itemsPerPage)
+                const businessIndexOfLastItem = currentPage * itemsPerPage
+                const businessIndexOfFirstItem = businessIndexOfLastItem - itemsPerPage
+                const currentBusiness = filteredBusinessList.slice(businessIndexOfFirstItem, businessIndexOfLastItem)
+                
                 return (
                   <div className="space-y-4">
                     {/* Header với filter */}
@@ -2740,24 +3286,36 @@ const SystemPage: React.FC = () => {
                       <div className="px-4 py-3 border-b">
                         <div className="flex items-center justify-between">
                           <div className="text-sm text-gray-700">
-                            Có 120/190/05 bản ghi - Trang: 1/21
+                            Có {filteredBusinessList.length}/{businessList.length} bản ghi - Trang: {currentPage}/{businessTotalPages}
                           </div>
                           <div className="flex items-center gap-3">
-                            <select className="border border-gray-300 rounded px-3 py-2 text-sm">
-                              <option>Đã cấp quyền</option>
-                              <option>Chờ quyết</option>
+                            <select 
+                              value={businessSearchStatus}
+                              onChange={(e) => setBusinessSearchStatus(e.target.value)}
+                              className="border border-gray-300 rounded px-3 py-2 text-sm"
+                            >
+                              <option value="">Tất cả trạng thái</option>
+                              <option value="Đã cấp quyền">Đã cấp quyền</option>
+                              <option value="Chờ quyết">Chờ quyết</option>
                             </select>
                             <input
                               type="text"
                               placeholder="Mã doanh nghiệp"
+                              value={businessSearchCode}
+                              onChange={(e) => setBusinessSearchCode(e.target.value)}
                               className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
                             />
                             <input
                               type="text"
                               placeholder="Tên doanh nghiệp"
+                              value={businessSearchName}
+                              onChange={(e) => setBusinessSearchName(e.target.value)}
                               className="border border-gray-300 rounded px-3 py-2 text-sm w-48"
                             />
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
+                            <button 
+                              onClick={handleBusinessSearch}
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+                            >
                               <i className="fas fa-search mr-2"></i>
                               Tìm kiếm
                             </button>
@@ -2772,263 +3330,111 @@ const SystemPage: React.FC = () => {
                         <table className="w-full">
                           <thead className="bg-gray-50">
                             <tr>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8">#</th>
                               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">STT</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8">#</th>
                               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">TÀI KHOẢN</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">DOANH NGHIỆP</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">LIÊN HỆ</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">EMAIL</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">GHI CHÚ</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">NGÀY ĐK</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">HỌ VÀ TÊN</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">CHỨC VỤ</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">ĐƠN VỊ</th>
                               <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">TRẠNG THÁI</th>
-                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">THAO TÁC PHÊ DUYỆT</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">SỬA</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">1</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">******</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>****** - VINTEXT</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">phat@vintext.vn</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>finh.phat@gmail.com</div>
-                                <div>Test</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">04/10/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                                  <i className="fas fa-check mr-1"></i>
-                                  Cấp quyền
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">admin - 01/07/2021</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">2</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">2301017748</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>2301017748 - CÔNG TY CỔ PHẦN XUE THỦY ĐIỀU HÒA</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0987566685</div>
-                                <div>thuongtd@systech.com.vn</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">13/04/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">3</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0200754420</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0200754420 - CÔNG TY CP CẢNG DỊCH VỤ & BẢO MẪI DÂN VŨ PPGC</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">25/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                                  <i className="fas fa-check mr-1"></i>
-                                  Cấp quyền
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">admin - 16/08/2021</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">4</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0158421445</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0158421445 - CÔNG TY TNHH CÔNG NGHỆ ĐẦU TƯ PHÚC MINH</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">0176447334</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">22/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">5</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0300265909</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0300265909 - CÔNG TY CỔ PHẦN ĐẬU THƯƠNG MAI</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>Công ty Cổ Phần ĐẬU THƯƠNG MAI</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">19/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                                  <i className="fas fa-check mr-1"></i>
-                                  Cấp quyền
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">admin - 16/08/2021</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">6</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0158421445</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0158421445 - CÔNG TY TNHH VINADIC PARTS VIỆT NAM</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">logistics.hq@vinadic.honda.vn.com</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">19/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">7</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0200617482</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0200617482 - CÔNG TY TRÁCH NHIỆM HỮU HẠN THƯƠNG MẠI VÀ DỊCH VỤ</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">19/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">8</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0126253561</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0126253561 - CÔNG TY CỔ PHẦN CUNG NGHIỆP VINCO</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">0987566685</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">18/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">
-                                  <i className="fas fa-check mr-1"></i>
-                                  Cấp quyền
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">admin - 21/07/2021</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">9</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0201392117</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0201392117 - CÔNG TY TNHH ĐẦU TƯ VÀ TÂM HỢI SÀI GÒN</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0869274592</div>
-                                <div>hanhchau3@gmail.com</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">18/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
-                            <tr className="hover:bg-gray-50">
-                              <td className="px-3 py-3 text-xs">
-                                <input type="checkbox" className="h-4 w-4 text-blue-600" />
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">10</td>
-                              <td className="px-3 py-3 text-xs text-blue-600">0314628183</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">
-                                <div>0314628183 - CÔNG TY TNHH DẦU LINUX & TÂY VIỆT NAM</div>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">logistics.hq@vinadic.honda.vn.com</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                              <td className="px-3 py-3 text-xs text-gray-900">16/02/2019</td>
-                              <td className="px-3 py-3 text-xs">
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">
-                                  <i className="fas fa-clock mr-1"></i>
-                                  Chờ quyết
-                                </span>
-                              </td>
-                              <td className="px-3 py-3 text-xs text-gray-900">-</td>
-                            </tr>
+                            {currentBusiness.map((business, index) => (
+                              <tr key={business.id} className="hover:bg-gray-50">
+                                <td className="px-3 py-3 text-xs text-gray-900">{businessIndexOfFirstItem + index + 1}</td>
+                                <td className="px-3 py-3 text-xs">
+                                  <div className="flex gap-2">
+                                    <button 
+                                      onClick={() => showDetailView('Chi tiết thông tin doanh nghiệp', business)}
+                                      className="text-blue-500 hover:text-blue-700" 
+                                      title="Xem chi tiết"
+                                    >
+                                      <i className="fas fa-eye"></i>
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        const confirmed = window.confirm(`Bạn có chắc chắn muốn xóa "${business.name}"?`)
+                                        if (confirmed) {
+                                          setBusinessList(prev => prev.filter(b => b.id !== business.id))
+                                          alert(`Đã xóa: ${business.name}`)
+                                        }
+                                      }}
+                                      className="text-red-500 hover:text-red-700" 
+                                      title="Xóa"
+                                    >
+                                      <i className="fas fa-trash"></i>
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{business.username}</td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{business.fullName}</td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{business.position}</td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{business.department}</td>
+                                <td className="px-3 py-3 text-xs">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                    business.status === 'Đã cấp quyền' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-yellow-100 text-yellow-800'
+                                  }`}>
+                                    {business.status}
+                                  </span>
+                                </td>
+                                <td className="px-3 py-3 text-xs">
+                                  <button 
+                                    onClick={() => alert(`Sửa thông tin: ${business.name}`)}
+                                    className="text-blue-500 hover:text-blue-700" 
+                                    title="Sửa thông tin"
+                                  >
+                                    <i className="fas fa-edit"></i>
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
                           </tbody>
                         </table>
 
                         {/* Pagination */}
-                        <div className="bg-gray-50 px-4 py-3 border-t">
-                          <div className="flex items-center justify-between">
-                            <div className="text-sm text-gray-700">
-                              Trang cuối...
+                        <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between">
+                          <div className="text-sm text-gray-700">
+                            Hiển thị {businessIndexOfFirstItem + 1}-{Math.min(businessIndexOfLastItem, filteredBusinessList.length)} của {filteredBusinessList.length} bản ghi
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handlePrevPage}
+                              disabled={currentPage === 1}
+                              className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              Trước
+                            </button>
+                            
+                            <div className="flex gap-1">
+                              {Array.from({ length: Math.min(businessTotalPages, 5) }, (_, i) => {
+                                const page = i + 1
+                                return (
+                                  <button
+                                    key={page}
+                                    onClick={() => handlePageChange(page)}
+                                    className={`px-3 py-1 text-sm rounded ${
+                                      currentPage === page
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-white border hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    {page}
+                                  </button>
+                                )
+                              })}
                             </div>
-                            <div className="flex space-x-1">
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100 bg-blue-500 text-white">1</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">2</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">3</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">4</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">5</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">6</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">7</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">8</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">9</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">10</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">...</button>
-                              <button className="px-2 py-1 text-xs border border-gray-300 rounded hover:bg-gray-100">Trang cuối</button>
-                            </div>
+                            
+                            <button
+                              onClick={handleNextPage}
+                              disabled={currentPage === businessTotalPages}
+                              className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              Sau
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -3167,19 +3573,26 @@ const SystemPage: React.FC = () => {
                           </button>
                           <div className="flex items-center gap-3">
                             <div className="text-sm text-gray-700">
-                              Có {customsList.length}/200 bản ghi - Trang: {currentPage}/{totalPages}
+                              Có {filteredCustomsList.length}/{customsList.length} bản ghi - Trang: {currentPage}/{totalPages}
                             </div>
                             <input
                               type="text"
                               placeholder="Mã hải quan"
+                              value={customsSearchCode}
+                              onChange={(e) => setCustomsSearchCode(e.target.value)}
                               className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
                             />
                             <input
                               type="text"
                               placeholder="Tên hải quan"
+                              value={customsSearchName}
+                              onChange={(e) => setCustomsSearchName(e.target.value)}
                               className="border border-gray-300 rounded px-3 py-2 text-sm w-48"
                             />
-                            <button className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center">
+                            <button 
+                              onClick={handleCustomsSearch}
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+                            >
                               <i className="fas fa-search mr-2"></i>
                               Tìm kiếm
                             </button>
@@ -3423,11 +3836,218 @@ const SystemPage: React.FC = () => {
                   </div>
                 )
               case '/system/banks':
-                return generateCatalogPage({
-                  list: banksList, showModal: showAddBankModal, setShowModal: setShowAddBankModal,
-                  formData: bankFormData, ...bankHandlers,
-                  title: 'Danh mục ngân hàng TM', searchPlaceholder: 'Tên ngân hàng'
-                })
+                const banksTotalPages = Math.ceil(filteredBanksList.length / itemsPerPage)
+                const banksIndexOfLastItem = currentPage * itemsPerPage
+                const banksIndexOfFirstItem = banksIndexOfLastItem - itemsPerPage
+                const currentBanks = filteredBanksList.slice(banksIndexOfFirstItem, banksIndexOfLastItem)
+
+                return (
+                  <div className="space-y-4">
+                    {/* Header với filter */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                      <div className="px-4 py-3 border-b">
+                        <div className="flex items-center justify-between">
+                          <button 
+                            onClick={() => setShowAddBankModal(true)}
+                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center"
+                          >
+                            <i className="fas fa-plus mr-2"></i>
+                            Thêm mới
+                          </button>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm text-gray-700">
+                              Có {filteredBanksList.length}/{banksList.length} bản ghi - Trang: {currentPage}/{banksTotalPages}
+                            </div>
+                            <input
+                              type="text"
+                              placeholder="Mã ngân hàng"
+                              value={banksSearchCode}
+                              onChange={(e) => setBanksSearchCode(e.target.value)}
+                              className="border border-gray-300 rounded px-3 py-2 text-sm w-40"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Tên ngân hàng"
+                              value={banksSearchName}
+                              onChange={(e) => setBanksSearchName(e.target.value)}
+                              className="border border-gray-300 rounded px-3 py-2 text-sm w-48"
+                            />
+                            <button 
+                              onClick={handleBanksSearch}
+                              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 flex items-center"
+                            >
+                              <i className="fas fa-search mr-2"></i>
+                              Tìm kiếm
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bảng dữ liệu */}
+                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">STT</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">MÃ</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">TÊN</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">DIỄN GIẢI</th>
+                              <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase">HIỂN THỊ</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {currentBanks.map((bank, index) => (
+                              <tr key={bank.id} className="hover:bg-gray-50">
+                                <td className="px-3 py-3 text-xs text-gray-900">{banksIndexOfFirstItem + index + 1}</td>
+                                <td className="px-3 py-3 text-xs">
+                                  <div className="flex gap-2">
+                                    <button 
+                                      onClick={() => bankHandlers.handleViewDetail(bank.name)}
+                                      className="text-blue-500 hover:text-blue-700" 
+                                      title="Xem chi tiết"
+                                    >
+                                      <i className="fas fa-eye"></i>
+                                    </button>
+                                    <button 
+                                      onClick={() => bankHandlers.handleDelete(bank.id, bank.name)}
+                                      className="text-red-500 hover:text-red-700" 
+                                      title="Xóa"
+                                    >
+                                      <i className="fas fa-trash"></i>
+                                    </button>
+                                  </div>
+                                </td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{bank.code}</td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{bank.name}</td>
+                                <td className="px-3 py-3 text-xs text-gray-900">{bank.description}</td>
+                                <td className="px-3 py-3 text-xs">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                    bank.isActive 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
+                                    {bank.isActive ? 'Hiển thị' : 'Ẩn'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Pagination */}
+                      <div className="px-4 py-3 bg-gray-50 border-t flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={handlePrevPage}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            Trước
+                          </button>
+                          
+                          <div className="flex gap-1">
+                            {Array.from({ length: Math.min(banksTotalPages, 5) }, (_, i) => {
+                              const page = i + 1
+                              return (
+                                <button
+                                  key={page}
+                                  onClick={() => handlePageChange(page)}
+                                  className={`px-3 py-1 text-sm rounded ${
+                                    currentPage === page
+                                      ? 'bg-blue-500 text-white'
+                                      : 'bg-white border hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {page}
+                                </button>
+                              )
+                            })}
+                          </div>
+                          
+                          <button
+                            onClick={handleNextPage}
+                            disabled={currentPage === banksTotalPages}
+                            className="px-3 py-1 text-sm bg-white border rounded hover:bg-gray-50 disabled:opacity-50"
+                          >
+                            Sau
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Add Bank Modal */}
+                    {showAddBankModal && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg p-6 w-1/2 max-h-[90vh] overflow-y-auto">
+                          <h2 className="text-lg font-bold text-gray-800 mb-4">Cập nhật thông tin ngân hàng TM</h2>
+                          
+                          <form onSubmit={bankHandlers.handleSubmit} className="space-y-4">
+                            <div className="flex items-center gap-4">
+                              <label className="text-sm font-medium text-gray-700 w-1/4">Mã ngân hàng:</label>
+                              <input
+                                type="text"
+                                value={bankFormData.code}
+                                onChange={(e) => bankHandlers.handleFormChange('code', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                placeholder="Nhập mã ngân hàng"
+                              />
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <label className="text-sm font-medium text-gray-700 w-1/4">Tên ngân hàng:</label>
+                              <input
+                                type="text"
+                                value={bankFormData.name}
+                                onChange={(e) => bankHandlers.handleFormChange('name', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                                placeholder="Nhập tên ngân hàng"
+                              />
+                            </div>
+                            <div className="flex gap-4">
+                              <label className="text-sm font-medium text-gray-700 w-1/4">Diễn giải:</label>
+                              <textarea
+                                value={bankFormData.address}
+                                onChange={(e) => bankHandlers.handleFormChange('address', e.target.value)}
+                                rows={3}
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500 resize-none"
+                                placeholder="Nhập diễn giải"
+                              />
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <label className="text-sm font-medium text-gray-700 w-1/4">Trạng thái:</label>
+                              <select
+                                value={bankFormData.status}
+                                onChange={(e) => bankHandlers.handleFormChange('status', e.target.value)}
+                                className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-blue-500"
+                              >
+                                <option value="Hoạt động">Hoạt động</option>
+                                <option value="Không hoạt động">Không hoạt động</option>
+                              </select>
+                            </div>
+                            <div className="flex justify-end gap-3 pt-4">
+                              <button
+                                type="button"
+                                onClick={bankHandlers.handleClose}
+                                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                              >
+                                Hủy
+                              </button>
+                              <button
+                                type="submit"
+                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                              >
+                                Lưu lại
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
               case '/system/warehouses':
                 const warehousesTotalPages = Math.ceil(warehousesList.length / itemsPerPage)
                 const warehousesIndexOfLastItem = currentPage * itemsPerPage
@@ -6180,6 +6800,121 @@ const SystemPage: React.FC = () => {
 
           <div className="bg-white rounded-lg shadow-md p-6">
             {getPageContent()}
+          </div>
+        </div>
+      )}
+
+      {/* Detail View Modal */}
+      {showDetailModal && detailModalData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 w-3/4 max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-gray-800">{detailModalTitle}</h2>
+              <button
+                onClick={closeDetailModal}
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+                title="Đóng"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {Object.entries(detailModalData).map(([key, value]) => {
+                if (key === 'id') return null // Skip ID field
+                
+                let displayKey = key
+                let displayValue = value
+                
+                // Format field names to Vietnamese
+                const fieldMapping: { [key: string]: string } = {
+                  'username': 'Tài khoản',
+                  'fullName': 'Họ và tên',
+                  'department': 'Phòng ban',
+                  'position': 'Chức vụ',
+                  'functionGroup': 'Nhóm chức năng',
+                  'isActive': 'Trạng thái',
+                  'code': 'Mã',
+                  'name': 'Tên',
+                  'description': 'Mô tả/Diễn giải',
+                  'address': 'Địa chỉ',
+                  'phone': 'Số điện thoại',
+                  'fax': 'Số fax',
+                  'level': 'Cấp độ',
+                  'status': 'Trạng thái',
+                  'maHaiQuan': 'Mã hải quan',
+                  'maCangKhu': 'Mã cảng/khu',
+                  'ghiChu': 'Ghi chú',
+                  'tenKhac': 'Tên khác',
+                  'loai': 'Loại',
+                  'maTramThuPhi': 'Mã trạm thu phí',
+                  'tenTramThuPhi': 'Tên trạm thu phí',
+                  'maSoThue': 'Mã số thuế',
+                  'tenGiaoDich': 'Tên giao dịch',
+                  'soTax': 'Số Tax',
+                  'maLuuKho': 'Mã lưu kho',
+                  'tenKho': 'Tên kho',
+                  'maPhuongThuc': 'Mã phương thức',
+                  'tenPhuongThuc': 'Tên phương thức',
+                  'namDangKy': 'Năm đăng ký',
+                  'vnaccs': 'VNACCS',
+                  'trangThai': 'Trạng thái',
+                  'mauBienLai': 'Mẫu biên lai',
+                  'kiHieu': 'Ký hiệu',
+                  'tuSo': 'Từ số',
+                  'denSo': 'Đến số',
+                  'ngayHieuLuc': 'Ngày hiệu lực',
+                  'diemThuPhi': 'Điểm thu phí',
+                  'nguoiTao': 'Người tạo',
+                  'maBieuCuoc': 'Mã biểu cước',
+                  'tenBieuCuoc': 'Tên biểu cước',
+                  'nhomLoaiHinh': 'Nhóm loại hình',
+                  'loaiContainer': 'Loại container',
+                  'tinhChatContainer': 'Tính chất container',
+                  'donViTinh': 'Đơn vị tính',
+                  'hang': 'Hàng',
+                  'sort': 'Sắp xếp',
+                  'donGia': 'Đơn giá',
+                  'maLoaiHinh': 'Mã loại hình',
+                  'tenLoaiHinh': 'Tên loại hình',
+                  'dienGiai': 'Diễn giải',
+                  'maLoaiThanhToan': 'Mã loại thanh toán',
+                  'tenLoaiThanhToan': 'Tên loại thanh toán',
+                  'maLoaiContainer': 'Mã loại container',
+                  'tenLoaiContainer': 'Tên loại container',
+                  'maDonViTinh': 'Mã đơn vị tính',
+                  'tenDonViTinh': 'Tên đơn vị tính',
+                  'loaiDonViTinh': 'Loại đơn vị tính'
+                }
+                
+                displayKey = fieldMapping[key] || key
+                
+                // Format boolean values
+                if (typeof value === 'boolean') {
+                  displayValue = value ? 'Có/Hoạt động' : 'Không/Không hoạt động'
+                }
+                
+                return (
+                  <div key={key} className="flex">
+                    <div className="w-1/3 font-medium text-gray-700 bg-gray-50 px-3 py-2 border">
+                      {displayKey}:
+                    </div>
+                    <div className="w-2/3 px-3 py-2 border border-l-0">
+                      {String(displayValue || '-')}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeDetailModal}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Đóng
+              </button>
+            </div>
           </div>
         </div>
       )}
