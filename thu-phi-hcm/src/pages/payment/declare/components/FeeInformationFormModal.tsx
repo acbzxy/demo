@@ -1,5 +1,13 @@
-import { ArrowLeftCircleIcon, WindowIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowLeftCircleIcon,
+  CheckCircleIcon,
+  ChevronDoubleRightIcon,
+  MagnifyingGlassIcon,
+  WindowIcon,
+} from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import FeeDeclarationForm from "./FeeDeclarationForm";
+import CargoTabs from "./FeeDeclaretionFooterTable";
 
 export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
   return (
@@ -11,7 +19,7 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
       transition={{ type: "tween", duration: 0.3 }}
     >
       {/* Header */}
-      <div className="modal-header absolute top-0 w-full">
+      <div className="modal-header fixed top-[85px] w-[calc(100%-45px)] z-20 bg-white">
         <h4 className="modal-title">
           <button
             onClick={onClose}
@@ -31,41 +39,77 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        <p>Đây là nội dung trong modal.</p>
-        <p>Bạn có thể thêm form, bảng, input...</p>
-        <p>
-          Modal này chiếm toàn bộ diện tích <b>component cha</b>, không tràn
-          full màn hình.
-        </p>
-
-        {/* Ví dụ form */}
-        <form className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">Tên phí:</label>
-            <input
-              type="text"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Nhập tên phí"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Số tiền:</label>
-            <input
-              type="number"
-              className="w-full border rounded px-3 py-2"
-              placeholder="Nhập số tiền"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded"
+      <div className="modal-body mt-[40px] pr-[15px] pb-[100px] pl-[15px] bg-[#E8EBEF] min-h-[278px]">
+        <div className="w-full">
+          <ul
+            id="progressbar"
+            className="progressbar flex justify-between relative mb-3"
           >
-            Lưu
-          </button>
-        </form>
+            <li className="step active">Tạo tờ khai phí</li>
+            <li className="step">Ký số (Khai báo nộp phí)</li>
+            <li className="step">Lấy thông báo phí</li>
+            <li className="step">Thực hiện nộp phí</li>
+            <li className="step">
+              <span className="flex items-center gap-1 justify-center">
+                <CheckCircleIcon className="w-4 h-4 text-green-600" />
+                <span>Hoàn thành</span>
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="data-master">
+          <div className="font-bold uppercase mb-1">
+            Nguồn thông tin tờ khai
+          </div>
+          <div className="item-frame flex items-center">
+            <label className="flex items-center mr-6 cursor-pointer">
+              <input
+                type="radio"
+                name="feeOption"
+                defaultChecked
+                className="appearance-none w-4 h-4 border border-gray-400 rounded-none
+                 checked:after:content-['✓'] checked:after:text-green-600 
+                 checked:after:flex checked:after:items-center checked:after:justify-center 
+                 checked:after:w-full checked:after:h-full bg-white"
+              />
+              <span className="ml-2 uppercase">Lấy thông tin từ Hải quan</span>
+            </label>
+            <div className="flex items-center mx-2">
+              <ChevronDoubleRightIcon className="w-3  h-3" />
+              <input
+                type="text"
+                className="border h-[33px] w-[120px] me-1"
+                defaultValue={"0109844160"}
+              />
+              <input
+                type="text"
+                className="border h-[33px] w-[100px] me-1"
+                placeholder="Số tờ khai HQ"
+              />
+              <button className="btn btn-primary w-[130px] font-normal bg-[#deecf9] text-[#005a9e] rounded-none pt-[4px] hover:text-white">
+                <MagnifyingGlassIcon className="w-3  h-3" />
+                &nbsp;Lấy thông tin
+              </button>
+              <span className="font-bold ms-4">|</span>
+            </div>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="feeOption"
+                className="appearance-none w-4 h-4 border border-gray-400 rounded-none
+                 checked:after:content-['✓'] checked:after:text-green-600 
+                 checked:after:flex checked:after:items-center checked:after:justify-center 
+                 checked:after:w-full checked:after:h-full bg-white"
+              />
+              <span className="ml-2 uppercase">
+                Khai báo tờ khai phí thủ công
+              </span>
+            </label>
+          </div>
+          <FeeDeclarationForm />
+          <CargoTabs />
+        </div>
       </div>
     </motion.div>
   );

@@ -405,3 +405,67 @@ body {
 .sticky-header {
   @apply border-t border-[#e6e6e6] sticky top-[-1px] bg-[#f5f5f5] z-[1];
 }
+
+.modal-header {
+  @apply flex items-start justify-between px-[15px] py-[10px] rounded-none text-black;
+}
+
+.modal-title {
+  @apply capitalize text-[17px];
+}
+
+.modal-body {
+  @apply relative overflow-auto flex-1 p-4;
+}
+
+.progressbar {
+  counter-reset: step;
+}
+
+.progressbar li {
+  @apply relative list-none text-center font-bold text-[10px] uppercase tracking-[1px] w-full;
+}
+
+/* Circle số */
+.progressbar li::before {
+  content: counter(step);
+  counter-increment: step;
+  @apply block w-[25px] h-[25px] leading-[25px] text-[13px] text-[#333] bg-white rounded-full mx-auto mb-2 z-10 relative;
+}
+
+/* Line nối */
+.progressbar li::after {
+  content: "";
+  @apply absolute top-[12px] left-1/2 w-full h-[2px] bg-[#f7f3f3];
+  z-index: 0;
+}
+
+/* Ẩn line cuối cùng */
+.progressbar li:last-child::after {
+  content: none;
+}
+
+/* Active step */
+.progressbar li.active::before {
+  @apply bg-[#006cbf] text-white;
+}
+
+.item-frame {
+  @apply bg-white rounded-[2px] p-[10px] mb-[15px] relative;
+}
+
+.frame-body {
+  @apply overflow-y-auto w-full bg-white relative;
+}
+
+.item-search {
+  @apply w-[120px] mb-[5px] inline-block mr-[2px] h-[33px] border border-[#c1c1c1] py-[3px] px-[5px];
+}
+
+.table-header {
+  @apply py-[10px] px-[3px] border-r text-center font-bold uppercase text-[13px];
+}
+
+.sticky-header {
+  @apply border-t border-[#e6e6e6] sticky top-[-1px] bg-[#f5f5f5] z-[1];
+}

@@ -261,7 +261,7 @@ const Declare: React.FC = () => {
         </div>
       </div>
       {showFeeInfoModal && (
-        <div className="absolute inset-0 z-10 bg-white shadow-lg">
+        <div className="absolute inset-0 z-10 bg-white shadow-lg h-[86vh]">
           <FeeInformationFormModal onClose={() => setShowFeeInfoModal(false)} />
         </div>
       )}
