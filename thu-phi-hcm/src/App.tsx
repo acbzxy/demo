@@ -26,6 +26,7 @@ const SummaryByEnterprisePage = lazy(() => import('./pages/reports/SummaryByEnte
 const DetailedReportPage = lazy(() => import('./pages/reports/DetailedReportPage'))
 const ReceiptUsageHistoryPage = lazy(() => import('./pages/reports/ReceiptUsageHistoryPage'))
 const CollectionSummaryPage = lazy(() => import('./pages/reports/CollectionSummaryPage'))
+const ReceiptLookupDetailPage = lazy(() => import('./pages/reports/ReceiptLookupPage'))
 
 // Debt Management Pages
 const DebtManagementPage = lazy(() => import('./pages/debt-management/DebtManagementPage'))
@@ -78,6 +79,7 @@ function App() {
           <Route path="/reports/detailed-report" element={<ProtectedRoute><DetailedReportPage /></ProtectedRoute>} />
           <Route path="/reports/receipt-usage-history" element={<ProtectedRoute><ReceiptUsageHistoryPage /></ProtectedRoute>} />
           <Route path="/reports/collection-summary" element={<ProtectedRoute><CollectionSummaryPage /></ProtectedRoute>} />
+          <Route path="/reports/receipt-lookup" element={<ProtectedRoute><ReceiptLookupDetailPage /></ProtectedRoute>} />
           
           {/* Debt Management routes */}
           <Route path="/debt-management" element={<ProtectedRoute><DebtManagementPage /></ProtectedRoute>} />
