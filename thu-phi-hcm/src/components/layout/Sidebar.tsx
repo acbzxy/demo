@@ -30,8 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         { path: '/payment/order', label: '2. Đơn hàng thanh toán QR, Ecor' },
         { path: '/data-table', label: '3. Danh sách biên lai' },
         { path: '/payment/process', label: '4. Trình ký xử lý biên lai' },
-        { path: '/payment/lookup', label: '5. Tra cứu biên lai' },
-        { path: '/payment/debt', label: '6. Tra cứu nợ phí' }
+        { path: '/reports/receipt-lookup', label: '5. Tra cứu biên lai' },
+        { path: '/debt-management/debt-status', label: '6. Tra cứu nợ phí' }
       ]
     },
     {
