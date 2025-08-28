@@ -17,6 +17,8 @@ const WelcomePage = lazy(() => import('./pages/WelcomePage'))
 const SystemPage = lazy(() => import('./pages/SystemPage'))
 const DataTablePage = lazy(() => import('./pages/DataTablePage'))
 const ReceiptApprovalPage = lazy(() => import('./pages/ReceiptApprovalPage'))
+const QROrderPage = lazy(() => import('./pages/QROrderPage'))
+const EcomPaymentPage = lazy(() => import('./pages/EcomPaymentPage'))
 
 // Reports Pages
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
@@ -66,10 +68,12 @@ function App() {
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/receipt-lookup" element={<ReceiptLookupPage />} />
+          <Route path="/ecom-payment" element={<EcomPaymentPage />} />
           
           {/* Protected routes */}
           <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
           <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
+          <Route path="/payment/order" element={<ProtectedRoute><QROrderPage /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />
           <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />
