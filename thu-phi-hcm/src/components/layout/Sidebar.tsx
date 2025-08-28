@@ -71,6 +71,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         { path: '/data-reconciliation/customs-report', label: 'Báo cáo đối soát Hải Quan' }
       ]
     },
+    {
+      path: '/payment-management',
+      label: 'QUẢN LÝ THANH TOÁN',
+      icon: 'fas fa-credit-card',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/payment-management/manage', label: 'Quản lý thanh toán' },
+        { path: '/payment-management/cancel', label: 'Hủy thanh toán' },
+        { path: '/payment-management/restore', label: 'Khôi phục thanh toán' },
+        { path: '/payment-management/notify-transfer', label: 'TB chuyển tiền về KB' },
+        { path: '/payment-management/manage-transfer', label: 'QL chuyển tiền về KB' },
+        { path: '/payment-management/bank-reconciliation', label: 'Đối soát dữ liệu thanh toán từ ngân hàng' }
+      ]
+    },
                             {
                   path: '/system',
                   label: 'HỆ THỐNG',

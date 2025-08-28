@@ -40,6 +40,9 @@ const InitializePage = lazy(() => import('./pages/data-reconciliation/Initialize
 const ManageListPage = lazy(() => import('./pages/data-reconciliation/ManageListPage'))
 const CustomsReportPage = lazy(() => import('./pages/data-reconciliation/CustomsReportPage'))
 
+// Payment Management Pages
+const PaymentManagementPage = lazy(() => import('./pages/payment-management/PaymentManagementPage'))
+
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth()
@@ -109,6 +112,15 @@ function App() {
           <Route path="/data-reconciliation/initialize" element={<ProtectedRoute><InitializePage /></ProtectedRoute>} />
           <Route path="/data-reconciliation/manage-list" element={<ProtectedRoute><ManageListPage /></ProtectedRoute>} />
           <Route path="/data-reconciliation/customs-report" element={<ProtectedRoute><CustomsReportPage /></ProtectedRoute>} />
+
+          {/* Payment Management routes */}
+          <Route path="/payment-management" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/manage" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/cancel" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/restore" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/notify-transfer" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/manage-transfer" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
+          <Route path="/payment-management/bank-reconciliation" element={<ProtectedRoute><PaymentManagementPage /></ProtectedRoute>} />
           
           <Route path="/data-table" element={<ProtectedRoute><DataTablePage /></ProtectedRoute>} />
           <Route path="/payment/process" element={<ProtectedRoute><ReceiptApprovalPage /></ProtectedRoute>} />

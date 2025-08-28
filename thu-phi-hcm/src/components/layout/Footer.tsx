@@ -15,7 +15,7 @@ const Footer: React.FC<FooterProps> = ({ sidebarCollapsed = false }) => {
     >
       <div className="container mx-auto px-4">
         <p className="text-sm">
-          <strong>Copyright &copy; 2025</strong> - Công Ty TNHH Phát Triển Công Nghệ Thái Sơn
+          <strong>Copyright &copy; 2025</strong> - Demo web thu phí
         </p>
       </div>
     </footer>

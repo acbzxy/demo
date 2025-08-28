@@ -159,7 +159,7 @@ const WelcomePage: React.FC = () => {
         {/* Footer */}
         <div className="text-center mt-12 text-gray-500 animate-fade-in">
           <p className="text-sm">
-            © 2025 - Công Ty TNHH Phát Triển Công Nghệ Thái Sơn
+            © 2025 - Demo web thu phí
           </p>
         </div>
       </div>
