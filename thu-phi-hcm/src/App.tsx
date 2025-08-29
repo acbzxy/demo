@@ -20,6 +20,8 @@ const ReceiptApprovalPage = lazy(() => import('./pages/ReceiptApprovalPage'))
 const QROrderPage = lazy(() => import('./pages/QROrderPage'))
 const EcomPaymentPage = lazy(() => import('./pages/EcomPaymentPage'))
 const FeeDeclarationManagePage = lazy(() => import('./pages/FeeDeclarationManagePage'))
+const BarcodeFeePage = lazy(() => import('./pages/BarcodeFeePage'))
+const DebtManagePage = lazy(() => import('./pages/DebtManagePage'))
 const CreateReceiptPage = lazy(() => import('./pages/CreateReceiptPage'))
 
 // Reports Pages
@@ -79,6 +81,8 @@ function App() {
           <Route path="/payment" element={<ProtectedRoute><PaymentPage /></ProtectedRoute>} />
           <Route path="/payment/order" element={<ProtectedRoute><QROrderPage /></ProtectedRoute>} />
           <Route path="/fee-declaration/manage" element={<ProtectedRoute><FeeDeclarationManagePage /></ProtectedRoute>} />
+                        <Route path="/fee-declaration/barcode" element={<ProtectedRoute><BarcodeFeePage /></ProtectedRoute>} />
+              <Route path="/fee-declaration/debt-management" element={<ProtectedRoute><DebtManagePage /></ProtectedRoute>} />
           <Route path="/receipt-management/create" element={<ProtectedRoute><CreateReceiptPage /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />

@@ -31,8 +31,8 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
         {/* Right side */}
         <div className="original-header-right">
           <span className="original-user-info">
-            <i className="fas fa-phone" style={{ marginRight: '5px' }}></i>
-            Xin chào <span style={{ fontWeight: 'bold' }}>{user?.username || '0108844160'}</span>
+            <i className="fas fa-user-circle" style={{ marginRight: '5px', fontSize: '16px' }}></i>
+            Xin chào <span style={{ fontWeight: 'bold' }}>{user?.username || 'devadmin'}</span>
           </span>
           
           <button
