@@ -32,6 +32,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
       ]
     },
     {
+      path: '/receipt-management',
+      label: 'BIÊN LAI THU PHÍ',
+      icon: 'fas fa-receipt',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/receipt-management/manage', label: 'Quản lý biên lai thu phí' }
+      ]
+    },
+    {
       path: '/payment',
       label: 'NỘP PHÍ CƠ SỞ HẠ TẦNG',
       icon: 'fas fa-building',

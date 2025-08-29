@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface FeeDeclaration {
   id: string;
@@ -16,13 +17,16 @@ interface FeeDeclaration {
 }
 
 const FeeDeclarationManagePage: React.FC = () => {
+  const navigate = useNavigate();
+  
   // States for filters
-  const [fromDate, setFromDate] = useState('06/04/2021');
-  const [toDate, setToDate] = useState('21/08/2021');
+  const [fromDate, setFromDate] = useState('2021-04-06');
+  const [toDate, setToDate] = useState('2021-08-21');
   const [loaiToKhai, setLoaiToKhai] = useState('');
   const [thanhToan, setThanhToan] = useState('');
   const [nguoiTao, setNguoiTao] = useState('');
   const [trangThaiTo, setTrangThaiTo] = useState('');
+  const [nhomBieuPhi, setNhomBieuPhi] = useState('');
 
   // State for detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
@@ -35,8 +39,35 @@ const FeeDeclarationManagePage: React.FC = () => {
   // State for download success modal
   const [showDownloadSuccessModal, setShowDownloadSuccessModal] = useState(false);
 
+  // Effect to check for status updates from localStorage
+  useEffect(() => {
+    const updateStatusData = localStorage.getItem('updateFeeDeclarationStatus');
+    if (updateStatusData) {
+      try {
+        const updateInfo = JSON.parse(updateStatusData);
+        
+        // Cập nhật trạng thái của item tương ứng
+        setFeeDeclarations(prev => 
+          prev.map(item => 
+            item.id === updateInfo.id 
+              ? { ...item, trangThai: updateInfo.newStatus }
+              : item
+          )
+        );
+        
+        // Xóa thông tin update khỏi localStorage
+        localStorage.removeItem('updateFeeDeclarationStatus');
+        
+        // Hiển thị thông báo thành công
+        alert('Cập nhật trạng thái thành công: ' + updateInfo.newStatus);
+      } catch (error) {
+        console.error('Error updating fee declaration status:', error);
+      }
+    }
+  }, []);
+
   // Sample data
-  const [feeDeclarations] = useState<FeeDeclaration[]>([
+  const [feeDeclarations, setFeeDeclarations] = useState<FeeDeclaration[]>([
     {
       id: '1',
       kyso: 'K001',
@@ -222,8 +253,11 @@ const FeeDeclarationManagePage: React.FC = () => {
       loaiToKhai,
       thanhToan,
       nguoiTao,
-      trangThaiTo
+      trangThaiTo,
+      nhomBieuPhi
     });
+    // Implement filter logic here if needed
+    alert('Tìm kiếm với các điều kiện đã chọn');
   };
 
   const handleViewDetail = (item: FeeDeclaration) => {
@@ -259,6 +293,12 @@ const FeeDeclarationManagePage: React.FC = () => {
     setShowDownloadSuccessModal(false);
   };
 
+  const handleCreateReceipt = (item: FeeDeclaration) => {
+    console.log('Tạo biên lai cho:', item.id);
+    // Navigate to create receipt page with selectedItem
+    navigate('/receipt-management/create', { state: { selectedItem: item } });
+  };
+
   return (
     <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
       {/* Page Title */}
@@ -278,20 +318,20 @@ const FeeDeclarationManagePage: React.FC = () => {
         marginBottom: '20px',
         boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
       }}>
-        {/* First Row */}
+        {/* Filter Row */}
         <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(6, 1fr)', 
-          gap: '15px', 
-          marginBottom: '15px',
-          alignItems: 'end'
+          display: 'flex', 
+          justifyContent: 'flex-end',
+          alignItems: 'end',
+          gap: '10px', 
+          marginBottom: '15px'
         }}>
-          <div>
+          <div style={{ width: '130px' }}>
             <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Ngày bắt đầu:
+              Ngày bắt đầu, Tới:
             </label>
             <input
-              type="text"
+              type="date"
               value={fromDate}
               onChange={(e) => setFromDate(e.target.value)}
               style={{
@@ -304,12 +344,9 @@ const FeeDeclarationManagePage: React.FC = () => {
             />
           </div>
           
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Đến ngày:
-            </label>
+          <div style={{ width: '130px' }}>
             <input
-              type="text"
+              type="date"
               value={toDate}
               onChange={(e) => setToDate(e.target.value)}
               style={{
@@ -322,10 +359,7 @@ const FeeDeclarationManagePage: React.FC = () => {
             />
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Loại tờ khai:
-            </label>
+          <div style={{ width: '120px' }}>
             <select
               value={loaiToKhai}
               onChange={(e) => setLoaiToKhai(e.target.value)}
@@ -343,10 +377,7 @@ const FeeDeclarationManagePage: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Thành toán:
-            </label>
+          <div style={{ width: '110px' }}>
             <select
               value={thanhToan}
               onChange={(e) => setThanhToan(e.target.value)}
@@ -358,16 +389,13 @@ const FeeDeclarationManagePage: React.FC = () => {
                 fontSize: '12px'
               }}
             >
-              <option value="">-- Thành toán --</option>
+              <option value="">-- Thanh toán --</option>
               <option value="da-thanh-toan">Đã thanh toán</option>
               <option value="chua-thanh-toan">Chưa thanh toán</option>
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Người tạo:
-            </label>
+          <div style={{ width: '110px' }}>
             <select
               value={nguoiTao}
               onChange={(e) => setNguoiTao(e.target.value)}
@@ -385,10 +413,7 @@ const FeeDeclarationManagePage: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px', fontWeight: '500' }}>
-              Trạng thái tờ:
-            </label>
+          <div style={{ width: '110px' }}>
             <select
               value={trangThaiTo}
               onChange={(e) => setTrangThaiTo(e.target.value)}
@@ -403,27 +428,46 @@ const FeeDeclarationManagePage: React.FC = () => {
               <option value="">-- Trạng thái tờ --</option>
               <option value="moi">Mới</option>
               <option value="ly-thong-bao">Lý thông báo</option>
+              <option value="da-tao-bien-lai">Đã tạo biên lai thành công</option>
             </select>
           </div>
-        </div>
 
-        {/* Search Button */}
-        <div style={{ textAlign: 'right' }}>
-          <button
-            onClick={handleSearch}
-            style={{
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              padding: '8px 16px',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: '500'
-            }}
-          >
-            Quản tìm kiếm
-          </button>
+          <div style={{ width: '120px' }}>
+            <select
+              value={nhomBieuPhi}
+              onChange={(e) => setNhomBieuPhi(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '6px 8px',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                fontSize: '12px'
+              }}
+            >
+              <option value="">-- Nhóm biểu phí --</option>
+              <option value="TP003">TP003</option>
+              <option value="TP001">TP001</option>
+              <option value="TP002">TP002</option>
+            </select>
+          </div>
+
+          <div>
+            <button
+              onClick={handleSearch}
+              style={{
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '12px',
+                fontWeight: '500'
+              }}
+            >
+              Tìm kiếm
+            </button>
+          </div>
         </div>
       </div>
 
@@ -461,15 +505,15 @@ const FeeDeclarationManagePage: React.FC = () => {
               <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '100px' }}>
                 Trạng thái
               </th>
-              <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '120px' }}>
-                Thông báo
-              </th>
-              <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '40px' }}>
-                #
-              </th>
-              <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '120px' }}>
-                Tổng tiền(VNĐ)
-              </th>
+                             <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '120px' }}>
+                 Thông báo
+               </th>
+               <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '100px' }}>
+                 Hành động
+               </th>
+               <th style={{ padding: '12px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 'bold', width: '120px' }}>
+                 Tổng tiền(VNĐ)
+               </th>
             </tr>
           </thead>
           <tbody>
@@ -557,9 +601,24 @@ const FeeDeclarationManagePage: React.FC = () => {
                     Lấy thông báo
                   </button>
                 </td>
-                <td style={{ padding: '8px', textAlign: 'center', fontSize: '12px' }}>
-                  {item.hash2}
-                </td>
+                                 <td style={{ padding: '8px', textAlign: 'center', fontSize: '12px' }}>
+                   <button
+                     style={{
+                       backgroundColor: '#17a2b8',
+                       color: 'white',
+                       border: 'none',
+                       padding: '6px 12px',
+                       borderRadius: '4px',
+                       cursor: 'pointer',
+                       fontSize: '11px',
+                       fontWeight: '500'
+                     }}
+                     onClick={() => handleCreateReceipt(item)}
+                     title="Tạo biên lai"
+                   >
+                     Tạo biên lai
+                   </button>
+                 </td>
                 <td style={{ padding: '8px', textAlign: 'right', fontSize: '12px', fontWeight: 'bold' }}>
                   {formatCurrency(item.tongTien)}
                 </td>
@@ -690,12 +749,31 @@ const FeeDeclarationManagePage: React.FC = () => {
                   ✓ Lấy thông báo
                 </button>
               </div>
-              <div>
-                <strong>Tổng tiền:</strong> 
-                <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '5px' }}>
-                  {formatCurrency(selectedItem.tongTien)} VNĐ
-                </span>
-              </div>
+                             <div>
+                 <strong>Hành động:</strong>
+                 <button
+                   style={{
+                     backgroundColor: '#17a2b8',
+                     color: 'white',
+                     border: 'none',
+                     padding: '4px 8px',
+                     borderRadius: '4px',
+                     cursor: 'pointer',
+                     fontSize: '11px',
+                     fontWeight: '500',
+                     marginLeft: '8px'
+                   }}
+                   onClick={() => handleCreateReceipt(selectedItem)}
+                 >
+                   Tạo biên lai
+                 </button>
+               </div>
+               <div>
+                 <strong>Tổng tiền:</strong> 
+                 <span style={{ color: '#d32f2f', fontWeight: 'bold', marginLeft: '5px' }}>
+                   {formatCurrency(selectedItem.tongTien)} VNĐ
+                 </span>
+               </div>
             </div>
 
             <div style={{

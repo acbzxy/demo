@@ -5,6 +5,7 @@ import { useNotification } from '../context/NotificationContext'
 
 // Import background image
 const backgroundImage = '/tphcm-bkg.jpg'
+const cangvuLogo = '/cangvu-hcm-logo.png'
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -269,356 +270,325 @@ const LoginPage: React.FC = () => {
   }
 
   return (
-    <div style={{
-      backgroundColor: '#00486c',
-      height: '100vh',
-      position: 'relative',
-      overflow: 'hidden'
-    }}>
-      {/* Background Decorative Elements */}
+    <div>
+      <style>
+        {`
+          @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+          }
+          
+          @keyframes fadeInUp {
+            from { 
+              opacity: 0; 
+              transform: translateY(30px); 
+            }
+            to { 
+              opacity: 1; 
+              transform: translateY(0); 
+            }
+          }
+          
+          .card-hover:hover {
+            transform: translateY(-5px) !important;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+          }
+          
+          .unified-container:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 50px 120px rgba(0, 0, 0, 0.25) !important;
+          }
+          
+
+          
+          @media (max-width: 1200px) {
+            .split-layout {
+              minHeight: calc(100vh - 130px) !important;
+            }
+            .unified-main-container > div {
+              flex-direction: column !important;
+              gap: 25px !important;
+              align-items: center !important;
+            }
+            .login-container {
+              max-width: 500px !important;
+              width: 100% !important;
+              flex: none !important;
+            }
+            .info-cards-container {
+              max-width: 800px !important;
+              min-width: auto !important;
+              width: 100% !important;
+              flex: none !important;
+            }
+            .cards-stack {
+              gap: 20px !important;
+            }
+          }
+          
+          @media (max-width: 768px) {
+            .split-layout {
+              padding: 20px 15px 70px !important;
+              minHeight: calc(100vh - 120px) !important;
+            }
+            .unified-main-container {
+              padding: 20px !important;
+              margin: 0 10px !important;
+            }
+            .unified-main-container > div {
+              gap: 20px !important;
+            }
+            .header-section h1 {
+              fontSize: 1.8rem !important;
+            }
+            .header-section p {
+              fontSize: 0.9rem !important;
+            }
+          }
+        `}
+      </style>
+      <div style={{
+        background: 'linear-gradient(135deg, #0066b3 0%, #004d87 40%, #003366 100%)',
+        height: '100vh',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+      {/* Modern Background Decorative Elements */}
       <div style={{
         position: 'absolute',
-        top: '10%',
-        left: '5%',
-        width: '150px',
-        height: '150px',
+        top: '50%',
+        left: '3%',
+        width: '180px',
+        height: '180px',
+        borderRadius: '50%',
+        background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02))',
+        backdropFilter: 'blur(10px)',
+        zIndex: 0,
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        top: '65%',
+        right: '5%',
+        width: '250px',
+        height: '250px',
+        borderRadius: '50%',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02))',
+        backdropFilter: 'blur(15px)',
+        zIndex: 0,
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.1)'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        bottom: '10%',
+        left: '12%',
+        width: '120px',
+        height: '120px',
+        borderRadius: '50%',
+        background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.01))',
+        backdropFilter: 'blur(8px)',
+        zIndex: 0,
+        boxShadow: '0 6px 24px rgba(0, 0, 0, 0.08)'
+      }}></div>
+      {/* Additional modern elements */}
+      <div style={{
+        position: 'absolute',
+        top: '75%',
+        right: '20%',
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: 'rgba(255, 215, 0, 0.1)',
+        backdropFilter: 'blur(5px)',
+        zIndex: 0
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        bottom: '25%',
+        left: '8%',
+        width: '80px',
+        height: '80px',
         borderRadius: '50%',
         background: 'rgba(255, 255, 255, 0.05)',
-        zIndex: 0
-      }}></div>
-      <div style={{
-        position: 'absolute',
-        top: '60%',
-        right: '8%',
-        width: '200px',
-        height: '200px',
-        borderRadius: '50%',
-        background: 'rgba(255, 255, 255, 0.03)',
-        zIndex: 0
-      }}></div>
-      <div style={{
-        position: 'absolute',
-        bottom: '20%',
-        left: '15%',
-        width: '100px',
-        height: '100px',
-        borderRadius: '50%',
-        background: 'rgba(255, 255, 255, 0.04)',
+        backdropFilter: 'blur(8px)',
         zIndex: 0
       }}></div>
 
       <div className="content-login" style={{ height: '100vh', position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', margin: 0, height: '100vh' }}>
-          {/* Left Content - 75% width */}
-          <div style={{ 
-            flex: '0 0 75%',
-            background: `url(${backgroundImage}) 0% 0% / 100% 65% no-repeat`,
-            backgroundColor: '#00486c',
+        {/* Modern Layout - Full Background */}
+        <div style={{
+          height: '100vh',
+          background: `url(${backgroundImage}) center center / cover no-repeat`,
+          position: 'relative',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {/* Background Overlay */}
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(135deg, rgba(0, 102, 179, 0.3) 0%, rgba(0, 77, 135, 0.4) 40%, rgba(0, 51, 102, 0.5) 100%)',
+            zIndex: 1
+          }}></div>
+
+          {/* Header Section */}
+          <div className="header-section" style={{
             position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            padding: '5px'
+            zIndex: 10,
+            textAlign: 'center',
+            padding: '20px 20px 10px',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            background: 'transparent',
+            border: 'none',
+            boxShadow: 'none'
           }}>
-            {/* Header Text */}
-            <div style={{
-              textAlign: 'center',
-              marginTop: '40px',
-              marginBottom: 'auto',
-              flexShrink: 0
+            <h1 style={{
+              fontSize: '2.2rem',
+              fontWeight: '800',
+              color: '#ffd700',
+              margin: '0 0 10px 0',
+              textShadow: '0 4px 8px rgba(0,0,0,0.5), 0 0 20px rgba(255,215,0,0.3)',
+              letterSpacing: '1px',
+              lineHeight: '1.2',
+              fontFamily: 'system-ui, -apple-system, sans-serif'
             }}>
-              <h1 style={{
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: '#f1c40f',
-                margin: '0 0 15px 0',
-                textShadow: '2px 2px 4px rgba(0,0,0,0.7)',
-                letterSpacing: '1px',
-                lineHeight: '1.1'
-              }}>
-                SỞ XÂY DỰNG<br />
-                THÀNH PHỐ HỒ CHÍ MINH<br />
-                CẢNG VỤ ĐƯỜNG THỦY NỘI ĐỊA
-              </h1>
-              
-              <p style={{
-                fontSize: '0.9rem',
-                color: 'white',
-                margin: '0',
-                textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
-                lineHeight: '1.2'
-              }}>
-                KHAI BÁO NỘP PHÍ SỬ DỤNG KẾT CẤU HẠ TẦNG, CÔNG TRÌNH DỊCH VỤ, TIỆN ÍCH CÔNG CỘNG<br />
-                TRONG KHU VỰC CỬA KHẨU CẢNG BIỂN TRÊN ĐỊA BÀN<br />
-                THÀNH PHỐ HỒ CHÍ MINH
-              </p>
-            </div>
-
-            {/* Two Cards Row - Bottom 50% */}
-            <div style={{
-              display: 'flex',
-              gap: '15px',
-              width: '100%',
-              padding: '0 5px',
-              height: '50vh',
-              marginBottom: '100px'
+              SỞ XÂY DỰNG THÀNH PHỐ HỒ CHÍ MINH<br />
+              CẢNG VỤ ĐƯỜNG THỦY NỘI ĐỊA
+            </h1>
+            
+            <p style={{
+              fontSize: '1rem',
+              color: 'rgba(255, 255, 255, 0.95)',
+              textShadow: '0 2px 6px rgba(0,0,0,0.5)',
+              lineHeight: '1.3',
+              fontWeight: '400',
+              letterSpacing: '0.5px',
+              maxWidth: '900px',
+              margin: '0 auto'
             }}>
-              {/* Notifications Card */}
-              <div style={{
-                flex: '1',
-                background: 'rgba(255,255,255,0.95)',
-                borderRadius: '10px',
-                padding: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <h3 style={{
-                  fontSize: '20px',
-                  color: '#2c3e50',
-                  marginBottom: '15px',
-                  borderBottom: '1px solid #ced4da',
-                  paddingBottom: '10px',
-                  textAlign: 'center',
-                  textTransform: 'uppercase',
-                  fontWeight: '500',
-                  fontFamily: 'system-ui'
-                }}>
-                  <i className="fas fa-bell" style={{ marginRight: '10px', color: '#e74c3c' }}></i>
-                  THÔNG BÁO HỆ THỐNG
-                </h3>
-                
-                <div style={{ 
-                  flex: '1', 
-                  overflowY: 'auto',
-                  fontSize: '15px',
-                  color: '#000'
-                }}>
-                  <p style={{ marginBottom: '20px' }}>
-                    Hệ thống thu phí vận hành chính thức từ 00 giờ 00 phút ngày 01/04/2022
-                  </p>
-                  
-                  <div style={{ marginBottom: '20px' }}>
-                    <p style={{ 
-                      marginBottom: '5px', 
-                      textTransform: 'uppercase', 
-                      fontWeight: 'bold',
-                      fontSize: '15px'
-                    }}>
-                      I. THÔNG BÁO
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <i className="fas fa-hand-o-right" style={{ marginRight: '5px' }}></i>
-                      Thông báo khóa tài khoản thu phí - 
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none', fontStyle: 'italic' }}>
-                        Xem chi tiết thông báo
-                      </a>
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <i className="fas fa-hand-o-right" style={{ marginRight: '5px' }}></i>
-                      Thay đổi địa chỉ email tiếp nhận phản hồi từ cộng đồng doanh nghiệp sang 
-                      <a href="mailto:thuphihatang@tphcm.gov.vn" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        thuphihatang@tphcm.gov.vn
-                      </a> - 
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none', fontStyle: 'italic' }}>
-                        Xem chi tiết thông báo
-                      </a>
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <i className="fas fa-hand-o-right" style={{ marginRight: '5px' }}></i>
-                      Về việc bảo trì, nâng cấp hệ thống <strong>từ 17h ngày 20/12/2024 đến 0h sáng ngày 22/12/2024</strong> - 
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none', fontStyle: 'italic' }}>
-                        Xem chi tiết thông báo
-                      </a>
-                    </p>
-                    
-                    <p style={{ marginBottom: '8px', fontSize: '14px' }}>
-                      <i className="fas fa-hand-o-right" style={{ marginRight: '5px' }}></i>
-                      Về việc bảo trì, nâng cấp hệ thống định kỳ hàng quý trong năm - 
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none', fontStyle: 'italic' }}>
-                        Xem chi tiết thông báo
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* User Guide Card */}
-              <div style={{
-                flex: '1',
-                background: 'rgba(255,255,255,0.95)',
-                borderRadius: '10px',
-                padding: '15px',
-                boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-                display: 'flex',
-                flexDirection: 'column'
-              }}>
-                <h3 style={{
-                  fontSize: '20px',
-                  color: '#2c3e50',
-                  marginBottom: '15px',
-                  borderBottom: '1px solid #ced4da',
-                  paddingBottom: '10px',
-                  textAlign: 'center',
-                  textTransform: 'uppercase',
-                  fontWeight: '500',
-                  fontFamily: 'system-ui'
-                }}>
-                  <i className="fas fa-info-circle" style={{ marginRight: '10px', color: '#3498db' }}></i>
-                  HƯỚNG DẪN SỬ DỤNG
-                </h3>
-                
-                <div style={{ 
-                  flex: '1', 
-                  overflowY: 'auto',
-                  fontSize: '14px',
-                  color: '#000'
-                }}>
-                  <div style={{ marginBottom: '20px' }}>
-                    <h4 style={{ fontWeight: 'bold', marginBottom: '10px' }}>I: Cài đặt môi trường sử dụng</h4>
-                    <p style={{ marginBottom: '10px' }}>
-                      Để thực hiện đăng ký chữ ký số và khai báo nộp phí trên website bạn vui lòng tải và cài đặt các file sau:
-                    </p>
-                    <p style={{ marginBottom: '8px' }}>
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        1. File cài đặt ký số
-                      </a><br />
-                      <i style={{ fontSize: '12px' }}>
-                        (Nếu máy tính của bạn có phiên bản hệ điều hành nhỏ hơn windows 8 
-                        <a href="#" style={{ color: '#3498db', textDecoration: 'none', fontWeight: 'bold' }}>
-                          Tải file cài đặt tại đây
-                        </a>)
-                      </i>
-                    </p>
-                    <p style={{ marginBottom: '8px' }}>
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        2. Tiện ích hỗ trợ ký số trên Google Chrome → <strong>Ecustsd signature on website</strong>
-                      </a>
-                    </p>
-                    <p style={{ marginBottom: '15px' }}>
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        3. Microsoft .NET Framework version &gt;= 4.6 <i>(Nếu chưa được cài đặt trên máy tính của bạn)</i>
-                      </a>
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 style={{ fontWeight: 'bold', marginBottom: '10px' }}>II: Hướng dẫn khai báo nộp phí</h4>
-                    <p style={{ marginBottom: '10px' }}>
-                      Nếu chưa biết cách khai báo nộp phí trên website bạn vui lòng tải file hướng dẫn bên dưới:
-                    </p>
-                    <p style={{ marginBottom: '8px' }}>
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        1. Tài liệu hướng dẫn sử dụng.docx
-                      </a>
-                    </p>
-                    <p style={{ marginBottom: '8px' }}>
-                      <a href="#" style={{ color: '#3498db', textDecoration: 'none' }}>
-                        2. Video hướng dẫn khai phí trên ECUS
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
+              KHAI BÁO NỘP PHÍ SỬ DỤNG KẾT CẤU HẠ TẦNG - CÔNG TRÌNH DỊCH VỤ, TIỆN ÍCH CÔNG CỘNG
+            </p>
           </div>
 
-          {/* Right Content - Login Form - 25% width */}
-          <div style={{ 
-            flex: '0 0 25%',
-            backgroundColor: '#fff',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            alignItems: 'center',
-            padding: '40px 20px',
+          {/* Main Content Area - Unified Layout */}
+          <div className="split-layout" style={{
             position: 'relative',
-            zIndex: 1
+            zIndex: 2,
+            flex: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '30px 20px 80px',
+            maxWidth: '1400px',
+            margin: '0 auto',
+            width: '100%',
+            minHeight: 'calc(100vh - 140px)',
+            boxSizing: 'border-box'
           }}>
-            {/* Login Form */}
-            <div style={{
-              marginTop: '0px',
-              marginBottom: '30px',
-              borderRadius: '0px',
-              minWidth: '320px',
-              width: '90%',
-              maxWidth: '500px',
-              background: '#fff',
-              paddingBottom: '30px'
+
+            {/* Unified Container */}
+            <div className="unified-main-container" style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              backdropFilter: 'blur(30px)',
+              borderRadius: '32px',
+              border: 'none',
+              boxShadow: '0 40px 100px rgba(0, 0, 0, 0.25)',
+              maxWidth: '1200px',
+              width: '100%',
+
+              animation: 'fadeInUp 1s ease-out',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
+              
+              {/* Decorative Elements for Main Container */}
+              <div style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '-40px',
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(243, 111, 33, 0.08), rgba(255, 140, 66, 0.04))',
+                filter: 'blur(20px)',
+                zIndex: -1
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                bottom: '-50px',
+                left: '-50px',
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(13, 177, 75, 0.08), rgba(16, 199, 91, 0.04))',
+                filter: 'blur(15px)',
+                zIndex: -1
+              }}></div>
+
+              {/* Inner Content Layout */}
+              <div style={{
+                display: 'flex',
+                gap: '30px',
+                alignItems: 'flex-start'
+              }}>
+
+                {/* Left - Login Form (White Background) */}
+                <div className="login-container" style={{
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(25px)',
+                  borderRadius: '24px',
+                  padding: '40px',
+                  border: '1px solid rgba(255, 255, 255, 0.4)',
+                  boxShadow: '0 25px 60px rgba(0, 0, 0, 0.15)',
+                  minWidth: '400px',
+                  maxWidth: '450px',
+                  flex: '0 0 auto',
+                  position: 'relative'
+                }}>
               <div style={{ 
                 textAlign: 'center', 
-                marginBottom: '30px',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center'
+                marginBottom: '35px'
               }}>
                 <div style={{
-                  width: '90px',
-                  height: '90px',
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  width: '120px',
+                  height: '120px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginBottom: '15px',
-                  boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
-                  position: 'relative'
+                  margin: '0 auto 25px',
+                  position: 'relative',
+                  animation: 'float 6s ease-in-out infinite'
                 }}>
-                  <div style={{
-                    width: '75px',
-                    height: '75px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backdropFilter: 'blur(10px)'
-                  }}>
-                    <i className="fas fa-shield-alt" style={{ 
-                      color: 'white', 
-                      fontSize: '36px',
-                      textShadow: '0 2px 4px rgba(0,0,0,0.3)' 
-                    }}></i>
-                  </div>
-                  {/* Decorative elements */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '15px',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.6)'
-                  }}></div>
-                  <div style={{
-                    position: 'absolute',
-                    bottom: '15px',
-                    left: '12px',
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(255, 255, 255, 0.4)'
-                  }}></div>
+                  <img 
+                    src={cangvuLogo} 
+                    alt="Cảng vụ HCM Logo"
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      objectFit: 'contain',
+                      filter: 'drop-shadow(0 8px 16px rgba(0, 0, 0, 0.3))'
+                    }}
+                  />
                 </div>
+                
+                <h3 style={{ 
+                  marginBottom: '30px', 
+                  textAlign: 'center', 
+                  fontWeight: '800',
+                  fontSize: '24px',
+                  color: '#2c3e50',
+                  letterSpacing: '1px',
+                  textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+                }}>
+                  ĐĂNG NHẬP HỆ THỐNG
+                </h3>
               </div>
               
-              <h3 style={{ 
-                marginBottom: '25px', 
-                textAlign: 'center', 
-                fontWeight: 'bold',
-                fontSize: '18px',
-                color: '#2c3e50',
-                letterSpacing: '0.5px'
-              }}>
-                ĐĂNG NHẬP HỆ THỐNG
-              </h3>
-
               <form onSubmit={handleSubmit}>
                 {/* Username */}
                 <div style={{ marginBottom: '5px', fontSize: '14px', color: '#2c3e50' }}>
@@ -844,7 +814,7 @@ const LoginPage: React.FC = () => {
                   style={{
                     color: '#fff',
                     padding: '12px',
-                    background: '#1976d2',
+                    background: '#0066b3',
                     borderRadius: '4px',
                     fontSize: '16px',
                     fontWeight: '500',
@@ -856,12 +826,12 @@ const LoginPage: React.FC = () => {
                   }}
                   onMouseOver={(e) => {
                     if (!isLoading) {
-                      e.currentTarget.style.backgroundColor = '#1565c0'
+                      e.currentTarget.style.backgroundColor = '#004d87'
                     }
                   }}
                   onMouseOut={(e) => {
                     if (!isLoading) {
-                      e.currentTarget.style.backgroundColor = '#1976d2'
+                      e.currentTarget.style.backgroundColor = '#0066b3'
                     }
                   }}
                 >
@@ -893,35 +863,290 @@ const LoginPage: React.FC = () => {
               
               {/* Dev Tip */}
               <div style={{ 
-                marginTop: '15px', 
-                padding: '8px', 
-                background: '#f8f9fa', 
-                borderRadius: '5px',
-                fontSize: '11px',
-                color: '#7f8c8d',
-                textAlign: 'center'
+                marginTop: '20px', 
+                padding: '12px', 
+                background: 'rgba(248, 249, 250, 0.8)', 
+                borderRadius: '10px',
+                fontSize: '12px',
+                color: '#6c757d',
+                textAlign: 'center',
+                border: '1px solid rgba(0, 0, 0, 0.1)'
               }}>
+                <i className="fas fa-lightbulb" style={{ marginRight: '6px', color: '#f36f21' }}></i>
                 <strong>Dev Tip:</strong> Double-click vào ô "Tài khoản" để auto-fill!
               </div>
-            </div>
-          </div>
+                </div>
+
+                {/* Right - Info Cards (No Background) */}
+                <div className="info-cards-container" style={{
+                  background: 'transparent',
+                  borderRadius: '24px',
+                  padding: '10px',
+                  border: 'none',
+                  boxShadow: 'none',
+                  flex: '1',
+                  minWidth: '450px',
+                  position: 'relative'
+                }}>
+              
+              {/* Decorative Elements */}
+              <div style={{
+                position: 'absolute',
+                top: '-30px',
+                right: '-30px',
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(243, 111, 33, 0.1), rgba(255, 140, 66, 0.05))',
+                filter: 'blur(15px)',
+                zIndex: -1
+              }}></div>
+              <div style={{
+                position: 'absolute',
+                bottom: '-40px',
+                left: '-40px',
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, rgba(13, 177, 75, 0.1), rgba(16, 199, 91, 0.05))',
+                filter: 'blur(12px)',
+                zIndex: -1
+              }}></div>
+
+              {/* Cards Container */}
+              <div className="cards-stack" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px'
+              }}>
+
+                {/* Notifications Card */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: '20px',
+                  padding: '25px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                    justifyContent: 'center'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #f36f21, #ff8c42)',
+                      marginRight: '15px',
+                      boxShadow: '0 6px 15px rgba(243, 111, 33, 0.4)'
+                    }}>
+                      <i className="fas fa-bell" style={{ color: 'white', fontSize: '22px' }}></i>
+                    </div>
+                    <h3 style={{
+                      fontSize: '20px',
+                      color: 'white',
+                      margin: 0,
+                      fontWeight: '700',
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                      letterSpacing: '0.5px'
+                    }}>
+                      THÔNG BÁO
+                    </h3>
+                  </div>
+                  
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    maxHeight: '250px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '12px',
+                      marginBottom: '15px',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      textAlign: 'center'
+                    }}>
+                      <p style={{ margin: '0', fontWeight: '600', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}>
+                        Hệ thống thu phí vận hành từ 01/04/2022
+                      </p>
+                    </div>
+                    
+                    <div style={{ 
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      marginBottom: '10px',
+                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                    }}>
+                      <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.4' }}>
+                        • Thông báo khóa tài khoản thu phí
+                      </p>
+                    </div>
+                    
+                    <div style={{ 
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      marginBottom: '10px',
+                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                    }}>
+                      <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.4' }}>
+                        • Thay đổi email: <span style={{ color: '#87ceeb' }}>thuphihatang@tphcm.gov.vn</span>
+                      </p>
+                    </div>
+                    
+                    <div style={{ 
+                      background: 'rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      border: '1px solid rgba(255, 255, 255, 0.15)'
+                    }}>
+                      <p style={{ margin: '0', fontSize: '13px', lineHeight: '1.4' }}>
+                        • Bảo trì hệ thống: <span style={{ color: '#f36f21', fontWeight: '600' }}>20-22/12/2024</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Guide Card */}
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(20px)',
+                  borderRadius: '20px',
+                  padding: '25px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  boxShadow: '0 15px 35px rgba(0, 0, 0, 0.1)',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '20px',
+                    justifyContent: 'center'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #0db14b, #10c75b)',
+                      marginRight: '15px',
+                      boxShadow: '0 6px 15px rgba(13, 177, 75, 0.4)'
+                    }}>
+                      <i className="fas fa-info-circle" style={{ color: 'white', fontSize: '22px' }}></i>
+                    </div>
+                    <h3 style={{
+                      fontSize: '20px',
+                      color: 'white',
+                      margin: 0,
+                      fontWeight: '700',
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)',
+                      letterSpacing: '0.5px'
+                    }}>
+                      HƯỚNG DẪN
+                    </h3>
+                  </div>
+                  
+                  <div style={{
+                    fontSize: '14px',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    maxHeight: '250px',
+                    overflowY: 'auto'
+                  }}>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '15px',
+                      marginBottom: '15px',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      <h4 style={{
+                        margin: '0 0 10px 0',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        color: 'white',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                      }}>
+                        Cài đặt môi trường
+                      </h4>
+                      <div style={{ fontSize: '13px', lineHeight: '1.4', opacity: '0.9' }}>
+                        • File cài đặt ký số<br/>
+                        • Tiện ích Chrome Extension<br/>
+                        • Microsoft .NET Framework ≥ 4.6
+                      </div>
+                    </div>
+                    
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.1)',
+                      borderRadius: '10px',
+                      padding: '15px',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      <h4 style={{
+                        margin: '0 0 10px 0',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        color: 'white',
+                        textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)'
+                      }}>
+                        Tài liệu hướng dẫn
+                      </h4>
+                      <div style={{ fontSize: '13px', lineHeight: '1.4', opacity: '0.9' }}>
+                        • Tài liệu hướng dẫn sử dụng<br/>
+                        • Video hướng dẫn khai phí ECUS<br/>
+                        • Hỗ trợ: <span style={{ color: '#0db14b', fontWeight: '600' }}>1900 1286</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                  </div> {/* End Cards Container */}
+                </div> {/* End Right Info Cards Container */}
+
+              </div> {/* End Inner Content Layout */}
+            </div> {/* End Unified Main Container */}
+
+          </div> {/* End Main Content Area */}
         </div>
 
-        {/* Footer */}
+        {/* Modern Footer */}
         <div style={{
-          zIndex: 0,
-          background: 'rgba(11, 90, 165, 0.1)',
-          padding: '15px',
+          zIndex: 100,
+          background: 'linear-gradient(90deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.2) 100%)',
+          backdropFilter: 'blur(10px)',
+          padding: '18px',
           position: 'absolute',
           bottom: '0px',
           left: '0',
           right: '0',
           textAlign: 'center',
           color: '#fff',
-          fontSize: '17px'
+          fontSize: '16px',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
         }}>
-          <strong style={{ fontSize: '15px' }}>Copyright © 2025</strong> - DEMO HỆ THỐNG THU PHÍ
+          <strong style={{ 
+            fontSize: '16px',
+            background: 'linear-gradient(135deg, #f36f21, #ff8c42)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}>
+            Copyright © 2025
+          </strong> - DEMO HỆ THỐNG THU PHÍ
         </div>
+      </div>
       </div>
 
       {/* Forgot Password Modal */}
@@ -1108,7 +1333,7 @@ const LoginPage: React.FC = () => {
                   style={{
                     width: '100%',
                     height: '44px',
-                    backgroundColor: '#1976d2',
+                    backgroundColor: '#0066b3',
                     color: '#ffffff',
                     border: 'none',
                     borderRadius: '4px',
@@ -1122,10 +1347,10 @@ const LoginPage: React.FC = () => {
                     marginBottom: '16px'
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1565c0'
+                    e.currentTarget.style.backgroundColor = '#004d87'
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = '#1976d2'
+                    e.currentTarget.style.backgroundColor = '#0066b3'
                   }}
                 >
                   <i className="fas fa-paper-plane"></i>
@@ -1607,7 +1832,7 @@ const LoginPage: React.FC = () => {
                     style={{
                       flex: 1,
                       height: '44px',
-                      backgroundColor: '#1976d2',
+                      backgroundColor: '#0066b3',
                       color: '#ffffff',
                       border: 'none',
                       borderRadius: '4px',
@@ -1620,10 +1845,10 @@ const LoginPage: React.FC = () => {
                       gap: '8px'
                     }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1565c0'
+                      e.currentTarget.style.backgroundColor = '#004d87'
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = '#1976d2'
+                      e.currentTarget.style.backgroundColor = '#0066b3'
                     }}
                   >
                     <i className="fas fa-user-plus"></i>
