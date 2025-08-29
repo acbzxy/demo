@@ -289,6 +289,28 @@ const LoginPage: React.FC = () => {
               transform: translateY(0); 
             }
           }
+
+          /* Custom scrollbar for Login Page only */
+          ::-webkit-scrollbar {
+            width: 5px !important;
+          }
+
+          ::-webkit-scrollbar-track {
+            background: #f1f1f1 !important;
+          }
+
+          ::-webkit-scrollbar-thumb {
+            background: #888 !important;
+            border-radius: 5px !important;
+          }
+
+          ::-webkit-scrollbar-thumb:hover {
+            background: #555 !important;
+          }
+
+          ::-webkit-scrollbar-button {
+            display: none !important;
+          }
           
           .card-hover:hover {
             transform: translateY(-5px) !important;

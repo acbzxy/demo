@@ -331,6 +331,50 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Custom Scrollbar Styles */
+.custom-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.custom-scroll::-webkit-scrollbar-button {
+  display: none;
+}
+
+/* Apply to global scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+}
+
 /* Unified icon color for all menu items */
 .original-nav-link .fa-home,
 .original-nav-link .fa-file-invoice,
