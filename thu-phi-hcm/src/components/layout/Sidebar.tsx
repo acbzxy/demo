@@ -21,6 +21,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
       icon: 'fas fa-home',
     },
     {
+      path: '/fee-declaration',
+      label: 'TỜ KHAI PHÍ',
+      icon: 'fas fa-file-invoice',
+      hasSubmenu: true,
+      submenu: [
+        { path: '/fee-declaration/manage', label: 'Quản lý tờ khai nộp phí' },
+        { path: '/fee-declaration/barcode', label: 'Barcode tờ khai nộp phí' },
+        { path: '/fee-declaration/debt-management', label: 'Quản lý nợ phí' }
+      ]
+    },
+    {
       path: '/payment',
       label: 'NỘP PHÍ CƠ SỞ HẠ TẦNG',
       icon: 'fas fa-building',
@@ -85,39 +96,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         { path: '/payment-management/bank-reconciliation', label: 'Đối soát dữ liệu thanh toán từ ngân hàng' }
       ]
     },
-    {
-      path: '/categories',
-      label: 'DANH MỤC DÙNG CHUNG',
-      icon: 'fas fa-list',
-      hasSubmenu: true,
-      submenu: [
-        { path: '/system/customs', label: 'Danh mục hải quan' },
-        { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
-        { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
-        { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
-        { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
-        { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
-        { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
-        { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
-        { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
-        { path: '/system/tariffs', label: 'Danh mục biểu cước' },
-        { path: '/system/form-types', label: 'Danh mục loại hình' },
-        { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
-        { path: '/system/container-types', label: 'Danh mục loại container' },
-        { path: '/system/units', label: 'Danh mục đơn vị tính' }
-      ]
-    },
-    {
-      path: '/system',
-      label: 'HỆ THỐNG',
-      icon: 'fas fa-cogs',
-      hasSubmenu: true,
-      submenu: [
-        { path: '/system/users', label: 'Quản lý người dùng' },
-        { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
-        { path: '/system/password', label: 'Đổi mật khẩu' }
-      ]
-    },
+                            {
+                  path: '/system',
+                  label: 'HỆ THỐNG',
+                  icon: 'fas fa-cogs',
+                  hasSubmenu: true,
+                  submenu: [
+                    { path: '/system/users', label: 'Quản lý người dùng' },
+                    { path: '/system/business', label: 'Quản lý thông tin doanh nghiệp' },
+                    { path: '/system/password', label: 'Đổi mật khẩu' },
+                    { path: '/system/customs', label: 'Danh mục hải quan' },
+                    { path: '/system/banks', label: 'Danh mục ngân hàng TM' },
+                    { path: '/system/warehouses', label: 'Danh mục Kho/Bãi/Cảng' },
+                    { path: '/system/toll-stations', label: 'Danh mục trạm thu phí' },
+                    { path: '/system/storage-locations', label: 'Danh mục địa điểm lưu kho' },
+                    { path: '/system/enterprises', label: 'Danh mục doanh nghiệp' },
+                    { path: '/system/transport-methods', label: 'Danh mục phương thức vận chuyển' },
+                    { path: '/system/receipt-templates', label: 'Danh mục mẫu ký hiệu biên lai' },
+                    { path: '/system/tariff-types', label: 'Danh mục loại biểu cước' },
+                    { path: '/system/tariffs', label: 'Danh mục biểu cước' },
+                    { path: '/system/form-types', label: 'Danh mục loại hình' },
+                    { path: '/system/payment-types', label: 'Danh mục loại thanh toán' },
+                    { path: '/system/container-types', label: 'Danh mục loại container' },
+                    { path: '/system/units', label: 'Danh mục đơn vị tính' }
+                  ]
+                },
     {
       path: '/account',
       label: 'THÔNG TIN TÀI KHOẢN',
@@ -149,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         <div className="original-sidebar-header">
           <div className="original-user-profile">
             <img 
-              src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%233498db'/%3E%3Ctext x='50' y='60' text-anchor='middle' fill='white' font-size='32' font-weight='bold'%3E{(user?.username?.charAt(0) || 'U').toUpperCase()}%3C/text%3E%3C/svg%3E"
+              src="/cangvu-hcm-logo.png"
               alt="User Avatar" 
               className="original-profile-img"
             />
@@ -190,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                           transition: 'max-height 0.3s ease'
                         }}
                       >
-                        {item.submenu.map((subItem) => (
+                        {item.submenu.map((subItem, index) => (
                           <li key={subItem.path} className="original-submenu-item">
                             <NavLink
                               to={subItem.path}
@@ -198,7 +201,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                                 `original-submenu-link ${isActive ? 'active' : ''}`
                               }
                             >
-                              <i className="fas fa-circle" style={{ fontSize: '6px', marginRight: '10px' }}></i>
+                              <span style={{ fontSize: '12px', fontWeight: 'bold', marginRight: '10px', minWidth: '16px', display: 'inline-block' }}>{index + 1}.</span>
                               <span>{subItem.label}</span>
                             </NavLink>
                           </li>
