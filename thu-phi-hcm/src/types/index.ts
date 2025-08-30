@@ -59,27 +59,32 @@ export interface NavItem {
 
 // Payment and Fee types
 export interface FeeDeclaration {
-  id: string
+  id: number
   declarationNumber: string
-  customsDeclarationNumber?: string
-  companyTaxCode: string
-  companyName: string
-  vesselName?: string
-  voyageNumber?: string
-  portCode: string
-  feeType: string
-  feeAmount: number
-  currency: 'VND' | 'USD'
-  status: 'draft' | 'submitted' | 'approved' | 'rejected' | 'paid'
-  createdAt: string
-  submittedAt?: string
-  approvedAt?: string
-  paidAt?: string
-  digitalSignature?: {
-    signed: boolean
-    signedAt?: string
-    certificateSerial?: string
+  companyId: number
+  company: {
+    id: number
+    companyName: string
+    taxCode: string
   }
+  vesselName: string
+  voyageNumber?: string
+  arrivalDate: string
+  departureDate?: string
+  portOfOrigin?: string
+  portOfDestination?: string
+  grossTonnage: number
+  netTonnage: number
+  totalFeeAmount: number
+  paidAmount: number
+  remainingAmount: number
+  paymentStatus: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE'
+  declarationStatus: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  dueDate?: string
+  paymentDate?: string
+  notes?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Receipt {
@@ -112,6 +117,7 @@ export interface ApiResponse<T = any> {
   data?: T
   message?: string
   errors?: Record<string, string[]>
+  timestamp?: string
 }
 
 // Form validation types

@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FeeDeclarationService, type FeeDeclarationSearchParams } from '../utils/feeDeclarationApi';
+import { useNotification } from '../context/NotificationContext';
+import { debugLog, debugError, isDebugMode } from '../debug';
+import type { FeeDeclaration } from '../types';
 
-interface FeeDeclaration {
+// Local interface for display purposes (legacy)
+interface FeeDeclarationDisplay {
   id: string;
   kyso: string;
   hash1: string;
@@ -11,13 +16,101 @@ interface FeeDeclaration {
   tkHaiQuan: string;
   doanhNghiep: string;
   trangThai: string;
+  hanhDong: string;
   thongBao: string;
   hash2: string;
   tongTien: number;
 }
 
+// Helper function to get status text
+const getStatusText = (status: string): string => {
+  switch (status) {
+    case 'DRAFT': return 'Mới';
+    case 'SUBMITTED': return 'Đã nộp';
+    case 'APPROVED': return 'Đã duyệt';
+    case 'REJECTED': return 'Bị từ chối';
+    case 'CANCELLED': return 'Đã hủy';
+    default: return status;
+  }
+}
+
+// Helper function to determine display status based on fee declaration and receipt status
+const getDisplayStatus = (item: FeeDeclaration): string => {
+  console.log(`Status debug for ID ${item.id}:`, {
+    declarationStatus: item.declarationStatus,
+    paymentStatus: item.paymentStatus,
+    declarationNumber: item.declarationNumber
+  });
+  
+  // Check localStorage for receipt status updates
+  try {
+    const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
+    const feeDeclarationUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+    
+    // Check if this fee declaration has an issued receipt
+    const hasIssuedReceipt = issuedReceipts.some((receipt: any) => 
+      receipt.feeDeclarationId === item.id
+    );
+    
+    if (hasIssuedReceipt) {
+      console.log(`ID ${item.id}: Showing "Đã phát hành"`);
+      return 'Đã phát hành';
+    }
+    
+    // Find update for this specific fee declaration
+    const updateForThisDeclaration = feeDeclarationUpdates.find((update: any) => 
+      update.id === item.id && update.receiptCreated
+    );
+    
+    if (updateForThisDeclaration) {
+      if (updateForThisDeclaration.receiptStatus === 'ISSUED') {
+        console.log(`ID ${item.id}: Showing "Đã phát hành"`);
+        return 'Đã phát hành';
+      } else if (updateForThisDeclaration.receiptStatus === 'DRAFT') {
+        console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp"`);
+        return 'Đã tạo biên lai nháp';
+      }
+    }
+    
+    // Fallback: Check legacy single-record format
+    const legacyUpdate = JSON.parse(localStorage.getItem('feeDeclarationUpdated') || '{}');
+    if (legacyUpdate.id === item.id && legacyUpdate.receiptCreated) {
+      if (legacyUpdate.receiptStatus === 'ISSUED') {
+        console.log(`ID ${item.id}: Showing "Đã phát hành" (legacy)`);
+        return 'Đã phát hành';
+      } else if (legacyUpdate.receiptStatus === 'DRAFT') {
+        console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp" (legacy)`);
+        return 'Đã tạo biên lai nháp';
+      }
+    }
+    
+    // Check paymentStatus for existing receipts
+    if (item.paymentStatus === 'PARTIAL' && item.declarationStatus === 'APPROVED') {
+      console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp"`);
+      return 'Đã tạo biên lai nháp';
+    }
+  } catch (error) {
+    console.warn('Error reading localStorage for receipt status:', error);
+  }
+  
+  // Default mapping based on declaration status
+  let displayStatus: string;
+  switch (item.declarationStatus) {
+    case 'DRAFT': displayStatus = 'Mới'; break;
+    case 'SUBMITTED': displayStatus = 'Mới'; break; // Changed: SUBMITTED should show as "Mới" until receipt is created
+    case 'APPROVED': displayStatus = 'Mới'; break; // Changed: APPROVED should show as "Mới" until receipt is created
+    case 'REJECTED': displayStatus = 'Bị từ chối'; break;
+    case 'CANCELLED': displayStatus = 'Đã hủy'; break;
+    default: displayStatus = 'Mới'; break; // Default to "Mới"
+  }
+  
+  console.log(`ID ${item.id}: Showing "${displayStatus}"`);
+  return displayStatus;
+};
+
 const FeeDeclarationManagePage: React.FC = () => {
   const navigate = useNavigate();
+  const { showError, showSuccess } = useNotification();
   
   // States for filters
   const [fromDate, setFromDate] = useState('2021-04-06');
@@ -30,216 +123,208 @@ const FeeDeclarationManagePage: React.FC = () => {
 
   // State for detail modal
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<FeeDeclaration | null>(null);
+  const [selectedItem, setSelectedItem] = useState<FeeDeclarationDisplay | null>(null);
 
   // State for notification modal
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [selectedNotificationItem, setSelectedNotificationItem] = useState<FeeDeclaration | null>(null);
+  const [selectedNotificationItem, setSelectedNotificationItem] = useState<FeeDeclarationDisplay | null>(null);
 
   // State for download success modal
   const [showDownloadSuccessModal, setShowDownloadSuccessModal] = useState(false);
 
+  // State for loading and pagination
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  // Load fee declarations on component mount and when filters change
+  useEffect(() => {
+    debugLog('Component mounted, loading fee declarations');
+    loadFeeDeclarations();
+  }, [currentPage, pageSize]);
+
   // Effect to check for status updates from localStorage
   useEffect(() => {
-    const updateStatusData = localStorage.getItem('updateFeeDeclarationStatus');
-    if (updateStatusData) {
-      try {
-        const updateInfo = JSON.parse(updateStatusData);
-        
-        // Cập nhật trạng thái của item tương ứng
-        setFeeDeclarations(prev => 
-          prev.map(item => 
-            item.id === updateInfo.id 
-              ? { ...item, trangThai: updateInfo.newStatus }
-              : item
-          )
-        );
-        
-        // Xóa thông tin update khỏi localStorage
-        localStorage.removeItem('updateFeeDeclarationStatus');
-        
-        // Hiển thị thông báo thành công
-        alert('Cập nhật trạng thái thành công: ' + updateInfo.newStatus);
-      } catch (error) {
-        console.error('Error updating fee declaration status:', error);
+    const checkForUpdates = () => {
+      // Check for old format updates
+      const updateStatusData = localStorage.getItem('updateFeeDeclarationStatus');
+      if (updateStatusData) {
+        try {
+          const updateInfo = JSON.parse(updateStatusData);
+          
+          // Cập nhật trạng thái của item tương ứng
+          setFeeDeclarations(prev => 
+            prev.map(item => 
+              item.id === updateInfo.id 
+                ? { ...item, trangThai: updateInfo.newStatus }
+                : item
+            )
+          );
+          
+          // Xóa thông tin update khỏi localStorage
+          localStorage.removeItem('updateFeeDeclarationStatus');
+          
+          // Hiển thị thông báo thành công
+          alert('Cập nhật trạng thái thành công: ' + updateInfo.newStatus);
+        } catch (error) {
+          console.error('Error updating fee declaration status:', error);
+        }
       }
-    }
+
+      // Check for receipt creation updates
+      const receiptUpdateData = localStorage.getItem('feeDeclarationUpdated');
+      if (receiptUpdateData) {
+        try {
+          const updateInfo = JSON.parse(receiptUpdateData);
+          console.log('Receipt creation update detected:', updateInfo);
+          
+          // Reload data to get fresh status from backend
+          loadFeeDeclarations();
+          
+          // Clear the update flag
+          localStorage.removeItem('feeDeclarationUpdated');
+          
+          console.log('Fee declaration data reloaded after receipt creation');
+        } catch (error) {
+          console.error('Error processing receipt update:', error);
+        }
+      }
+    };
+
+    // Check immediately
+    checkForUpdates();
+    
+    // Listen for storage events (cross-tab updates)
+    window.addEventListener('storage', checkForUpdates);
+    
+    // Listen for focus events (when returning to tab)
+    window.addEventListener('focus', checkForUpdates);
+
+    return () => {
+      window.removeEventListener('storage', checkForUpdates);
+      window.removeEventListener('focus', checkForUpdates);
+    };
   }, []);
 
-  // Sample data
-  const [feeDeclarations, setFeeDeclarations] = useState<FeeDeclaration[]>([
-    {
-      id: '1',
-      kyso: 'K001',
-      hash1: 'A',
-      tkNopPhi: 'Web-210817242026',
-      ngayTKNP: '17/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1384376990463',
-      doanhNghiep: '0100439415-Công Ty TNHH Vinachimex Việt Nam',
-      trangThai: 'Lý thông báo',
-      thongBao: 'Có thông báo',
-      hash2: 'H1',
-      tongTien: 750000
-    },
-    {
-      id: '2',
-      kyso: 'K002',
-      hash1: 'B',
-      tkNopPhi: 'Web-210817428904',
-      ngayTKNP: '17/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1208739190588',
-      doanhNghiep: '0301245905-Công Ty TNHH Ánh Long và Dch vụ',
-      trangThai: 'Lý thông báo',
-      thongBao: 'Có thông báo',
-      hash2: 'H2',
-      tongTien: 750000
-    },
-    {
-      id: '3',
-      kyso: 'K003',
-      hash1: 'C',
-      tkNopPhi: 'Web-210817420403',
-      ngayTKNP: '17/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1208739190449',
-      doanhNghiep: '0301245905-Công Ty TNHH Ánh Long và Dch vụ',
-      trangThai: 'Lý thông báo',
-      thongBao: 'Có thông báo',
-      hash2: 'H3',
-      tongTien: 1000000
-    },
-    {
-      id: '4',
-      kyso: 'K004',
-      hash1: 'D',
-      tkNopPhi: 'Web-210817396402',
-      ngayTKNP: '17/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1405231482593',
-      doanhNghiep: '5905002089-Công Ty Cổ Phần DAP SG 7 - Vinachem',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H4',
-      tongTien: 750000
-    },
-    {
-      id: '5',
-      kyso: 'K005',
-      hash1: 'E',
-      tkNopPhi: 'Web-210816445403',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1357487968553',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H5',
-      tongTien: 5000000
-    },
-    {
-      id: '6',
-      kyso: 'K006',
-      hash1: 'F',
-      tkNopPhi: 'Web-210816341600',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1357487952699',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H6',
-      tongTien: 5500000
-    },
-    {
-      id: '7',
-      kyso: 'K007',
-      hash1: 'G',
-      tkNopPhi: 'Web-210816341589',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1566343738555',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H7',
-      tongTien: 15000000
-    },
-    {
-      id: '8',
-      kyso: 'K008',
-      hash1: 'H',
-      tkNopPhi: 'Web-210816341598',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1557579800896',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H8',
-      tongTien: 6000000
-    },
-    {
-      id: '9',
-      kyso: 'K009',
-      hash1: 'I',
-      tkNopPhi: 'Web-210816342597',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '101 - hàng đông lại',
-      tkHaiQuan: '1557579765553',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H9',
-      tongTien: 9000000
-    },
-    {
-      id: '10',
-      kyso: 'K010',
-      hash1: 'J',
-      tkNopPhi: 'Web-210816442596',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1368679836550',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H10',
-      tongTien: 1000000
-    },
-    {
-      id: '11',
-      kyso: 'K011',
-      hash1: 'K',
-      tkNopPhi: 'Web-210816442575',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1537558799556',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H11',
-      tongTien: 250000
-    },
-    {
-      id: '12',
-      kyso: 'K012',
-      hash1: 'L',
-      tkNopPhi: 'Web-210816442358',
-      ngayTKNP: '16/08/2021',
-      loaiToKhai: '100 - hàng container',
-      tkHaiQuan: '1556765798780',
-      doanhNghiep: '0300754209-Công Ty Cổ Phần Dích vụ chủ khối Đình vũ PTSC',
-      trangThai: 'Mới',
-      thongBao: 'Có thông báo',
-      hash2: 'H12',
-      tongTien: 2000000
+  // Fee declarations data
+  const [feeDeclarations, setFeeDeclarations] = useState<FeeDeclaration[]>([]);
+  const [displayDeclarations, setDisplayDeclarations] = useState<FeeDeclarationDisplay[]>([]);
+
+  // Load fee declarations from API
+  const loadFeeDeclarations = async () => {
+    try {
+      setLoading(true);
+      console.log('Loading fee declarations...');
+      
+      const searchParams: FeeDeclarationSearchParams = {
+        fromDate: fromDate || undefined,
+        toDate: toDate || undefined,
+        // Map frontend parameters to backend parameters
+        declarationStatus: trangThaiTo || undefined,
+        paymentStatus: thanhToan || undefined,
+        // Legacy parameters for backward compatibility
+        feeType: loaiToKhai || undefined,
+        paymentMethod: thanhToan || undefined,
+        createdBy: nguoiTao || undefined,
+        status: trangThaiTo || undefined,
+        feeGroupCode: nhomBieuPhi || undefined,
+        page: currentPage,
+        size: pageSize,
+        sortBy: 'arrivalDate', // Use backend field name
+        sortDir: 'desc'
+      };
+
+      console.log('Search params:', searchParams);
+
+      // Try to call the real API first
+      try {
+        const response = await FeeDeclarationService.searchFeeDeclarations(searchParams);
+        console.log('API Response:', response);
+        
+        // Backend returns PageResponse directly, not wrapped in ApiResponse
+        if (response && response.content) {
+          console.log('API data received:', response);
+          const apiDeclarations = response.content || [];
+          setFeeDeclarations(apiDeclarations);
+          
+          // Map backend data to display format
+          const mappedData = apiDeclarations.map((item: FeeDeclaration, index: number) => ({
+            id: String(item.id),
+            kyso: String(index + 1),
+            hash1: '',
+            tkNopPhi: item.declarationNumber,
+            ngayTKNP: new Date(item.arrivalDate).toLocaleDateString('vi-VN'),
+            loaiToKhai: 'Tờ khai phí cảng',
+            tkHaiQuan: item.voyageNumber || '',
+            doanhNghiep: `${item.company.taxCode} - ${item.company.companyName}`,
+            trangThai: getDisplayStatus(item),
+            hanhDong: 'Xem chi tiết',
+            thongBao: item.notes || 'Có thông báo',
+            hash2: '',
+            tongTien: Number(item.totalFeeAmount)
+          }));
+
+          setDisplayDeclarations(mappedData);
+          setTotalElements(response.totalElements);
+          setTotalPages(response.totalPages);
+          showSuccess('Tải dữ liệu thành công');
+          return;
+        }
+      } catch (apiError) {
+        console.warn('API call failed, falling back to mock data:', apiError);
+        showError('Không thể kết nối đến server. Sử dụng dữ liệu demo.');
+      }
+
+      // Fallback to mock data
+      console.log('Using mock data...');
+      const mockResponse = await FeeDeclarationService.getAllFeeDeclarations();
+      console.log('Mock response:', mockResponse);
+      
+      if (mockResponse && mockResponse.content) {
+        const apiDeclarations = mockResponse.content || [];
+        setFeeDeclarations(apiDeclarations);
+        
+        // Map mock data to display format
+        const mappedData = apiDeclarations.map((item: FeeDeclaration, index: number) => ({
+          id: String(item.id),
+          kyso: String(index + 1),
+          hash1: '',
+          tkNopPhi: item.declarationNumber,
+          ngayTKNP: new Date(item.arrivalDate).toLocaleDateString('vi-VN'),
+          loaiToKhai: 'Tờ khai phí cảng',
+          tkHaiQuan: item.voyageNumber || '',
+          doanhNghiep: `${item.company.taxCode} - ${item.company.companyName}`,
+          trangThai: getDisplayStatus(item),
+          hanhDong: 'Xem chi tiết',
+          thongBao: item.notes || 'Có thông báo',
+          hash2: '',
+          tongTien: Number(item.totalFeeAmount)
+        }));
+        
+        setDisplayDeclarations(mappedData);
+        setTotalElements(mockResponse.totalElements || mappedData.length);
+        setTotalPages(mockResponse.totalPages || 1);
+        showSuccess('Sử dụng dữ liệu demo');
+      } else {
+        showError('Không thể tải dữ liệu');
+      }
+    } catch (error) {
+      console.error('Error loading fee declarations:', error);
+      showError('Có lỗi xảy ra khi tải dữ liệu: ' + (error as Error).message);
+      
+      // Set empty data if all fails
+      setFeeDeclarations([]);
+      setTotalElements(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   // Calculate total amount
-  const totalAmount = feeDeclarations.reduce((sum, item) => sum + item.tongTien, 0);
+  const totalAmount = displayDeclarations.reduce((sum, item) => sum + item.tongTien, 0);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -256,11 +341,12 @@ const FeeDeclarationManagePage: React.FC = () => {
       trangThaiTo,
       nhomBieuPhi
     });
-    // Implement filter logic here if needed
-    alert('Tìm kiếm với các điều kiện đã chọn');
+    // Reset to first page and reload data
+    setCurrentPage(0);
+    loadFeeDeclarations();
   };
 
-  const handleViewDetail = (item: FeeDeclaration) => {
+  const handleViewDetail = (item: FeeDeclarationDisplay) => {
     setSelectedItem(item);
     setShowDetailModal(true);
   };
@@ -270,7 +356,7 @@ const FeeDeclarationManagePage: React.FC = () => {
     setSelectedItem(null);
   };
 
-  const handleGetNotification = (item: FeeDeclaration) => {
+  const handleGetNotification = (item: FeeDeclarationDisplay) => {
     setSelectedNotificationItem(item);
     setShowNotificationModal(true);
   };
@@ -299,15 +385,113 @@ const FeeDeclarationManagePage: React.FC = () => {
     navigate('/receipt-management/create', { state: { selectedItem: item } });
   };
 
+  // Error boundary fallback
+  const ErrorFallback = ({ error }: { error: Error }) => (
+    <div style={{ 
+      padding: '40px', 
+      textAlign: 'center', 
+      backgroundColor: '#f8f9fa', 
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        padding: '30px',
+        borderRadius: '10px',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+        maxWidth: '500px'
+      }}>
+        <h2 style={{ color: '#dc3545', marginBottom: '20px' }}>
+          <i className="fas fa-exclamation-triangle" style={{ marginRight: '10px' }}></i>
+          Có lỗi xảy ra
+        </h2>
+        <p style={{ marginBottom: '20px', color: '#666' }}>
+          Trang quản lý tờ khai phí gặp lỗi. Vui lòng thử lại sau.
+        </p>
+        <details style={{ marginBottom: '20px', textAlign: 'left' }}>
+          <summary style={{ cursor: 'pointer', color: '#007bff' }}>Chi tiết lỗi</summary>
+          <pre style={{ 
+            marginTop: '10px', 
+            padding: '10px', 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '4px',
+            fontSize: '12px',
+            overflow: 'auto'
+          }}>
+            {error.message}
+          </pre>
+        </details>
+        <button
+          onClick={() => window.location.reload()}
+          style={{
+            backgroundColor: '#007bff',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Tải lại trang
+        </button>
+      </div>
+    </div>
+  );
+
+  // Render with error boundary
+  if (window.location.search.includes('debug=error')) {
+    throw new Error('Debug error for testing');
+  }
+
   return (
     <div style={{ padding: '20px', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+      {/* Debug Info */}
+      {isDebugMode() && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '4px',
+          padding: '10px',
+          marginBottom: '20px',
+          fontSize: '12px',
+          color: '#856404'
+        }}>
+          <strong>DEBUG MODE:</strong> 
+          <span style={{ marginLeft: '10px' }}>
+            Loading: {loading ? 'Yes' : 'No'} | 
+            Data count: {feeDeclarations.length} | 
+            Total: {totalElements} |
+            Backend URL: {window.location.hostname === 'localhost' ? 'http://localhost:8080' : 'Production'}
+          </span>
+          <button 
+            onClick={() => (window as any).debug.disableDebug()}
+            style={{ 
+              marginLeft: '10px', 
+              fontSize: '10px', 
+              padding: '2px 6px',
+              backgroundColor: '#dc3545',
+              color: 'white',
+              border: 'none',
+              borderRadius: '2px',
+              cursor: 'pointer'
+            }}
+          >
+            Tắt Debug
+          </button>
+        </div>
+      )}
+      
       {/* Page Title */}
       <div style={{ 
         marginBottom: '20px',
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-        [ {feeDeclarations.length} tờ khai phí ] - Trang: 1/1
+        [ {totalElements} tờ khai phí ] - Trang: {currentPage + 1}/{totalPages || 1}
+        {loading && <span style={{ marginLeft: '10px', color: '#007bff' }}>Đang tải...</span>}
       </div>
 
       {/* Filter Section */}
@@ -517,7 +701,30 @@ const FeeDeclarationManagePage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {feeDeclarations.map((item, index) => (
+            {loading ? (
+              <tr>
+                <td colSpan={11} style={{ 
+                  padding: '40px', 
+                  textAlign: 'center', 
+                  fontSize: '14px', 
+                  color: '#007bff' 
+                }}>
+                  <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                  Đang tải dữ liệu...
+                </td>
+              </tr>
+            ) : displayDeclarations.length === 0 ? (
+              <tr>
+                <td colSpan={11} style={{ 
+                  padding: '40px', 
+                  textAlign: 'center', 
+                  fontSize: '14px', 
+                  color: '#666' 
+                }}>
+                  Không có dữ liệu
+                </td>
+              </tr>
+            ) : displayDeclarations.map((item, index) => (
               <tr key={item.id} style={{ 
                 borderBottom: '1px solid #eee',
                 backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9'
@@ -613,7 +820,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                        fontSize: '11px',
                        fontWeight: '500'
                      }}
-                     onClick={() => handleCreateReceipt(item)}
+                     onClick={() => handleCreateReceipt(feeDeclarations[displayDeclarations.indexOf(item)])}
                      title="Tạo biên lai"
                    >
                      Tạo biên lai
@@ -628,19 +835,62 @@ const FeeDeclarationManagePage: React.FC = () => {
         </table>
       </div>
 
-      {/* Footer */}
+      {/* Footer with Pagination */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginTop: '15px',
-        padding: '0 5px'
+        padding: '10px 5px'
       }}>
-        <div style={{ fontSize: '12px', color: '#666' }}>
-          Trang cuối
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ fontSize: '12px', color: '#666' }}>
+            Hiển thị {(currentPage * pageSize) + 1}-{Math.min((currentPage + 1) * pageSize, totalElements)} trong tổng số {totalElements} bản ghi
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+            <button
+              onClick={() => {
+                if (currentPage > 0) {
+                  setCurrentPage(currentPage - 1);
+                }
+              }}
+              disabled={currentPage === 0 || loading}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                border: '1px solid #ddd',
+                backgroundColor: currentPage === 0 || loading ? '#f5f5f5' : 'white',
+                cursor: currentPage === 0 || loading ? 'not-allowed' : 'pointer',
+                borderRadius: '3px'
+              }}
+            >
+              ‹ Trước
+            </button>
+            <span style={{ fontSize: '12px', padding: '0 8px' }}>
+              Trang {currentPage + 1} / {totalPages || 1}
+            </span>
+            <button
+              onClick={() => {
+                if (currentPage < totalPages - 1) {
+                  setCurrentPage(currentPage + 1);
+                }
+              }}
+              disabled={currentPage >= totalPages - 1 || loading}
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                border: '1px solid #ddd',
+                backgroundColor: currentPage >= totalPages - 1 || loading ? '#f5f5f5' : 'white',
+                cursor: currentPage >= totalPages - 1 || loading ? 'not-allowed' : 'pointer',
+                borderRadius: '3px'
+              }}
+            >
+              Sau ›
+            </button>
+          </div>
         </div>
         <div style={{ fontSize: '14px', fontWeight: 'bold', color: '#d32f2f' }}>
-          Tổng tiền: {formatCurrency(totalAmount)}
+          Tổng tiền: {formatCurrency(totalAmount)} VNĐ
         </div>
       </div>
 
@@ -763,7 +1013,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                      fontWeight: '500',
                      marginLeft: '8px'
                    }}
-                   onClick={() => handleCreateReceipt(selectedItem)}
+                   onClick={() => handleCreateReceipt(feeDeclarations[displayDeclarations.indexOf(selectedItem)])}
                  >
                    Tạo biên lai
                  </button>
