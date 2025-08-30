@@ -788,7 +788,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                 <td style={{ padding: '8px', textAlign: 'center', fontSize: '12px' }}>
                   <button
                     style={{
-                      backgroundColor: '#28a745',
+                      backgroundColor: '#007bff',
                       color: 'white',
                       border: 'none',
                       padding: '6px 12px',
@@ -799,12 +799,19 @@ const FeeDeclarationManagePage: React.FC = () => {
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
-                      margin: '0 auto'
+                      margin: '0 auto',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = '#0056b3';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = '#007bff';
                     }}
                     onClick={() => handleGetNotification(item)}
                     title="Lấy thông báo"
                   >
-                    <span style={{ fontSize: '10px' }}>✓</span>
+                    <span style={{ fontSize: '10px', color: '#ffffff' }}>✓</span>
                     Lấy thông báo
                   </button>
                 </td>
@@ -984,7 +991,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                 <strong>Thông báo:</strong>
                 <button
                   style={{
-                    backgroundColor: '#28a745',
+                    backgroundColor: '#007bff',
                     color: 'white',
                     border: 'none',
                     padding: '4px 8px',
@@ -992,11 +999,18 @@ const FeeDeclarationManagePage: React.FC = () => {
                     cursor: 'pointer',
                     fontSize: '11px',
                     fontWeight: '500',
-                    marginLeft: '8px'
+                    marginLeft: '8px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#0056b3';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#007bff';
                   }}
                   onClick={() => handleGetNotification(selectedItem)}
                 >
-                  ✓ Lấy thông báo
+                  <span style={{ color: '#ffffff' }}>✓</span> Lấy thông báo
                 </button>
               </div>
                              <div>
@@ -1272,18 +1286,25 @@ const FeeDeclarationManagePage: React.FC = () => {
             }}>
               <button
                 style={{
-                  backgroundColor: '#343a40',
+                  backgroundColor: '#007bff',
                   color: 'white',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '4px',
                   cursor: 'pointer',
                   fontSize: '13px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s'
                 }}
-                                 onClick={handleDownloadNotification}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0056b3';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#007bff';
+                }}
+                onClick={handleDownloadNotification}
               >
-                📥 Tải thông báo nộp phí
+                <span style={{ color: '#ffffff' }}>📥</span> Tải thông báo nộp phí
               </button>
               
               <button
@@ -1334,7 +1355,8 @@ const FeeDeclarationManagePage: React.FC = () => {
             }}>
               <div style={{
                 fontSize: '24px',
-                marginBottom: '10px'
+                marginBottom: '10px',
+                color: '#007bff'
               }}>
                 ⚠
               </div>
@@ -1342,7 +1364,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                 margin: 0,
                 fontSize: '16px',
                 fontWeight: 'bold',
-                color: '#333'
+                color: '#007bff'
               }}>
                 THÔNG BÁO
               </h3>
@@ -1360,7 +1382,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: '15px',
-                color: '#28a745',
+                color: '#007bff',
                 fontWeight: '500'
               }}>
                 <span style={{ marginRight: '8px', fontSize: '16px' }}>✓</span>

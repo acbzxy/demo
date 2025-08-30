@@ -357,7 +357,7 @@ function loadGuideContent() {
                 <div class="guide-card">
                     <h3>Liên Hệ Hỗ Trợ</h3>
                     <div class="contact-info">
-                        <p><i class="fas fa-phone"></i> Hotline: <strong>1900 1286</strong></p>
+                        <p><i class="fas fa-phone"></i> Hotline: <strong>1900 1234</strong></p>
                         <p><i class="fas fa-envelope"></i> Email: <strong>thuphihatang@tphcm.gov.vn</strong></p>
                         <p><i class="fas fa-clock"></i> Thời gian hỗ trợ: 7:30 - 17:30 (Thứ 2 - Thứ 6)</p>
                     </div>

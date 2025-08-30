@@ -125,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           fullName: 'Dev Administrator',
           companyName: 'Development Company',
           taxCode: '0109844160',
-          phone: '1900 1286',
+          phone: '1900 1234',
           address: 'TP. Hồ Chí Minh',
           userType: 'dev',
           status: 'active',

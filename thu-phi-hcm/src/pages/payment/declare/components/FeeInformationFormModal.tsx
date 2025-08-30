@@ -6,10 +6,35 @@ import {
   WindowIcon,
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
+import { useState } from "react";
 import FeeDeclarationForm from "./FeeDeclarationForm";
 import CargoTabs from "./FeeDeclaretionFooterTable";
 
 export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
+  const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  
+  const handleCancelDeclaration = () => {
+    setShowCancelConfirmModal(true);
+  };
+
+  const handleConfirmCancel = () => {
+    // Handle cancel declaration logic
+    console.log('Hủy tờ khai');
+    setShowCancelConfirmModal(false);
+    onClose();
+  };
+
+  const handleSignDeclaration = () => {
+    // Handle digital signature logic
+    console.log('Ký số tờ khai (khai báo nộp phí)');
+    alert('Chức năng ký số tờ khai đang được xử lý...');
+  };
+
+  const handleSave = () => {
+    // Handle save logic
+    console.log('Lưu lại');
+    alert('Đã lưu thông tin thành công!');
+  };
   return (
     <motion.div
       className="w-full flex flex-col bg-white"
@@ -30,8 +55,25 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
           </button>
           <span className="font-semibold">Thông Tin Tờ Khai Phí</span>
         </h4>
-        <div>
-          <button className="btn btn-default bg-blue-800 text-white rounded-none">
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={handleCancelDeclaration}
+            className="btn btn-default bg-red-600 text-white rounded-none hover:bg-red-700 transition-colors"
+          >
+            <i className="fas fa-times w-4 h-4 me-1"></i>
+            Hủy tờ khai
+          </button>
+          <button 
+            onClick={handleSignDeclaration}
+            className="btn btn-default bg-green-600 text-white rounded-none hover:bg-green-700 transition-colors"
+          >
+            <i className="fas fa-signature w-4 h-4 me-1"></i>
+            Ký số tờ khai (khai báo nộp phí)
+          </button>
+          <button 
+            onClick={handleSave}
+            className="btn btn-default bg-blue-800 text-white rounded-none hover:bg-blue-900 transition-colors"
+          >
             <WindowIcon className="w-4 h-4 me-1" />
             Lưu lại
           </button>
@@ -111,6 +153,130 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
           <CargoTabs />
         </div>
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1001
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            width: '500px',
+            maxWidth: '90vw',
+            borderRadius: '8px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+            position: 'relative',
+            border: '2px solid #2563eb'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              background: 'linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%)',
+              padding: '12px 20px',
+              color: 'white',
+              borderRadius: '6px 6px 0 0'
+            }}>
+              <h3 style={{
+                margin: 0,
+                fontSize: '16px',
+                fontWeight: '600',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px'
+              }}>
+                <i className="fas fa-exclamation-triangle"></i>
+                THÔNG BÁO
+              </h3>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{ 
+              padding: '20px',
+              textAlign: 'center'
+            }}>
+              <div style={{
+                fontSize: '14px',
+                color: '#374151',
+                lineHeight: '1.6',
+                marginBottom: '24px'
+              }}>
+                Bạn có chắc chắn muốn hủy tờ khai phí có số tờ khai hải quan 23243454354 không?
+                <br />
+                <span style={{ fontWeight: '600', color: '#dc2626' }}>
+                  Lưu ý: cần xác nhận ký số điện tử để hủy tờ khai
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center',
+                gap: '12px'
+              }}>
+                <button
+                  onClick={handleConfirmCancel}
+                  style={{
+                    backgroundColor: '#dc2626',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#b91c1c';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#dc2626';
+                  }}
+                >
+                  <i className="fas fa-times"></i>
+                  Hủy tờ khai
+                </button>
+
+                <button
+                  onClick={() => setShowCancelConfirmModal(false)}
+                  style={{
+                    backgroundColor: '#6b7280',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4b5563';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#6b7280';
+                  }}
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }
