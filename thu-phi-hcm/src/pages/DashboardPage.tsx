@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react'
+import DonutChart from '../components/DonutChart'
+import BarChart from '../components/BarChart'
 
 const DashboardPage: React.FC = () => {
   const [isAnimated, setIsAnimated] = useState(false)
@@ -30,22 +32,165 @@ const DashboardPage: React.FC = () => {
           }
         }
 
-        @keyframes donutSpin {
-          from {
+        @keyframes pieSpinSequence {
+          0% {
             background: conic-gradient(
-              #e9ecef 0deg 360deg
+              #f8f9fa 0deg 360deg
             );
-            transform: scale(0.8);
             opacity: 0;
+            transform: scale(0.8);
+            filter: blur(2px);
           }
-          to {
+          5% {
             background: conic-gradient(
-              #3498db 0deg 108deg,
-              #27ae60 108deg 216deg, 
-              #e74c3c 216deg 360deg
+              #f8f9fa 0deg 360deg
             );
-            transform: scale(1);
             opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
+          }
+          10% {
+            background: conic-gradient(
+              #9b59b6 0deg 10deg,
+              #f8f9fa 10deg 360deg
+            );
+          }
+          15% {
+            background: conic-gradient(
+              #9b59b6 0deg 30deg,
+              #f8f9fa 30deg 360deg
+            );
+          }
+          20% {
+            background: conic-gradient(
+              #9b59b6 0deg 50deg,
+              #f8f9fa 50deg 360deg
+            );
+          }
+          25% {
+            background: conic-gradient(
+              #9b59b6 0deg 70deg,
+              #f8f9fa 70deg 360deg
+            );
+          }
+          30% {
+            background: conic-gradient(
+              #9b59b6 0deg 90deg,
+              #f8f9fa 90deg 360deg
+            );
+          }
+          35% {
+            background: conic-gradient(
+              #9b59b6 0deg 110deg,
+              #f8f9fa 110deg 360deg
+            );
+          }
+          40% {
+            background: conic-gradient(
+              #9b59b6 0deg 130deg,
+              #f8f9fa 130deg 360deg
+            );
+          }
+          45% {
+            background: conic-gradient(
+              #9b59b6 0deg 150deg,
+              #f8f9fa 150deg 360deg
+            );
+          }
+          50% {
+            background: conic-gradient(
+              #9b59b6 0deg 170deg,
+              #f8f9fa 170deg 360deg
+            );
+          }
+          55% {
+            background: conic-gradient(
+              #9b59b6 0deg 190deg,
+              #f8f9fa 190deg 360deg
+            );
+          }
+          60% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f8f9fa 200deg 360deg
+            );
+          }
+          65% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 220deg,
+              #f8f9fa 220deg 360deg
+            );
+          }
+          70% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 240deg,
+              #f8f9fa 240deg 360deg
+            );
+          }
+          75% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 260deg,
+              #f8f9fa 260deg 360deg
+            );
+          }
+          80% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 280deg,
+              #f8f9fa 280deg 360deg
+            );
+          }
+          83% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg,
+              #f8f9fa 290deg 360deg
+            );
+          }
+          86% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg,
+              #2ecc71 290deg 310deg,
+              #f8f9fa 310deg 360deg
+            );
+          }
+          89% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg,
+              #2ecc71 290deg 330deg,
+              #f8f9fa 330deg 360deg
+            );
+          }
+          92% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg,
+              #2ecc71 290deg 350deg,
+              #f8f9fa 350deg 360deg
+            );
+          }
+          95% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg,
+              #2ecc71 290deg 358deg,
+              #f8f9fa 358deg 360deg
+            );
+          }
+          100% {
+            background: conic-gradient(
+              #9b59b6 0deg 200deg,
+              #f39c12 200deg 290deg, 
+              #2ecc71 290deg 360deg
+            );
+            opacity: 1;
+            transform: scale(1);
+            filter: blur(0px);
           }
         }
 
@@ -62,10 +207,61 @@ const DashboardPage: React.FC = () => {
 
         @keyframes pulseGlow {
           0%, 100% {
-            box-shadow: 0 0 20px rgba(52, 152, 219, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
           }
           50% {
-            box-shadow: 0 0 30px rgba(52, 152, 219, 0.6), 0 0 40px rgba(52, 152, 219, 0.2);
+            box-shadow: 0 8px 32px rgba(155, 89, 182, 0.3),
+                        0 0 30px rgba(243, 156, 18, 0.2),
+                        0 0 40px rgba(46, 204, 113, 0.1);
+          }
+        }
+
+        @keyframes colorGlow {
+          0% {
+            filter: brightness(1);
+          }
+          50% {
+            filter: brightness(1.2) saturate(1.3);
+          }
+          100% {
+            filter: brightness(1);
+          }
+        }
+
+        @keyframes smoothRotate {
+          0% {
+            transform: scale(0.8) rotate(0deg);
+          }
+          8% {
+            transform: scale(1) rotate(0deg);
+          }
+          100% {
+            transform: scale(1) rotate(1deg);
+          }
+        }
+
+        @keyframes counterUp {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes professionalGlow {
+          0% {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+          }
+          50% {
+            box-shadow: 0 8px 40px rgba(155, 89, 182, 0.15),
+                        0 0 20px rgba(243, 156, 18, 0.1),
+                        0 0 30px rgba(46, 204, 113, 0.08);
+          }
+          100% {
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.08);
           }
         }
 
@@ -74,9 +270,16 @@ const DashboardPage: React.FC = () => {
           transform-origin: bottom;
         }
 
-        .donut-animated {
-          animation: donutSpin 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards,
-                     pulseGlow 2s ease-in-out infinite 1.5s;
+        .pie-animated {
+          animation: pieSpinSequence 4s cubic-bezier(0.4, 0.0, 0.2, 1) forwards,
+                     smoothRotate 4s cubic-bezier(0.4, 0.0, 0.2, 1) forwards,
+                     colorGlow 2s ease-in-out 0.8s,
+                     professionalGlow 3s ease-in-out infinite 4.2s;
+        }
+
+        .legend-counter {
+          animation: counterUp 0.8s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+          opacity: 0;
         }
 
         .legend-animated {
@@ -292,116 +495,11 @@ const DashboardPage: React.FC = () => {
                 Thống kê truy cập và doanh số
               </h3>
               <div style={{ display: 'flex', gap: '15px', fontSize: '12px' }}>
-                <div 
-                  className={isAnimated ? 'legend-animated' : ''}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px',
-                    animationDelay: '0.4s',
-                    opacity: isAnimated ? 1 : 0
-                  }}
-                >
-                  <div style={{ width: '12px', height: '12px', backgroundColor: '#8e44ad', borderRadius: '2px' }}></div>
-                  <span style={{ color: '#7f8c8d' }}>VIỆT NAM</span>
-                </div>
-                <div 
-                  className={isAnimated ? 'legend-animated' : ''}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px',
-                    animationDelay: '0.5s',
-                    opacity: isAnimated ? 1 : 0
-                  }}
-                >
-                  <div style={{ width: '12px', height: '12px', backgroundColor: '#e74c3c', borderRadius: '2px' }}></div>
-                  <span style={{ color: '#7f8c8d' }}>USA</span>
-                </div>
-                <div 
-                  className={isAnimated ? 'legend-animated' : ''}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px',
-                    animationDelay: '0.6s',
-                    opacity: isAnimated ? 1 : 0
-                  }}
-                >
-                  <div style={{ width: '12px', height: '12px', backgroundColor: '#3498db', borderRadius: '2px' }}></div>
-                  <span style={{ color: '#7f8c8d' }}>UK</span>
-                </div>
-              </div>
-            </div>
-            
-            {/* Simple Bar Chart */}
-            <div style={{ height: '250px', display: 'flex', alignItems: 'end', justifyContent: 'space-between', gap: '15px' }}>
-              {['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG'].map((month, monthIndex) => {
-                const barHeights = {
-                  uk: Math.random() * 150 + 50,
-                  vn: Math.random() * 120 + 40,
-                  usa: Math.random() * 180 + 60
-                }
-                
-                return (
-                  <div key={month} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: '1' }}>
-                    <div style={{ display: 'flex', gap: '3px', alignItems: 'end', marginBottom: '10px' }}>
-                      <div 
-                        className={isAnimated ? 'bar-animated' : ''}
-                        style={{ 
-                          width: '12px', 
-                          height: `${barHeights.uk}px`,
-                          backgroundColor: '#3498db', 
-                          borderRadius: '2px 2px 0 0',
-                          transformOrigin: 'bottom',
-                          transform: isAnimated ? 'scaleY(1)' : 'scaleY(0)',
-                          opacity: isAnimated ? 1 : 0,
-                          animationDelay: `${0.8 + monthIndex * 0.1}s`
-                        }}
-                      ></div>
-                      <div 
-                        className={isAnimated ? 'bar-animated' : ''}
-                        style={{ 
-                          width: '12px', 
-                          height: `${barHeights.vn}px`,
-                          backgroundColor: '#8e44ad', 
-                          borderRadius: '2px 2px 0 0',
-                          transformOrigin: 'bottom',
-                          transform: isAnimated ? 'scaleY(1)' : 'scaleY(0)',
-                          opacity: isAnimated ? 1 : 0,
-                          animationDelay: `${0.9 + monthIndex * 0.1}s`
-                        }}
-                      ></div>
-                      <div 
-                        className={isAnimated ? 'bar-animated' : ''}
-                        style={{ 
-                          width: '12px', 
-                          height: `${barHeights.usa}px`,
-                          backgroundColor: '#e74c3c', 
-                          borderRadius: '2px 2px 0 0',
-                          transformOrigin: 'bottom',
-                          transform: isAnimated ? 'scaleY(1)' : 'scaleY(0)',
-                          opacity: isAnimated ? 1 : 0,
-                          animationDelay: `${1.0 + monthIndex * 0.1}s`
-                        }}
-                      ></div>
-                    </div>
-                    <span 
-                      className={isAnimated ? 'month-label-animated' : ''}
-                      style={{ 
-                        fontSize: '11px', 
-                        color: '#7f8c8d', 
-                        fontWeight: '500',
-                        animationDelay: `${1.2 + monthIndex * 0.05}s`,
-                        opacity: isAnimated ? 1 : 0
-                      }}
-                    >
-                      {month}
-                    </span>
-                  </div>
-                )
-              })}
           </div>
+        </div>
+
+            {/* Chart.js Bar Chart */}
+            <BarChart isAnimated={isAnimated} />
         </div>
 
           {/* Traffic Sources Chart */}
@@ -426,40 +524,8 @@ const DashboardPage: React.FC = () => {
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              {/* Simple Donut Chart */}
-              <div 
-                className={isAnimated ? 'donut-animated' : ''}
-                style={{ 
-                  width: '180px', 
-                  height: '180px', 
-                  borderRadius: '50%',
-                  background: isAnimated 
-                    ? `conic-gradient(
-                        #3498db 0deg 108deg,
-                        #27ae60 108deg 216deg, 
-                        #e74c3c 216deg 360deg
-                      )`
-                    : '#e9ecef',
-                  position: 'relative',
-                  marginBottom: '25px',
-                  transition: 'all 0.3s ease',
-                  animationDelay: '0.5s'
-                }}
-              >
-                <div style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: '100px',
-                  height: '100px',
-                  backgroundColor: 'white',
-                  borderRadius: '50%',
-                  boxShadow: 'inset 0 0 20px rgba(0,0,0,0.1)'
-                }}></div>
-                
-
-              </div>
+              {/* Chart.js Pie Chart */}
+              <DonutChart isAnimated={isAnimated} />
               
               {/* Legend */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', width: '100%' }}>
@@ -469,42 +535,62 @@ const DashboardPage: React.FC = () => {
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     alignItems: 'center',
-                    animationDelay: '1.5s'
+                    animationDelay: '2.3s'
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ 
                       width: '12px', 
                       height: '12px', 
-                      backgroundColor: '#3498db', 
+                      backgroundColor: '#9b59b6', 
                       borderRadius: '50%',
-                      boxShadow: '0 0 8px rgba(52, 152, 219, 0.4)'
+                      boxShadow: '0 0 8px rgba(155, 89, 182, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Search Engines</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn chính</span>
                   </div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>30%</span>
+                  <span 
+                    className={isAnimated ? 'legend-counter' : ''}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#2c3e50',
+                      animationDelay: '2.2s'
+                    }}
+                  >
+                    56%
+                  </span>
                 </div>
                 
-                <div 
+                                                <div 
                   className={isAnimated ? 'legend-animated' : ''}
                   style={{ 
                     display: 'flex', 
                     justifyContent: 'space-between', 
                     alignItems: 'center',
-                    animationDelay: '1.7s'
+                    animationDelay: '2.4s'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <div style={{ 
                       width: '12px', 
                       height: '12px', 
-                      backgroundColor: '#27ae60', 
+                      backgroundColor: '#f39c12', 
                       borderRadius: '50%',
-                      boxShadow: '0 0 8px rgba(39, 174, 96, 0.4)'
+                      boxShadow: '0 0 8px rgba(243, 156, 18, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Direct Click</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn phụ</span>
                   </div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>30%</span>
+                  <span 
+                    className={isAnimated ? 'legend-counter' : ''}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#2c3e50',
+                      animationDelay: '2.5s'
+                    }}
+                  >
+                    25%
+                  </span>
                 </div>
                 
                 <div 
@@ -513,20 +599,30 @@ const DashboardPage: React.FC = () => {
           display: 'flex',
                     justifyContent: 'space-between', 
                     alignItems: 'center',
-                    animationDelay: '1.9s'
+                    animationDelay: '2.6s'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ 
                       width: '12px', 
                       height: '12px', 
-                      backgroundColor: '#e74c3c', 
+                      backgroundColor: '#2ecc71', 
                       borderRadius: '50%',
-                      boxShadow: '0 0 8px rgba(231, 76, 60, 0.4)'
+                      boxShadow: '0 0 8px rgba(46, 204, 113, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Bookmarks Click</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn khác</span>
                   </div>
-                  <span style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50' }}>40%</span>
+                  <span 
+                    className={isAnimated ? 'legend-counter' : ''}
+                    style={{ 
+                      fontSize: '14px', 
+                      fontWeight: '600', 
+                      color: '#2c3e50',
+                      animationDelay: '2.7s'
+                    }}
+                  >
+                    19%
+                  </span>
                 </div>
               </div>
             </div>
@@ -845,3 +941,4 @@ const DashboardPage: React.FC = () => {
 }
 
 export default DashboardPage
+

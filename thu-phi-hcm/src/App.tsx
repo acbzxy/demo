@@ -24,6 +24,7 @@ const BarcodeFeePage = lazy(() => import('./pages/BarcodeFeePage'))
 const DebtManagePage = lazy(() => import('./pages/DebtManagePage'))
 const CreateReceiptPage = lazy(() => import('./pages/CreateReceiptPage'))
 const ReceiptManagePage = lazy(() => import('./pages/ReceiptManagePage'))
+const ChartDemoPage = lazy(() => import('./pages/ChartDemoPage'))
 
 // Reports Pages
 const ReportsPage = lazy(() => import('./pages/reports/ReportsPage'))
@@ -86,6 +87,7 @@ function App() {
               <Route path="/fee-declaration/debt-management" element={<ProtectedRoute><DebtManagePage /></ProtectedRoute>} />
           <Route path="/receipt-management/create" element={<ProtectedRoute><CreateReceiptPage /></ProtectedRoute>} />
           <Route path="/receipt-management/manage" element={<ProtectedRoute><ReceiptManagePage /></ProtectedRoute>} />
+          <Route path="/chart-demo" element={<ProtectedRoute><ChartDemoPage /></ProtectedRoute>} />
           <Route path="/account" element={<ProtectedRoute><AccountPage /></ProtectedRoute>} />
           <Route path="/password" element={<ProtectedRoute><PasswordPage /></ProtectedRoute>} />
           <Route path="/guide" element={<ProtectedRoute><GuidePage /></ProtectedRoute>} />

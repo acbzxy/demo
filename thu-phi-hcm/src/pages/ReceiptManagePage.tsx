@@ -196,17 +196,32 @@ const ReceiptManagePage: React.FC = () => {
           display: 'flex',
           alignItems: 'center'
         }}>
-          <div style={{
-            backgroundColor: '#333',
-            color: 'white',
-            padding: '8px 16px',
-            borderRadius: '4px',
-            fontSize: '14px',
-            fontWeight: '600'
-          }}>
+          <button 
+            onClick={() => {
+              // Add issue receipt functionality here
+              alert('Phát hành biên lai cho các mục đã chọn');
+            }}
+            style={{
+              backgroundColor: '#0db14b',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '4px',
+              fontSize: '14px',
+              fontWeight: '600',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#0aa038';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#0db14b';
+            }}
+          >
             <i className="fas fa-receipt" style={{ marginRight: '8px' }}></i>
             Phát hành biên lai
-          </div>
+          </button>
           
           <div style={{ 
             marginLeft: '20px',
@@ -542,7 +557,7 @@ const ReceiptManagePage: React.FC = () => {
                 onClick={handleSearch}
                 style={{
                   padding: '6px 20px',
-                  backgroundColor: '#333',
+                  backgroundColor: '#0066b3',
                   color: 'white',
                   border: 'none',
                   borderRadius: '3px',
@@ -555,10 +570,10 @@ const ReceiptManagePage: React.FC = () => {
                   minHeight: '32px'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#222';
+                  e.currentTarget.style.backgroundColor = '#004d8a';
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = '#333';
+                  e.currentTarget.style.backgroundColor = '#0066b3';
                 }}
               >
                 <i className="fas fa-search" style={{ marginRight: '8px' }}></i>
