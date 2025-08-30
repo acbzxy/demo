@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext'
 import Layout from './components/layout/Layout'
 import { NotificationProvider } from './context/NotificationContext'
 import LoadingSpinner from './components/ui/LoadingSpinner'
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 // Lazy load components for better performance
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -69,9 +70,10 @@ function App() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <NotificationProvider>
-      <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
+    <ErrorBoundary>
+      <NotificationProvider>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
           {/* Public routes */}
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -169,6 +171,7 @@ function App() {
         </Routes>
       </Suspense>
     </NotificationProvider>
+  </ErrorBoundary>
   )
 }
 

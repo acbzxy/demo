@@ -1,10 +1,182 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { ReceiptService, type Receipt, type ReceiptDetail } from '../utils/receiptApi';
+import { FeeDeclarationService } from '../utils/feeDeclarationApi';
+import { useNotification } from '../context/NotificationContext';
 
 const CreateReceiptPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedFeeDeclaration = location.state?.selectedItem;
+  const { showError, showSuccess } = useNotification();
+
+  // Add CSS for loading spinner animation
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Map data from selected fee declaration
+  React.useEffect(() => {
+    if (selectedFeeDeclaration) {
+      console.log('Mapping data from selected fee declaration:', selectedFeeDeclaration);
+      
+      // Map company information
+      if (selectedFeeDeclaration.company) {
+        setCompanyCode(selectedFeeDeclaration.company.taxCode || '');
+        setCompanyName(selectedFeeDeclaration.company.companyName || '');
+        setCompanyAddress(selectedFeeDeclaration.company.address || '');
+        setReceivingCompanyCode(selectedFeeDeclaration.company.taxCode || '');
+        setReceivingCompanyName(selectedFeeDeclaration.company.companyName || '');
+        setPayerEmail(selectedFeeDeclaration.company.email || '');
+        setPayerName(selectedFeeDeclaration.company.representativeName || selectedFeeDeclaration.company.companyName || '');
+      }
+      
+      // Map declaration information
+      if (selectedFeeDeclaration.declarationNumber) {
+        setCustomsDeclarationNumber(selectedFeeDeclaration.declarationNumber);
+      }
+      
+      if (selectedFeeDeclaration.arrivalDate) {
+        setDeclarationDate(selectedFeeDeclaration.arrivalDate);
+        setCustomsDeclarationDate(selectedFeeDeclaration.arrivalDate);
+      }
+      
+      // Generate receipt code based on declaration number
+      if (selectedFeeDeclaration.declarationNumber) {
+        const receiptCodeGenerated = `BL${selectedFeeDeclaration.declarationNumber.slice(-4)}`;
+        setReceiptCode(receiptCodeGenerated);
+      }
+      
+      // Set current date for receipt
+      setReceiptDate(new Date().toISOString().split('T')[0]);
+      
+      // Set notes with declaration info
+      const notesText = `Biên lai cho tờ khai ${selectedFeeDeclaration.declarationNumber} - Tàu ${selectedFeeDeclaration.vesselName || 'N/A'}`;
+      setNotes(notesText);
+      
+      // Check if there are existing receipts for this fee declaration
+      // Use localStorage workaround since backend API is temporarily disabled
+      checkExistingReceiptsFromLocalStorage(selectedFeeDeclaration.id);
+      
+      console.log('Data mapping completed');
+    }
+  }, [selectedFeeDeclaration]);
+
+  // Function to check existing receipts from localStorage (workaround)
+  const checkExistingReceiptsFromLocalStorage = (feeDeclarationId: number) => {
+    try {
+      console.log('Checking localStorage for existing receipts for fee declaration:', feeDeclarationId);
+      
+      // Check localStorage for receipt updates (new array format)
+      const feeDeclarationUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+      const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
+      
+      console.log('feeDeclarationUpdates:', feeDeclarationUpdates);
+      console.log('issuedReceipts:', issuedReceipts);
+      
+      // Find update for this specific fee declaration
+      const updateForThisDeclaration = feeDeclarationUpdates.find((update: any) => 
+        update.id === feeDeclarationId && update.receiptCreated
+      );
+      
+      console.log('updateForThisDeclaration:', updateForThisDeclaration);
+      
+      if (updateForThisDeclaration) {
+        console.log('Found existing receipt info in localStorage:', updateForThisDeclaration);
+        
+        // Set receipt state based on localStorage data
+        setIsSaved(true);
+        setSavedReceiptId(updateForThisDeclaration.receiptId || Date.now()); // Use stored receipt ID
+        
+        // Check if receipt was issued
+        const hasIssuedReceipt = issuedReceipts.some((receipt: any) => 
+          receipt.feeDeclarationId === feeDeclarationId
+        );
+        
+        if (hasIssuedReceipt || updateForThisDeclaration.receiptStatus === 'ISSUED') {
+          setReceiptStatus('ISSUED');
+          console.log('Receipt already issued - showing issued state');
+        } else {
+          setReceiptStatus('DRAFT');
+          console.log('Draft receipt found - showing issue receipt button');
+        }
+        
+        return;
+      }
+      
+      // Fallback: Check old single-record format for backward compatibility
+      const legacyUpdate = JSON.parse(localStorage.getItem('feeDeclarationUpdated') || '{}');
+      if (legacyUpdate.id === feeDeclarationId && legacyUpdate.receiptCreated) {
+        console.log('Found legacy receipt info:', legacyUpdate);
+        setIsSaved(true);
+        setSavedReceiptId(legacyUpdate.receiptId || Date.now());
+        setReceiptStatus(legacyUpdate.receiptStatus || 'DRAFT');
+        return;
+      }
+      
+      console.log('No existing receipts found for fee declaration:', feeDeclarationId);
+    } catch (error) {
+      console.error('Error checking localStorage for existing receipts:', error);
+    }
+  };
+
+  // Function to check and load existing receipts (API version - disabled)
+  const checkExistingReceipts = async (feeDeclarationId: number) => {
+    try {
+      console.log('Checking existing receipts for fee declaration:', feeDeclarationId);
+      const response = await ReceiptService.getReceiptsByFeeDeclarationId(feeDeclarationId);
+      
+      if (response.success && response.data && response.data.length > 0) {
+        const existingReceipt = response.data[0]; // Get the first (latest) receipt
+        console.log('Found existing receipt:', existingReceipt);
+        
+        // Load receipt data into form
+        setReceiptCode(existingReceipt.receiptCode || '');
+        setReceiptNumber(existingReceipt.receiptNumber || '');
+        setReceiptDate(existingReceipt.receiptDate || '');
+        setPayerName(existingReceipt.payerName || '');
+        setPayerEmail(existingReceipt.payerEmail || '');
+        setPayerPhone(existingReceipt.payerPhone || '');
+        setPayerIdNumber(existingReceipt.payerIdNumber || '');
+        setPaymentMethod(existingReceipt.paymentMethod || 'CASH');
+        setNotes(existingReceipt.notes || '');
+        
+        // Load receipt details
+        if (existingReceipt.receiptDetails) {
+          setFeeDetails(existingReceipt.receiptDetails.map((detail, index) => ({
+            id: index + 1,
+            content: detail.content || '',
+            quantity: detail.quantity || 0,
+            unit: detail.unit || '',
+            price: detail.unitPrice || 0,
+            total: detail.totalAmount || 0
+          })));
+        }
+        
+        // Set receipt state
+        setIsSaved(true);
+        setSavedReceiptId(existingReceipt.id!);
+        setReceiptStatus(existingReceipt.status || 'DRAFT');
+        
+        console.log('Loaded existing receipt with status:', existingReceipt.status);
+      } else {
+        console.log('No existing receipts found for fee declaration:', feeDeclarationId);
+      }
+    } catch (error) {
+      console.error('Error checking existing receipts:', error);
+      // Don't show error to user as this is just a check
+    }
+  };
 
   // Form states
   const [receiptCode, setReceiptCode] = useState('');
@@ -26,6 +198,7 @@ const CreateReceiptPage: React.FC = () => {
   const [receivingCompanyName, setReceivingCompanyName] = useState('CÔNG TY TNHH DELVNETS VIETNAM');
   const [payerName, setPayerName] = useState('0314308153');
   const [payerEmail, setPayerEmail] = useState('logistics.hq@delvnetsvietnam.com');
+  const [payerPhone, setPayerPhone] = useState('');
   const [payerIdNumber, setPayerIdNumber] = useState('036734867');
 
   // Checkbox states
@@ -36,11 +209,15 @@ const CreateReceiptPage: React.FC = () => {
 
   // Save state
   const [isSaved, setIsSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isIssuing, setIsIssuing] = useState(false);
+  const [receiptStatus, setReceiptStatus] = useState<'DRAFT' | 'ISSUED' | 'CANCELLED' | 'PAID'>('DRAFT');
+  const [savedReceiptId, setSavedReceiptId] = useState<number | null>(null);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  // Sample fee details
-  const [feeDetails] = useState([
+  // Fee details - will be populated from selected fee declaration
+  const [feeDetails, setFeeDetails] = useState([
     {
       id: 1,
       content: 'Cảng-Đã thành, phí hỗ trợ phí biên tờ khai (1355430545&4)',
@@ -59,61 +236,260 @@ const CreateReceiptPage: React.FC = () => {
     }
   ]);
 
+  // Update fee details when selected fee declaration changes
+  React.useEffect(() => {
+    if (selectedFeeDeclaration) {
+      // Generate fee details based on selected fee declaration
+      const generatedFeeDetails = [
+        {
+          id: 1,
+          content: `Phí cảng vụ cho tàu ${selectedFeeDeclaration.vesselName || 'N/A'}`,
+          unit: 'Tàu',
+          quantity: 1,
+          price: Math.round((selectedFeeDeclaration.totalFeeAmount || 750000) * 0.6),
+          total: Math.round((selectedFeeDeclaration.totalFeeAmount || 750000) * 0.6)
+        },
+        {
+          id: 2,
+          content: `Phí hoa tiêu - Container ${selectedFeeDeclaration.grossTonnage || 'N/A'} tấn`,
+          unit: 'Container',
+          quantity: 1,
+          price: Math.round((selectedFeeDeclaration.totalFeeAmount || 750000) * 0.4),
+          total: Math.round((selectedFeeDeclaration.totalFeeAmount || 750000) * 0.4)
+        }
+      ];
+      
+      setFeeDetails(generatedFeeDetails);
+      console.log('Fee details updated:', generatedFeeDetails);
+    }
+  }, [selectedFeeDeclaration]);
+
   const totalAmount = feeDetails.reduce((sum, item) => sum + item.total, 0);
 
   const formatCurrency = (amount: number) => {
     return amount.toLocaleString('vi-VN');
   };
 
-  const handleSave = () => {
-    const receiptData = {
-      // Company information
-      companyCode,
-      companyName,
-      companyAddress,
-      receivingCompanyCode,
-      receivingCompanyName,
-      payerName,
-      payerEmail,
-      payerIdNumber,
+  const handleSave = async () => {
+    console.log('=== handleSave clicked ===');
+    console.log('receiptCode:', receiptCode);
+    console.log('payerName:', payerName);
+    console.log('payerEmail:', payerEmail);
+    try {
+      setIsSaving(true);
       
-      // Receipt information
-      receiptCode,
-      receiptNumber,
-      paymentMethod,
-      receiptDate,
-      notes,
+      // Validate required fields
+      if (!receiptCode.trim()) {
+        console.log('Validation failed: receiptCode is empty');
+        alert('Vui lòng nhập mã biên lai'); // Temporary alert for debugging
+        showError('Vui lòng nhập mã biên lai');
+        return;
+      }
+      console.log('Validation passed: receiptCode =', receiptCode);
       
-      // Declaration information
-      stbNumber,
-      declarationDate,
-      storageLocationCode,
-      customsDeclarationNumber,
-      customsDeclarationDate,
+      if (!payerName.trim()) {
+        console.log('Validation failed: payerName is empty');
+        showError('Vui lòng nhập tên người nộp phí');
+        return;
+      }
+      console.log('Validation passed: payerName =', payerName);
       
-      // Checkboxes
-      samePayment,
-      containerList,
-      commonContainerDeclaration,
-      attached,
+      if (!payerEmail.trim()) {
+        console.log('Validation failed: payerEmail is empty');
+        alert('Vui lòng nhập email người nộp phí'); // Temporary alert for debugging
+        showError('Vui lòng nhập email người nộp phí');
+        return;
+      }
+      console.log('Validation passed: payerEmail =', payerEmail);
+
+      // Convert fee details to ReceiptDetail format
+      const receiptDetails: ReceiptDetail[] = feeDetails.map(detail => ({
+        content: detail.content,
+        unit: detail.unit,
+        quantity: detail.quantity,
+        unitPrice: detail.price,
+        totalAmount: detail.total,
+        notes: `Chi tiết ${detail.id}`
+      }));
+
+      // Create receipt object
+      const receiptData: Receipt = {
+        receiptCode: receiptCode.trim(),
+        receiptNumber: receiptNumber.trim(),
+        feeDeclarationId: selectedFeeDeclaration?.id || 1, // Use selected fee declaration ID - fallback to 1
+        companyId: selectedFeeDeclaration?.company?.id || 1, // Use company ID from selected fee declaration
+        payerName: payerName.trim(),
+        payerEmail: payerEmail.trim(),
+        payerIdNumber: payerIdNumber.trim(),
+        payerPhone: payerIdNumber.trim(), // Using same as ID number for now
+        receiptDate: receiptDate,
+        paymentMethod: paymentMethod === 'Chuyển khoản' ? 'BANK_TRANSFER' : 'CASH',
+        totalAmount: totalAmount,
+        status: 'DRAFT',
+        storageLocationCode: storageLocationCode,
+        stbNumber: stbNumber,
+        declarationDate: declarationDate,
+        customsDeclarationNumber: customsDeclarationNumber,
+        customsDeclarationDate: customsDeclarationDate,
+        notes: notes,
+        samePayment: samePayment,
+        containerList: containerList,
+        commonContainerDeclaration: commonContainerDeclaration,
+        attached: attached,
+        receiptDetails: receiptDetails
+      };
       
-      // Fee details
-      feeDetails,
-      totalAmount
-    };
-    
-    console.log('Saving receipt data:', receiptData);
-    setIsSaved(true);
-    alert('Biên lai đã được lưu thành công!');
+      console.log('Saving receipt data:', receiptData);
+      console.log('selectedFeeDeclaration:', selectedFeeDeclaration);
+      console.log('selectedFeeDeclaration?.id:', selectedFeeDeclaration?.id);
+      
+      // Call API to save receipt
+      console.log('Calling ReceiptService.createReceipt...');
+      const response = await ReceiptService.createReceipt(receiptData);
+      console.log('API Response:', response);
+      
+      if (response.success && response.data) {
+        console.log('Setting states - isSaved: true, receiptId:', response.data.id, 'status:', response.data.status);
+        setIsSaved(true);
+        setSavedReceiptId(response.data.id || null);
+        setReceiptStatus(response.data.status);
+        showSuccess('Biên lai đã được lưu thành công!');
+        
+        // Update fee declaration status after successful receipt creation
+        if (selectedFeeDeclaration?.id) {
+          try {
+            console.log('Updating fee declaration status for ID:', selectedFeeDeclaration.id);
+            const updatedDeclaration = {
+              ...selectedFeeDeclaration,
+              paymentStatus: 'PARTIAL', // Update to indicate receipt has been created
+              declarationStatus: 'APPROVED' // Update declaration status
+            };
+            
+            await FeeDeclarationService.updateFeeDeclaration(selectedFeeDeclaration.id, updatedDeclaration);
+            console.log('Fee declaration status updated successfully');
+            
+            // Store update info for the fee declaration management page
+            const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+            const newUpdate = {
+              id: selectedFeeDeclaration.id,
+              newPaymentStatus: 'PARTIAL',
+              newDeclarationStatus: 'APPROVED',
+              receiptCreated: true,
+              receiptStatus: 'DRAFT', // Track receipt status
+              receiptId: response.data.id, // Store receipt ID
+              timestamp: new Date().toISOString()
+            };
+            
+            // Remove existing update for this fee declaration and add new one
+            const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
+            filteredUpdates.push(newUpdate);
+            localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
+            
+            // Keep backward compatibility
+            localStorage.setItem('feeDeclarationUpdated', JSON.stringify(newUpdate));
+            
+          } catch (updateError) {
+            console.warn('Failed to update fee declaration status:', updateError);
+            // Don't show error to user since receipt was created successfully
+          }
+        }
+        
+        // Auto-generate receipt code for next time
+        if (response.data.id) {
+          const nextNumber = parseInt(receiptNumber) + 1;
+          setReceiptNumber(String(nextNumber).padStart(7, '0'));
+        }
+      } else {
+        console.log('API call failed - response:', response);
+        showError('Có lỗi xảy ra khi lưu biên lai: ' + (response.message || 'Unknown error'));
+      }
+      
+    } catch (error) {
+      console.error('Error saving receipt:', error);
+      showError('Có lỗi xảy ra khi lưu biên lai: ' + (error as Error).message);
+    } finally {
+      console.log('Finally block: setting isSaving to false');
+      setIsSaving(false);
+    }
   };
 
   const handleClose = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleIssueReceipt = () => {
-    console.log('Phát hành biên lai...');
-    setShowReceiptModal(true);
+  const handleIssueReceipt = async () => {
+    if (!savedReceiptId) {
+      showError('Vui lòng lưu biên lai trước khi phát hành');
+      return;
+    }
+    
+    if (receiptStatus !== 'DRAFT') {
+      showError('Chỉ có thể phát hành biên lai ở trạng thái bản nháp');
+      return;
+    }
+    
+    if (isIssuing) {
+      console.log('Already issuing, ignoring click');
+      return; // Prevent double-click
+    }
+    
+    try {
+      setIsIssuing(true);
+      console.log('Phát hành biên lai...');
+      
+      const response = await ReceiptService.issueReceipt(savedReceiptId);
+      
+      if (response.success && response.data) {
+        // Update receipt status immediately to prevent UI issues
+        setReceiptStatus('ISSUED');
+        console.log('Receipt status updated to ISSUED');
+        
+        showSuccess('Biên lai đã được phát hành thành công!');
+        
+        // Update localStorage immediately
+        const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+        const issuedUpdate = {
+          id: selectedFeeDeclaration?.id,
+          newPaymentStatus: 'PAID',
+          newDeclarationStatus: 'APPROVED', 
+          receiptCreated: true,
+          receiptStatus: 'ISSUED',
+          receiptId: savedReceiptId,
+          timestamp: new Date().toISOString()
+        };
+        
+        const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration?.id);
+        filteredUpdates.push(issuedUpdate);
+        localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
+        
+        // Also update issuedReceipts for backward compatibility
+        const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
+        if (!issuedReceipts.includes(selectedFeeDeclaration?.id)) {
+          issuedReceipts.push(selectedFeeDeclaration?.id);
+          localStorage.setItem('issuedReceipts', JSON.stringify(issuedReceipts));
+        }
+        
+        console.log('localStorage updated:', {
+          feeDeclarationUpdates: JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]'),
+          issuedReceipts: JSON.parse(localStorage.getItem('issuedReceipts') || '[]')
+        });
+        
+        setShowReceiptModal(true);
+      } else {
+        showError('Có lỗi xảy ra khi phát hành biên lai');
+      }
+      
+    } catch (error) {
+      console.error('Error issuing receipt:', error);
+      if (error instanceof Error && error.message.includes('trạng thái bản nháp')) {
+        showError('Biên lai này đã được phát hành rồi');
+        setReceiptStatus('ISSUED'); // Update UI to reflect current state
+      } else {
+        showError('Có lỗi xảy ra khi phát hành biên lai: ' + (error as Error).message);
+      }
+    } finally {
+      setIsIssuing(false);
+    }
   };
 
   const handleCloseReceiptModal = () => {
@@ -148,13 +524,30 @@ const CreateReceiptPage: React.FC = () => {
       existingReceipts.push(receiptData);
       localStorage.setItem('issuedReceipts', JSON.stringify(existingReceipts));
       
-      // Đánh dấu để cập nhật trạng thái trong FeeDeclarationManagePage
-      localStorage.setItem('updateFeeDeclarationStatus', JSON.stringify({
+      // Update localStorage with ISSUED status
+      const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+      const issuedUpdate = {
         id: selectedFeeDeclaration.id,
-        newStatus: 'Đã tạo biên lai thành công',
+        newPaymentStatus: 'PAID',
+        newDeclarationStatus: 'APPROVED', 
+        receiptCreated: true,
+        receiptStatus: 'ISSUED', // Mark as issued
+        receiptId: savedReceiptId,
         timestamp: new Date().toISOString()
-      }));
+      };
+      
+      // Remove existing update for this fee declaration and add new one
+      const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
+      filteredUpdates.push(issuedUpdate);
+      localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
+      
+      // Keep backward compatibility
+      localStorage.setItem('feeDeclarationUpdated', JSON.stringify(issuedUpdate));
     }
+    
+    // Update UI state immediately
+    setReceiptStatus('ISSUED');
+    console.log('Receipt status updated to ISSUED');
     
     setShowReceiptModal(false);
     alert('Biên lai đã được phát hành thành công!');
@@ -696,24 +1089,91 @@ const CreateReceiptPage: React.FC = () => {
           borderTop: '1px solid #eee',
           paddingTop: '20px'
         }}>
-          {/* Left side - Issue Receipt button (only show after save) */}
-          <div>
+          {/* Left side - Status and Issue Receipt button */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            {/* Status indicator */}
             {isSaved && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '8px 12px',
+                borderRadius: '4px',
+                backgroundColor: receiptStatus === 'DRAFT' ? '#fff3cd' : 
+                                receiptStatus === 'ISSUED' ? '#d4edda' : '#f8d7da',
+                color: receiptStatus === 'DRAFT' ? '#856404' : 
+                       receiptStatus === 'ISSUED' ? '#155724' : '#721c24',
+                fontSize: '12px',
+                fontWeight: '500',
+                border: `1px solid ${receiptStatus === 'DRAFT' ? '#ffeeba' : 
+                                   receiptStatus === 'ISSUED' ? '#c3e6cb' : '#f5c6cb'}`
+              }}>
+                <span style={{
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  backgroundColor: receiptStatus === 'DRAFT' ? '#ffc107' : 
+                                  receiptStatus === 'ISSUED' ? '#28a745' : '#dc3545'
+                }}></span>
+                Trạng thái: {receiptStatus === 'DRAFT' ? 'Bản nháp' : 
+                           receiptStatus === 'ISSUED' ? 'Đã phát hành' : 
+                           receiptStatus === 'CANCELLED' ? 'Đã hủy' : 'Đã thanh toán'}
+              </div>
+            )}
+            
+            {/* Issue Receipt button */}
+            {isSaved && receiptStatus === 'DRAFT' && (
               <button
                 onClick={handleIssueReceipt}
+                disabled={isIssuing}
                 style={{
-                  backgroundColor: '#28a745',
+                  backgroundColor: isIssuing ? '#6c757d' : '#28a745',
                   color: 'white',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '4px',
-                  cursor: 'pointer',
+                  cursor: isIssuing ? 'not-allowed' : 'pointer',
                   fontSize: '13px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                📄 Phát hành biên lai
+                {isIssuing ? (
+                  <>
+                    <span style={{ 
+                      width: '12px', 
+                      height: '12px', 
+                      border: '2px solid #fff',
+                      borderTop: '2px solid transparent',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }}></span>
+                    Đang phát hành...
+                  </>
+                ) : (
+                  <>📄 Phát hành biên lai</>
+                )}
               </button>
+            )}
+            
+            {/* Show success message when receipt is issued */}
+            {receiptStatus === 'ISSUED' && (
+              <div style={{
+                backgroundColor: '#d4edda',
+                color: '#155724',
+                border: '1px solid #c3e6cb',
+                padding: '10px 15px',
+                borderRadius: '4px',
+                fontSize: '13px',
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                ✅ Biên lai đã được phát hành thành công
+              </div>
             )}
           </div>
 
@@ -721,18 +1181,39 @@ const CreateReceiptPage: React.FC = () => {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={handleSave}
+              disabled={isSaving || (isSaved && receiptStatus !== 'DRAFT')}
               style={{
-                backgroundColor: '#343a40',
+                backgroundColor: isSaving ? '#6c757d' : 
+                               (isSaved && receiptStatus !== 'DRAFT') ? '#6c757d' : '#343a40',
                 color: 'white',
                 border: 'none',
                 padding: '10px 20px',
                 borderRadius: '4px',
-                cursor: 'pointer',
+                cursor: (isSaving || (isSaved && receiptStatus !== 'DRAFT')) ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
-                fontWeight: '500'
+                fontWeight: '500',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              Lưu lại
+              {isSaving ? (
+                <>
+                  <span style={{ 
+                    width: '12px', 
+                    height: '12px', 
+                    border: '2px solid #fff',
+                    borderTop: '2px solid transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></span>
+                  Đang lưu...
+                </>
+              ) : isSaved ? (
+                receiptStatus === 'DRAFT' ? '💾 Cập nhật' : '✅ Đã lưu'
+              ) : (
+                '💾 Lưu lại'
+              )}
             </button>
             
             <button
