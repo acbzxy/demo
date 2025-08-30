@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ReceiptService, Receipt, ReceiptSearchParams, PageResponse } from '../utils/receiptApi';
+import { useNotification } from '../context/NotificationContext';
 
 const ReceiptManagePage: React.FC = () => {
+  const { showSuccess, showError } = useNotification();
+  
   const [filterData, setFilterData] = useState({
     fromDate: '',
     toDate: '',
@@ -15,7 +19,18 @@ const ReceiptManagePage: React.FC = () => {
     searchCode: ''
   });
 
-  const [receiptData] = useState([
+  // State for real receipt data
+  const [receiptData, setReceiptData] = useState<Receipt[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 0,
+    size: 10,
+    totalElements: 0,
+    totalPages: 0
+  });
+
+  // Mock data for fallback (keeping original structure)
+  const [mockReceiptData] = useState([
     {
       id: 1,
       declarationHQ: '1357806765T9',
@@ -134,6 +149,86 @@ const ReceiptManagePage: React.FC = () => {
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const itemsPerPage = 10;
 
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    loadReceipts({
+      page: newPage - 1, // API uses 0-based indexing
+      size: itemsPerPage
+    });
+  };
+
+  // Load receipts from API
+  const loadReceipts = async (searchParams: ReceiptSearchParams = {}) => {
+    try {
+      setLoading(true);
+      console.log('Loading receipts with params:', searchParams);
+      
+      // Use real API
+      const response = await ReceiptService.getAllReceipts(
+        searchParams.page || 0,
+        searchParams.size || 10,
+        searchParams.sortBy || 'receiptDate',
+        searchParams.sortDir || 'desc'
+      );
+      
+      console.log('Full API response:', response);
+      
+      // Handle both wrapped (ApiResponse) and direct PageResponse
+      let pageData;
+      if (response.success && response.data) {
+        // Wrapped in ApiResponse
+        pageData = response.data;
+        console.log('Using wrapped response data');
+      } else if (response.content) {
+        // Direct PageResponse from backend (like FeeDeclarationService)
+        pageData = response;
+        console.log('Using direct PageResponse');
+      } else {
+        console.warn('API response not successful, using mock data');
+        console.log('Response structure:', Object.keys(response));
+        // Fallback to mock data
+        setReceiptData(mockReceiptData as any);
+        setPagination({
+          page: 0,
+          size: 10,
+          totalElements: mockReceiptData.length,
+          totalPages: Math.ceil(mockReceiptData.length / 10)
+        });
+        return;
+      }
+      
+      console.log('Receipts loaded successfully:', pageData);
+      setReceiptData(pageData.content);
+      setPagination({
+        page: pageData.number,
+        size: pageData.size,
+        totalElements: pageData.totalElements,
+        totalPages: pageData.totalPages
+      });
+    } catch (error) {
+      console.error('Error loading receipts:', error);
+      console.error('Error details:', error);
+      showError('Không thể tải danh sách biên lai. Kiểm tra backend có đang chạy không?');
+      
+      // Fallback to mock data
+      setReceiptData(mockReceiptData as any);
+      setPagination({
+        page: 0,
+        size: 10,
+        totalElements: mockReceiptData.length,
+        totalPages: Math.ceil(mockReceiptData.length / 10)
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on component mount
+  useEffect(() => {
+    loadReceipts();
+  }, []);
+
   const handleFilterChange = (field: string, value: string) => {
     setFilterData(prev => ({
       ...prev,
@@ -142,7 +237,29 @@ const ReceiptManagePage: React.FC = () => {
   };
 
   const handleSearch = () => {
-    console.log('Tìm kiếm với filter:', filterData);
+    const searchParams: ReceiptSearchParams = {
+      page: 0,
+      size: pagination.size
+    };
+
+    // Add filters if they have values
+    if (filterData.fromDate) {
+      searchParams.fromDate = filterData.fromDate;
+    }
+    if (filterData.toDate) {
+      searchParams.toDate = filterData.toDate;
+    }
+    if (filterData.status) {
+      searchParams.status = filterData.status;
+    }
+    if (filterData.payment) {
+      searchParams.paymentMethod = filterData.payment;
+    }
+    if (filterData.receiptNumber) {
+      searchParams.receiptNumber = filterData.receiptNumber;
+    }
+
+    loadReceipts(searchParams);
   };
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,12 +278,30 @@ const ReceiptManagePage: React.FC = () => {
     );
   };
 
-  const totalPages = Math.ceil(receiptData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = receiptData.slice(startIndex, startIndex + itemsPerPage);
+  // Use server-side pagination
+  const totalPages = pagination.totalPages;
+  const currentData = receiptData; // Already paginated from server
+
+  // Map API data to display format
+  const mappedData = currentData.map(receipt => ({
+    id: receipt.id || 0,
+    declarationHQ: receipt.feeDeclarationId?.toString() || '',
+    dateTKNO: receipt.receiptDate || '',
+    tkFeePayment: receipt.receiptCode || '',
+    declarationType: 'Hàng cont', // Default value
+    codeSymbol: receipt.receiptNumber || '',
+    receiptNumber: receipt.receiptNumber || '',
+    receiptDate: receipt.receiptDate || '',
+    business: receipt.payerName || '',
+    status: receipt.status === 'ISSUED' ? 'Phát hành' : 
+            receipt.status === 'DRAFT' ? 'Bản nháp' : 
+            receipt.status === 'CANCELLED' ? 'Đã hủy' : 'Mới',
+    totalAmount: receipt.totalAmount || 0,
+    issued: receipt.status === 'ISSUED'
+  }));
 
   // Tính tổng tiền
-  const totalIssuedAmount = receiptData
+  const totalIssuedAmount = mappedData
     .filter(item => item.issued)
     .reduce((sum, item) => sum + item.totalAmount, 0);
     
@@ -181,6 +316,12 @@ const ReceiptManagePage: React.FC = () => {
       minHeight: 'calc(100vh - 60px)',
       fontFamily: 'Arial, sans-serif'
     }}>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
       <div style={{
         backgroundColor: 'white',
         borderRadius: '8px',
@@ -628,7 +769,30 @@ const ReceiptManagePage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {currentData.map((item, index) => (
+              {loading ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ 
+                        width: '20px', 
+                        height: '20px', 
+                        border: '2px solid #f3f3f3',
+                        borderTop: '2px solid #007bff',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                      Đang tải dữ liệu...
+                    </div>
+                  </td>
+                </tr>
+              ) : mappedData.length === 0 ? (
+                <tr>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '20px', color: '#6c757d' }}>
+                    Không có dữ liệu biên lai
+                  </td>
+                </tr>
+              ) : (
+                mappedData.map((item, index) => (
                 <tr key={item.id} style={{ 
                   borderBottom: '1px solid #dee2e6',
                   transition: 'background-color 0.2s ease'
@@ -654,7 +818,7 @@ const ReceiptManagePage: React.FC = () => {
                     </div>
                   </td>
                   <td style={{ padding: '8px', textAlign: 'center', fontSize: '12px' }}>
-                    {startIndex + index + 1}
+                    {((currentPage - 1) * itemsPerPage) + index + 1}
                   </td>
                   <td style={{ padding: '8px', fontSize: '12px', fontWeight: '500' }}>
                     {item.declarationHQ}
@@ -702,7 +866,8 @@ const ReceiptManagePage: React.FC = () => {
                     {item.totalAmount.toLocaleString('vi-VN')}
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
 
@@ -741,12 +906,12 @@ const ReceiptManagePage: React.FC = () => {
           borderTop: '1px solid #dee2e6'
         }}>
           <div style={{ fontSize: '13px', color: '#6c757d' }}>
-            Hiển thị {startIndex + 1} - {Math.min(startIndex + itemsPerPage, receiptData.length)} của {receiptData.length} bản ghi
+            Hiển thị {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, pagination.totalElements)} của {pagination.totalElements} bản ghi
           </div>
           
           <div style={{ display: 'flex', gap: '5px' }}>
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
               disabled={currentPage === 1}
               style={{
                 padding: '6px 12px',
@@ -764,7 +929,7 @@ const ReceiptManagePage: React.FC = () => {
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i}
-                onClick={() => setCurrentPage(i + 1)}
+                onClick={() => handlePageChange(i + 1)}
                 style={{
                   padding: '6px 12px',
                   border: '1px solid #dee2e6',
@@ -781,7 +946,7 @@ const ReceiptManagePage: React.FC = () => {
             ))}
             
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
               disabled={currentPage === totalPages}
               style={{
                 padding: '6px 12px',
