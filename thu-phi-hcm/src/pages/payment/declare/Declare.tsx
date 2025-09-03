@@ -2,16 +2,44 @@ import Button from "@/components/ui/Button";
 import { PencilSquareIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 import React, { useEffect, useState } from "react";
 import FeeInformationFormModal from "./components/FeeInformationFormModal";
+import { CrmApiService, type CrmFeeDeclarationSearchParams } from "../../../utils/crmApi";
+import { useNotification } from "../../../context/NotificationContext";
+import NetworkDiagnosticPanel from "../../../components/NetworkDiagnosticPanel";
 
 const Declare: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showFeeInfoModal, setShowFeeInfoModal] = useState(false);
   const [filteredData, setFilteredData] = useState<any[]>([]);
+  const [allData, setAllData] = useState<any[]>([]);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedRowData, setSelectedRowData] = useState<any>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
   const [showSignConfirmModal, setShowSignConfirmModal] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isApiConnected, setIsApiConnected] = useState(false);
+  const [connectionDetails, setConnectionDetails] = useState<any>(null);
+  const [showDiagnosticPanel, setShowDiagnosticPanel] = useState(false);
+  
+  // === SEARCH AND FILTER STATE ===
+  const [searchFilters, setSearchFilters] = useState({
+    fromDate: '2025-08-12',
+    toDate: '2025-08-27',
+    declarationType: '',
+    paymentType: '',
+    dataSource: '',
+    status: '-3',
+    feeGroup: '',
+    companyCode: '',
+    declarationNumber: '',
+    notificationNumber: ''
+  });
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [feeTypes, setFeeTypes] = useState<any[]>([]);
+  const [showCompanyModal, setShowCompanyModal] = useState(false);
+  
   const totalRecords = filteredData.length;
+  
+  const { showError, showSuccess, showInfo } = useNotification();
 
   const handleViewNote = (rowData: any) => {
     setSelectedRowData(rowData);
@@ -36,83 +64,461 @@ const Declare: React.FC = () => {
 
   const handleDigitalSign = () => {
     if (selectedItems.length === 0) {
-      alert('Vui lòng chọn ít nhất một tờ khai để ký số!');
+      showError('Vui lòng chọn ít nhất một tờ khai để ký số!', 'Lỗi');
       return;
     }
     setShowSignConfirmModal(true);
   };
 
-  const handleConfirmDigitalSign = () => {
-    // Handle digital signature logic
-    console.log('Ký số các tờ khai:', selectedItems);
-    alert(`Đã ký số thành công ${selectedItems.length} tờ khai!`);
-    setShowSignConfirmModal(false);
-    setSelectedItems([]);
+  const handleConfirmDigitalSign = async () => {
+    try {
+      setLoading(true);
+      showInfo('Đang thực hiện ký số...', 'Xử lý');
+      
+      // Ký số từng tờ khai được chọn
+      const signPromises = selectedItems.map(async (declarationId) => {
+        const signatureData = {
+          signerName: 'Người dùng hiện tại', // Có thể lấy từ auth context
+          signerEmail: 'user@example.com',
+          algorithm: 'RSA-SHA256',
+          timestamp: new Date().toISOString(),
+          certificateInfo: 'Chứng chỉ chữ ký số'
+        };
+        
+        return await CrmApiService.signDeclaration(declarationId, signatureData);
+      });
+
+      const results = await Promise.all(signPromises);
+      
+      // Kiểm tra kết quả
+      const successCount = results.filter(result => result && result.status === 200).length;
+      const failCount = selectedItems.length - successCount;
+
+      if (successCount > 0) {
+        showSuccess(`Đã ký số thành công ${successCount} tờ khai!`, 'Thành công');
+        // Reload data để cập nhật trạng thái
+        await loadFeeDeclarations();
+      }
+      
+      if (failCount > 0) {
+        showError(`Có ${failCount} tờ khai không thể ký số!`, 'Cảnh báo');
+      }
+      
+    } catch (error: any) {
+      console.error('💥 Digital signature failed:', error);
+      showError(`Lỗi ký số: ${error.message}`, 'Lỗi');
+    } finally {
+      setLoading(false);
+      setShowSignConfirmModal(false);
+      setSelectedItems([]);
+    }
   };
 
-  useEffect(() => {
-    setTimeout(() => {
+  // === SEARCH AND FILTER FUNCTIONS ===
+  
+  const handleFilterChange = (field: string, value: string) => {
+    setSearchFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSearch = async () => {
+    try {
+      setLoading(true);
+      showInfo('Đang tìm kiếm...', 'Xử lý');
+
+      const searchParams: CrmFeeDeclarationSearchParams = {
+        page: 0,
+        size: 100,
+        sortBy: 'createdAt',
+        sortDir: 'desc',
+        fromDate: searchFilters.fromDate,
+        toDate: searchFilters.toDate,
+        declarationNumber: searchFilters.declarationNumber || undefined,
+        status: searchFilters.status !== '-3' ? searchFilters.status : undefined
+      };
+
+      const response = await CrmApiService.searchFeeDeclarations(searchParams);
+      
+      if (response && response.data) {
+        const transformedData = transformApiDataToDisplayFormat(response.data.content || response.data);
+        setFilteredData(transformedData);
+        setAllData(transformedData);
+        showSuccess(`Tìm thấy ${transformedData.length} tờ khai phù hợp`, 'Kết quả');
+      } else {
+        setFilteredData([]);
+        showInfo('Không tìm thấy dữ liệu phù hợp', 'Kết quả');
+      }
+    } catch (error: any) {
+      console.error('🔍 Search failed:', error);
+      showError(`Lỗi tìm kiếm: ${error.message}`, 'Lỗi');
+      // Fallback to showing all data
+      setFilteredData(allData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetSearch = () => {
+    setSearchFilters({
+      fromDate: '2025-08-12',
+      toDate: '2025-08-27',
+      declarationType: '',
+      paymentType: '',
+      dataSource: '',
+      status: '-3',
+      feeGroup: '',
+      companyCode: '',
+      declarationNumber: '',
+      notificationNumber: ''
+    });
+    setFilteredData(allData);
+  };
+
+  // === LOAD SUPPORTING DATA ===
+  
+  const loadSupportingData = async () => {
+    try {
+      // Load companies for dropdown
+      const companiesResponse = await CrmApiService.getAllCompanies();
+      if (companiesResponse && companiesResponse.data) {
+        setCompanies(companiesResponse.data);
+      }
+
+      // Load fee types for dropdown  
+      const feeTypesResponse = await CrmApiService.getAllFeeTypes();
+      if (feeTypesResponse && feeTypesResponse.data) {
+        setFeeTypes(feeTypesResponse.data);
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to load supporting data:', error);
+      // Non-critical error, continue with empty arrays
+    }
+  };
+
+  // Transform API data to display format
+  const transformApiDataToDisplayFormat = (apiData: any[]) => {
+    return apiData.map((item: any) => ({
+      id: item.id,
+      doanhNghiepKB: item.companyName || item.tenDoanhNghiepKhaiPhi || 'N/A',
+      doanhNghiepXNK: item.companyName || item.tenDoanhNghiepXuatNhapKhau || 'N/A',
+      maHQ: item.declarationNumber || item.soToKhai || 'N/A',
+      ngayHQ: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A',
+      ngayPhi: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('vi-VN') : 'N/A',
+      loai: item.feeType || item.loaiToKhai || 'N/A',
+      thongBao: item.status === 'COMPLETED' ? 'Đã lấy' : 'Chưa lấy',
+      soTB: `TB${item.id}`,
+      trangThai: getStatusDisplay(item.status || item.trangThai),
+      trangThaiNH: item.paymentStatus === 'PAID' ? 'Đã duyệt' : 'Chờ duyệt',
+      thanhTien: item.feeAmount || item.tongTienPhi || 0,
+      // Additional fields from backend
+      maDoanhNghiepKhaiPhi: item.maDoanhNghiepKhaiPhi,
+      nguonTK: item.nguonTK,
+      rawData: item // Keep original data for detail view
+    }));
+  };
+
+  // Load fee declarations from CRM API
+  const loadFeeDeclarations = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Test API connection first with enhanced diagnostics
+      console.log('🔗 Testing CRM API connection...');
+      const connectionResult = await CrmApiService.testConnection(10000); // 10 second timeout
+      setIsApiConnected(connectionResult.connected);
+      setConnectionDetails(connectionResult.details);
+
+      if (connectionResult.connected) {
+        console.log('✅ CRM API connected, loading fee declarations...');
+        showInfo('Đang kết nối CRM API...', 'Thông báo');
+        
+        // Load fee declarations from CRM API
+        const searchParams: CrmFeeDeclarationSearchParams = {
+          page: 0,
+          size: 20,
+          sortBy: 'createdAt',
+          sortDir: 'desc'
+        };
+        
+        const response = await CrmApiService.searchFeeDeclarations(searchParams);
+        
+        if (response && response.data) {
+          // Transform CRM data to display format using new function
+          const transformedData = transformApiDataToDisplayFormat(response.data.content || response.data);
+          
+          setFilteredData(transformedData);
+          setAllData(transformedData);
+          showSuccess(`Đã tải ${transformedData.length} tờ khai từ CRM API`, 'Thành công');
+        } else {
+          throw new Error('Invalid response format from CRM API');
+        }
+      } else {
+        console.warn('❌ CRM API not available, using fallback mock data');
+        showError('Không thể kết nối CRM API, sử dụng dữ liệu mẫu', 'Cảnh báo');
+        
+        // Fallback to mock data
+        setFilteredData([
+          {
+            id: 1,
+            doanhNghiepKB: "CTY TNHH Xuất nhập khẩu A",
+            doanhNghiepXNK: "CTY CP Thương mại B",
+            maHQ: "HQ202501",
+            ngayHQ: "12/08/2025",
+            ngayPhi: "13/08/2025",
+            loai: "A",
+            thongBao: "Đã lấy",
+            soTB: "TB5001",
+            trangThai: "Hoàn thành",
+            trangThaiNH: "Đã duyệt",
+            thanhTien: 1000000,
+          },
+          {
+            id: 2,
+            doanhNghiepKB: "CTY TNHH C",
+            doanhNghiepXNK: "CTY TNHH D",
+            maHQ: "HQ202502",
+            ngayHQ: "14/08/2025",
+            ngayPhi: "15/08/2025",
+            loai: "B",
+            thongBao: "Chưa lấy",
+            soTB: "TB5002",
+            trangThai: "Đang xử lý",
+            trangThaiNH: "Chờ duyệt",
+            thanhTien: 2000000,
+          },
+        ]);
+      }
+    } catch (error: any) {
+      console.error('💥 Failed to load fee declarations:', error);
+      setError(error.message || 'Failed to load fee declarations');
+      showError(`Lỗi tải dữ liệu: ${error.message}`, 'Lỗi');
+      
+      // Fallback to mock data on error
       setFilteredData([
         {
           id: 1,
-          doanhNghiepKB: "CTY TNHH Xuất nhập khẩu A",
-          doanhNghiepXNK: "CTY CP Thương mại B",
-          maHQ: "HQ202501",
+          doanhNghiepKB: "CTY TNHH Xuất nhập khẩu A (Mock)",
+          doanhNghiepXNK: "CTY CP Thương mại B (Mock)",
+          maHQ: "MOCK-001",
           ngayHQ: "12/08/2025",
           ngayPhi: "13/08/2025",
-          loai: "A",
-          thongBao: "Đã lấy",
-          soTB: "TB5001",
-          trangThai: "Hoàn thành",
-          trangThaiNH: "Đã duyệt",
+          loai: "Mock",
+          thongBao: "Mock data",
+          soTB: "TB-MOCK",
+          trangThai: "Mock",
+          trangThaiNH: "Mock",
           thanhTien: 1000000,
         },
-        {
-          id: 2,
-          doanhNghiepKB: "CTY TNHH C",
-          doanhNghiepXNK: "CTY TNHH D",
-          maHQ: "HQ202502",
-          ngayHQ: "14/08/2025",
-          ngayPhi: "15/08/2025",
-          loai: "B",
-          thongBao: "Chưa lấy",
-          soTB: "TB5002",
-          trangThai: "Đang xử lý",
-          trangThaiNH: "Chờ duyệt",
-          thanhTien: 2000000,
-        },
       ]);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
+  };
+
+  // Helper function to display status
+  const getStatusDisplay = (status: string) => {
+    const statusMap: Record<string, string> = {
+      'DRAFT': 'Nháp',
+      'SUBMITTED': 'Đã nộp',
+      'APPROVED': 'Đã duyệt',
+      'REJECTED': 'Từ chối',
+      'COMPLETED': 'Hoàn thành',
+      'CANCELLED': 'Đã hủy',
+    };
+    return statusMap[status] || status || 'N/A';
+  };
+
+  useEffect(() => {
+    const initializeData = async () => {
+      // Load supporting data first (companies, fee types)
+      await loadSupportingData();
+      
+      // Then load main data
+      await loadFeeDeclarations();
+    };
+    
+    initializeData();
   }, []);
 
   return (
     <div className="w-full text-[14px] relative">
       <div className="card-body">
+        {/* Enhanced API Status Bar */}
+        <div className="bg-gray-50 -m-[10px] mb-[5px] p-[8px] border-b border-[#e6e6e6]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <div className={`w-3 h-3 rounded-full ${
+                  loading ? 'bg-yellow-500 animate-pulse' : 
+                  isApiConnected ? 'bg-green-500' : 'bg-red-500'
+                }`}></div>
+                <span className="text-sm font-medium">
+                  CRM API: {
+                    loading ? 'Đang kiểm tra...' :
+                    isApiConnected ? 'Kết nối' : 'Không kết nối'
+                  }
+                </span>
+                <span className="text-xs text-gray-500">
+                  (10.14.122.24:8081)
+                </span>
+                {connectionDetails && (
+                  <span className="text-xs text-blue-600 cursor-help" 
+                        title={JSON.stringify(connectionDetails, null, 2)}>
+                    ℹ️ Chi tiết
+                  </span>
+                )}
+              </div>
+              {error && (
+                <div className="text-red-600 text-xs max-w-md truncate" title={error}>
+                  Lỗi: {error}
+                </div>
+              )}
+              {connectionDetails && !isApiConnected && (
+                <div className="text-orange-600 text-xs">
+                  {connectionDetails.endpoints?.[0]?.error || 'Connection failed'}
+                </div>
+              )}
+            </div>
+            <div className="flex items-center space-x-2">
+              {connectionDetails?.networkInfo?.onLine === false && (
+                <span className="text-red-600 text-xs">⚠️ Offline</span>
+              )}
+              {!isApiConnected && (
+                <button
+                  onClick={() => setShowDiagnosticPanel(true)}
+                  className="btn btn-sm btn-outline-warning rounded-none text-xs px-2 py-1"
+                  title="Chẩn đoán kết nối"
+                >
+                  🔧 Chẩn đoán
+                </button>
+              )}
+              <button
+                onClick={loadFeeDeclarations}
+                disabled={loading}
+                className="btn btn-sm btn-outline-secondary rounded-none text-xs px-2 py-1"
+              >
+                {loading ? '🔄' : '🔁'} Tải lại
+              </button>
+            </div>
+          </div>
+          
+          {/* Connection Details (Debug Mode) */}
+          {connectionDetails && !isApiConnected && (
+            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs">
+              <div className="font-semibold text-red-800 mb-1">🔍 Thông tin debug:</div>
+              <div className="space-y-1">
+                {connectionDetails.endpoints?.map((endpoint: any, index: number) => (
+                  <div key={index} className="flex justify-between">
+                    <span className="text-gray-600">{endpoint.name}:</span>
+                    <span className={endpoint.success ? 'text-green-600' : 'text-red-600'}>
+                      {endpoint.success ? '✅ OK' : `❌ ${endpoint.error}`} 
+                      ({endpoint.duration}ms)
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 pt-2 border-t border-red-200 text-gray-600">
+                <div><strong>Khắc phục:</strong></div>
+                <div>1. Kiểm tra server CRM có đang chạy không</div>
+                <div>2. Kiểm tra network và firewall</div>
+                <div>3. Xem Swagger: http://10.14.122.24:8081/CRM_BE/swagger-ui/index.html</div>
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="bg-white -m-[10px] mb-[10px] p-[10px] pb-[5px] border-b border-[#e6e6e6]">
           <div className="inline-block">
-            <button
-              type="button"
-              value="kyso"
-              className="btn btn-success btn-padding me-1 rounded-none"
-              onClick={handleDigitalSign}
-            >
-              <PencilSquareIcon className="w-4 h-4" />
-              &nbsp;Ký số tờ khai
-            </button>
-            <button
-              className="btn btn-info btn-padding rounded-none"
-              type="button"
-              onClick={() => {
-                setShowFeeInfoModal(true);
-              }}
-            >
-              <PlusCircleIcon className="w-4 h-4 " />
-              &nbsp;Thêm mới
-            </button>
-            <br />
-            <i className="pt-[10px] inline-block">
-              (Tích chọn tờ khai bên dưới để ký số)
+            {/* Main Action Buttons */}
+            <div className="mb-2">
+              <button
+                type="button"
+                className="btn btn-success btn-padding me-1 rounded-none"
+                onClick={handleDigitalSign}
+                disabled={loading}
+              >
+                <PencilSquareIcon className="w-4 h-4" />
+                &nbsp;Ký số tờ khai
+              </button>
+              <button
+                className="btn btn-info btn-padding me-1 rounded-none"
+                type="button"
+                onClick={() => setShowFeeInfoModal(true)}
+              >
+                <PlusCircleIcon className="w-4 h-4 " />
+                &nbsp;Thêm mới
+              </button>
+              <button
+                className="btn btn-warning btn-padding me-1 rounded-none"
+                type="button"
+                onClick={() => setShowCompanyModal(true)}
+              >
+                🏢&nbsp;Quản lý công ty
+              </button>
+              <button
+                className="btn btn-primary btn-padding me-1 rounded-none"
+                type="button"
+                onClick={async () => {
+                  try {
+                    showInfo('Đang tạo thông báo phí...', 'Xử lý');
+                    // TODO: Implement create notification
+                    showSuccess('Chức năng đang phát triển', 'Thông báo');
+                  } catch (error: any) {
+                    showError(`Lỗi: ${error.message}`, 'Lỗi');
+                  }
+                }}
+              >
+                📋&nbsp;Tạo thông báo phí
+              </button>
+            </div>
+            
+            {/* Secondary Action Buttons */}
+            <div className="mb-2">
+              <button
+                className="btn btn-outline-primary btn-sm me-1 rounded-none"
+                type="button"
+                onClick={async () => {
+                  try {
+                    showInfo('Đang xuất báo cáo...', 'Xử lý');
+                    const today = new Date().toISOString().split('T')[0];
+                    await CrmApiService.getDailyReports(today);
+                    showSuccess('Xuất báo cáo thành công!', 'Thành công');
+                  } catch (error: any) {
+                    showError(`Lỗi xuất báo cáo: ${error.message}`, 'Lỗi');
+                  }
+                }}
+              >
+                📊&nbsp;Báo cáo ngày
+              </button>
+              <button
+                className="btn btn-outline-secondary btn-sm me-1 rounded-none"
+                type="button"
+                onClick={loadFeeDeclarations}
+                disabled={loading}
+              >
+                {loading ? '🔄' : '🔁'}&nbsp;Làm mới dữ liệu
+              </button>
+              <button
+                className="btn btn-outline-info btn-sm me-1 rounded-none"
+                type="button"
+                onClick={async () => {
+                  try {
+                    const companies = await CrmApiService.getAllCompanies();
+                    showInfo(`Tìm thấy ${companies.data?.length || 0} công ty`, 'Thông tin');
+                  } catch (error: any) {
+                    showError(`Lỗi: ${error.message}`, 'Lỗi');
+                  }
+                }}
+              >
+                🔍&nbsp;Kiểm tra kết nối
+              </button>
+            </div>
+            
+            <i className="pt-[5px] inline-block text-gray-600">
+              (Tích chọn tờ khai bên dưới để ký số • {totalRecords} tờ khai • {selectedItems.length} đã chọn)
             </i>
           </div>
           <div className="text-right float-right">
@@ -121,41 +527,59 @@ const Declare: React.FC = () => {
               <input
                 type="date"
                 name="fromDate"
-                defaultValue="2025-08-12"
-                placeholder="mm/dd/yyyy"
-                //   onChange={handleChange}
-                className="border px-2 pt-1  focus:bg-white item-search"
+                value={searchFilters.fromDate}
+                onChange={(e) => handleFilterChange('fromDate', e.target.value)}
+                className="border px-2 pt-1 focus:bg-white item-search"
               />
             </div>
             <div className="inline-block input-group">
               <input
                 type="date"
-                name="fromDate"
-                defaultValue="2025-08-27"
-                placeholder="mm/dd/yyyy"
-                //   onChange={handleChange}
-                className="border  px-2 pt-1  focus:bg-white item-search"
+                name="toDate"
+                value={searchFilters.toDate}
+                onChange={(e) => handleFilterChange('toDate', e.target.value)}
+                className="border px-2 pt-1 focus:bg-white item-search"
               />
             </div>
-            <select name="LOAI_TOKHAI" className="item-search">
-              <option value="0">--Loại tờ khai--</option>
+            <select 
+              name="LOAI_TOKHAI" 
+              className="item-search"
+              value={searchFilters.declarationType}
+              onChange={(e) => handleFilterChange('declarationType', e.target.value)}
+            >
+              <option value="">--Loại tờ khai--</option>
               <option value="100">1. Hàng container</option>
               <option value="101">2. Hàng rời, lỏng, kiện</option>
               <option value="102">3. Hàng container CFS</option>
             </select>
-            <select name="LOAI_THANH_TOAN" className="item-search">
+            <select 
+              name="LOAI_THANH_TOAN" 
+              className="item-search"
+              value={searchFilters.paymentType}
+              onChange={(e) => handleFilterChange('paymentType', e.target.value)}
+            >
               <option value="">--Thanh toán--</option>
               <option value="CK">Chuyển khoản ngân hàng</option>
               <option value="EC">Thanh toán bằng tài khoản ngân hàng</option>
               <option value="QR">Thanh toán bằng mã QR</option>
               <option value="TM">Tiền mặt</option>
             </select>
-            <select name="LOAI_DULIEU" className="item-search">
+            <select 
+              name="LOAI_DULIEU" 
+              className="item-search"
+              value={searchFilters.dataSource}
+              onChange={(e) => handleFilterChange('dataSource', e.target.value)}
+            >
               <option value="">--Nguồn khai--</option>
               <option value="WEBSITE">Từ website</option>
               <option value="WEBSERVICE">Từ phần mềm eCus</option>
             </select>
-            <select name="TRANG_THAI_TOKHAI" className="item-search width127px">
+            <select 
+              name="TRANG_THAI_TOKHAI" 
+              className="item-search width127px"
+              value={searchFilters.status}
+              onChange={(e) => handleFilterChange('status', e.target.value)}
+            >
               <option value="-3">--Trạng thái tờ khai--</option>
               <option value="0">1. Thêm mới</option>
               <option value="1">2. Đã ký số</option>
@@ -165,11 +589,15 @@ const Declare: React.FC = () => {
               <option value="-2">6. Biên lai hủy</option>
             </select>
             <br />
-            <select name="NHOM_LOAIHINH" className="item-search w-[242px]">
+            <select 
+              name="NHOM_LOAIHINH" 
+              className="item-search w-[242px]"
+              value={searchFilters.feeGroup}
+              onChange={(e) => handleFilterChange('feeGroup', e.target.value)}
+            >
               <option value="">-- Nhóm loại phí --</option>
               <option value="TP001">
-                TP001 - Hàng tạm nhập tái xuất; Hàng tái xuất tạm nhập; Hàng quá
-                cảnh
+                TP001 - Hàng tạm nhập tái xuất; Hàng tái xuất tạm nhập; Hàng quá cảnh
               </option>
               <option value="TP002">
                 TP002 - Hàng hóa nhập khẩu, xuất khẩu mở tờ khai ngoài TP.HCM
@@ -178,28 +606,43 @@ const Declare: React.FC = () => {
                 TP003 - Hàng hóa nhập khẩu, xuất khẩu mở tờ khai tại TP.HCM
               </option>
               <option value="TP004">
-                TP004 - Hàng gửi kho ngoại quan; Hàng chuyển khẩu được đưa vào
-                khu vực kho bãi thuộc các cảng biển thành phố (không đưa vào kho
-                ngoại quan và khu vực trung chuyển)
+                TP004 - Hàng gửi kho ngoại quan; Hàng chuyển khẩu được đưa vào khu vực kho bãi thuộc các cảng biển thành phố
               </option>
             </select>
             <input
               name="MA_DV"
               placeholder="Mã doanh nghiệp"
               className="item-search width127px form-control"
+              value={searchFilters.companyCode}
+              onChange={(e) => handleFilterChange('companyCode', e.target.value)}
             />
             <input
               name="SO_TK"
               placeholder="Số TK"
               className="item-search width127px form-control"
+              value={searchFilters.declarationNumber}
+              onChange={(e) => handleFilterChange('declarationNumber', e.target.value)}
             />
             <input
               name="SO_THONG_BAO"
               placeholder="Số thông báo"
               className="item-search width127px form-control"
+              value={searchFilters.notificationNumber}
+              onChange={(e) => handleFilterChange('notificationNumber', e.target.value)}
             />
-            <button className="btn btn-primary width127px item-search rounded-none pt-[4px]">
-              &nbsp;Tìm kiếm
+            <button 
+              className="btn btn-primary width127px item-search rounded-none pt-[4px] mr-2"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              {loading ? '🔄' : '🔍'}&nbsp;Tìm kiếm
+            </button>
+            <button 
+              className="btn btn-secondary width127px item-search rounded-none pt-[4px]"
+              onClick={handleResetSearch}
+              disabled={loading}
+            >
+              🔄&nbsp;Reset
             </button>
           </div>
           <div className="clear-both"></div>
@@ -750,6 +1193,233 @@ const Declare: React.FC = () => {
                   Đóng
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Network Diagnostic Panel */}
+      {showDiagnosticPanel && (
+        <NetworkDiagnosticPanel onClose={() => setShowDiagnosticPanel(false)} />
+      )}
+
+      {/* Company Management Modal */}
+      {showCompanyModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: '#ffffff',
+            width: '900px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            borderRadius: '12px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              padding: '20px 24px',
+              borderBottom: '2px solid #e5e7eb',
+              backgroundColor: '#f8fafc'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                marginRight: '16px'
+              }}>
+                <i className="fas fa-building" style={{ color: 'white', fontSize: '18px' }}></i>
+              </div>
+              <h3 style={{
+                margin: 0,
+                fontSize: '20px',
+                fontWeight: '700',
+                color: '#1f2937',
+                letterSpacing: '0.5px'
+              }}>
+                Quản Lý Công Ty
+              </h3>
+              <button
+                onClick={() => setShowCompanyModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '16px',
+                  right: '16px',
+                  background: 'rgba(239, 68, 68, 0.1)',
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: '36px',
+                  height: '36px',
+                  fontSize: '16px',
+                  color: '#ef4444',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ef4444';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+                  e.currentTarget.style.color = '#ef4444';
+                }}
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div style={{ 
+              padding: '24px',
+              maxHeight: 'calc(90vh - 120px)',
+              overflowY: 'auto'
+            }}>
+              {/* Company List */}
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '16px'
+                }}>
+                  <h4 style={{ margin: 0, fontSize: '18px', color: '#374151' }}>
+                    Danh Sách Công Ty ({companies.length})
+                  </h4>
+                  <button
+                    onClick={async () => {
+                      try {
+                        showInfo('Đang tải danh sách công ty...', 'Xử lý');
+                        const response = await CrmApiService.getAllCompanies();
+                        if (response && response.data) {
+                          setCompanies(response.data);
+                          showSuccess(`Đã tải ${response.data.length} công ty`, 'Thành công');
+                        }
+                      } catch (error: any) {
+                        showError(`Lỗi tải công ty: ${error.message}`, 'Lỗi');
+                      }
+                    }}
+                    style={{
+                      backgroundColor: '#3b82f6',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      padding: '8px 16px',
+                      fontSize: '14px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🔄 Làm mới
+                  </button>
+                </div>
+
+                {/* Companies Table */}
+                <div style={{
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  overflow: 'hidden'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ backgroundColor: '#f9fafb' }}>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>ID</th>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>Tên Công Ty</th>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>Mã Số Thuế</th>
+                        <th style={{ padding: '12px', textAlign: 'left', borderBottom: '1px solid #e5e7eb' }}>Trạng Thái</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {companies.length > 0 ? (
+                        companies.slice(0, 10).map((company: any, index: number) => (
+                          <tr key={company.id || index} style={{
+                            borderBottom: index < Math.min(companies.length, 10) - 1 ? '1px solid #f3f4f6' : 'none'
+                          }}>
+                            <td style={{ padding: '12px' }}>{company.id || '-'}</td>
+                            <td style={{ padding: '12px', fontWeight: '500' }}>{company.companyName || company.tenCongTy || 'N/A'}</td>
+                            <td style={{ padding: '12px' }}>{company.taxCode || company.maSoThue || 'N/A'}</td>
+                            <td style={{ padding: '12px' }}>
+                              <span style={{
+                                padding: '4px 8px',
+                                borderRadius: '4px',
+                                fontSize: '12px',
+                                fontWeight: '500',
+                                backgroundColor: company.status === 'ACTIVE' ? '#d1fae5' : '#fee2e2',
+                                color: company.status === 'ACTIVE' ? '#065f46' : '#991b1b'
+                              }}>
+                                {company.status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: '#6b7280' }}>
+                            Chưa có dữ liệu công ty. Nhấn "Làm mới" để tải từ server.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {companies.length > 10 && (
+                  <p style={{ marginTop: '12px', fontSize: '14px', color: '#6b7280', textAlign: 'center' }}>
+                    Hiển thị 10/{companies.length} công ty đầu tiên
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{
+              borderTop: '1px solid #e5e7eb',
+              padding: '16px 24px',
+              backgroundColor: '#f8fafc',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px'
+            }}>
+              <button
+                onClick={() => setShowCompanyModal(false)}
+                style={{
+                  backgroundColor: '#6b7280',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '10px 20px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#4b5563';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#6b7280';
+                }}
+              >
+                Đóng
+              </button>
             </div>
           </div>
         </div>

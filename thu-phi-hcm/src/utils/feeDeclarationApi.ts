@@ -1,8 +1,9 @@
 import type { FeeDeclaration, ApiResponse } from '../types'
 import { sleep } from './helpers'
 
-// API Base URL - change this to your backend URL
+// API Base URL - legacy API (kept for backward compatibility)
 const API_BASE_URL = 'http://localhost:8080/api'
+// For new CRM API, use crmApi.ts
 
 // Fee Declaration API endpoints
 const ENDPOINTS = {
