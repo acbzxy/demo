@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 
@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     setOpenSubmenu(openSubmenu === path ? null : path)
   }
 
-  const navItems = [
+  const allNavItems = [
     {
       path: '/dashboard',
       label: 'TRANG CHỦ',
@@ -151,6 +151,42 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
     },
   ]
 
+  // Filter menu items based on user type
+  const navItems = useMemo(() => {
+    if (user?.userType === 'custom') {
+      // Show 5 main menus + 4 basic menus for custom user (user/123456)
+      const allowedPaths = [
+        '/dashboard',           // Trang chủ (basic)
+        '/reports',             // Báo cáo thống kê
+        '/data-reconciliation', // Đối soát dữ liệu
+        '/receipt-management',  // Biên lai thu phí
+        '/fee-declaration',     // Tờ khai phí
+        '/system',              // Hệ thống
+        '/account',             // Thông tin tài khoản (basic)
+        '/password',            // Đổi mật khẩu (basic)
+        '/guide'                // Hướng dẫn (basic)
+      ]
+      return allNavItems.filter(item => allowedPaths.includes(item.path))
+    }
+    
+    if (user?.userType === 'admin_custom') {
+      // Show 3 main menus + 4 basic menus for admin user (admin/123456)
+      const allowedPaths = [
+        '/dashboard',           // Trang chủ (basic)
+        '/payment-management',  // Quản lý thanh toán
+        '/debt-management',     // Q.lý xử lý nợ phí
+        '/payment',             // Nộp phí cơ sở hạ tầng
+        '/account',             // Thông tin tài khoản (basic)
+        '/password',            // Đổi mật khẩu (basic)
+        '/guide'                // Hướng dẫn (basic)
+      ]
+      return allNavItems.filter(item => allowedPaths.includes(item.path))
+    }
+    
+    // For other users, show all menus
+    return allNavItems
+  }, [user?.userType])
+
   const handleLogout = () => {
     logout()
   }
@@ -167,7 +203,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
             />
             <div className="original-user-details">
               <div className="original-user-status">{user?.username || '0108844160'} - Online</div>
-              <div className="original-user-role">Doanh nghiệp nộp phí</div>
+              <div className="original-user-role">
+                {user?.userType === 'custom' ? 'Người dùng tùy chỉnh' : 
+                 user?.userType === 'admin_custom' ? 'Quản trị viên tùy chỉnh' : 'Doanh nghiệp nộp phí'}
+              </div>
             </div>
           </div>
         </div>

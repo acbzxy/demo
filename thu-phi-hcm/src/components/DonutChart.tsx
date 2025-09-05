@@ -32,13 +32,13 @@ export default function DonutChart({ isAnimated = false, showLegend = false }: P
                  options: {
            responsive: true,
            maintainAspectRatio: false,
-                             animation: {
-                    duration: isAnimated ? 1600 : 0,
-                    easing: 'easeOutCubic',
-                    animateRotate: true,
-                    animateScale: true,
-                    delay: isAnimated ? 500 : 0
-                  },
+                                                          animation: {
+                   duration: isAnimated ? 1200 : 0,
+                   easing: 'easeOutQuart',
+                   animateRotate: true,
+                   animateScale: true,
+                   delay: isAnimated ? 300 : 0
+                 },
           plugins: {
             legend: {
               display: showLegend,
@@ -74,20 +74,8 @@ export default function DonutChart({ isAnimated = false, showLegend = false }: P
       });
     };
 
-    if (isAnimated) {
-      // Trigger animation when component becomes animated
-      const timeout = setTimeout(() => {
-        start();
-      }, 200);
-      
-      return () => {
-        clearTimeout(timeout);
-        chartRef.current?.destroy();
-        chartRef.current = null;
-      };
-    } else {
-      start();
-    }
+    // Start chart creation immediately for both animated and non-animated
+    start();
 
     return () => {
       chartRef.current?.destroy();

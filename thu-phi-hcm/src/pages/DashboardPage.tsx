@@ -1,9 +1,38 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import DonutChart from '../components/DonutChart'
+import { useAuth } from '../context/AuthContext'
 import BarChart from '../components/BarChart'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js'
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Filler,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const DashboardPage: React.FC = () => {
   const [isAnimated, setIsAnimated] = useState(false)
+  const { user } = useAuth()
+  const chartRef = useRef<ChartJS<"line", number[], string> | null>(null)
+  
+  // Check if user is admin
+  const isAdmin = user?.userType === 'admin_custom' || user?.username === 'admin'
 
   useEffect(() => {
     // Trigger animations after component mounts
@@ -13,6 +42,109 @@ const DashboardPage: React.FC = () => {
     
     return () => clearTimeout(timer)
   }, [])
+
+  // Chart.js Area Chart Effect for Admin
+  useEffect(() => {
+    if (!isAdmin) return
+    
+    const canvas = document.getElementById("adminWaveChart") as HTMLCanvasElement
+    if (!canvas) return
+    
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+    
+    // Destroy existing chart if any
+    if (chartRef.current) {
+      chartRef.current.destroy()
+    }
+
+    // Create new Chart.js area chart
+    chartRef.current = new ChartJS(ctx, {
+      type: "line",
+      data: {
+        labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul"],
+        datasets: [
+          {
+            label: "Doanh nghiệp lớn",
+            data: [280, 320, 295, 350, 330, 380, 340],
+            fill: true,
+            backgroundColor: "rgba(139, 92, 246, 0.2)",
+            borderColor: "#8b5cf6",
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 3
+          },
+          {
+            label: "Doanh nghiệp vừa",
+            data: [220, 180, 200, 160, 190, 170, 200],
+            fill: true,
+            backgroundColor: "rgba(6, 182, 212, 0.2)",
+            borderColor: "#06b6d4",
+            tension: 0.4,
+            pointRadius: 0,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: {
+        animation: {
+          duration: 1200,
+          easing: "easeOutQuart",
+          delay: 300 // Sync với pie chart timing
+        },
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: true,
+            grid: {
+              display: true,
+              color: "rgba(226, 232, 240, 0.5)",
+            }
+          },
+          y: {
+            display: true,
+            beginAtZero: true,
+            grace: "10%",
+            grid: {
+              display: true,
+              color: "rgba(226, 232, 240, 0.5)",
+            },
+            ticks: {
+              color: "#94a3b8",
+              font: {
+                size: 12
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false // We'll use custom legend
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+            titleColor: "#1e293b",
+            bodyColor: "#64748b",
+            borderColor: "#e2e8f0",
+            borderWidth: 1,
+          }
+        }
+      }
+    })
+
+    return () => {
+      if (chartRef.current) {
+        chartRef.current.destroy()
+        chartRef.current = null
+      }
+    }
+  }, [isAdmin, isAnimated])
   
   // Import background image
   const backgroundImage = '/tphcm-bkg.jpg'
@@ -359,17 +491,19 @@ const DashboardPage: React.FC = () => {
             }}></div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>Doanh thu tuần</h3>
-              <i className="fas fa-chart-line" style={{ fontSize: '20px', opacity: 0.7 }}></i>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>
+                {isAdmin ? 'Tổng thu phí cảng' : 'Doanh thu tuần'}
+              </h3>
+              <i className={`fas ${isAdmin ? 'fa-anchor' : 'fa-chart-line'}`} style={{ fontSize: '20px', opacity: 0.7 }}></i>
             </div>
             
             <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '15px' }}>
-              ₫ 15.000.000
+              {isAdmin ? '₫ 42.850.000' : '₫ 15.000.000'}
             </div>
             
             <div style={{ fontSize: '14px', opacity: 0.9 }}>
               <i className="fas fa-arrow-up" style={{ marginRight: '5px' }}></i>
-              Tăng 60%
+              {isAdmin ? 'Tăng 15%' : 'Tăng 60%'}
             </div>
           </div>
 
@@ -404,17 +538,19 @@ const DashboardPage: React.FC = () => {
             }}></div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>Biên lai hàng tuần</h3>
-              <i className="fas fa-clipboard-list" style={{ fontSize: '20px', opacity: 0.7 }}></i>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>
+                {isAdmin ? 'Tờ khai đã duyệt' : 'Biên lai hàng tuần'}
+              </h3>
+              <i className={`fas ${isAdmin ? 'fa-check-circle' : 'fa-clipboard-list'}`} style={{ fontSize: '20px', opacity: 0.7 }}></i>
             </div>
             
             <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '15px' }}>
-              45.634
+              {isAdmin ? '1.287' : '45.634'}
             </div>
             
             <div style={{ fontSize: '14px', opacity: 0.9 }}>
-              <i className="fas fa-arrow-down" style={{ marginRight: '5px' }}></i>
-              Giảm 10%
+              <i className={`fas ${isAdmin ? 'fa-arrow-up' : 'fa-arrow-down'}`} style={{ marginRight: '5px' }}></i>
+              {isAdmin ? 'Tăng 8%' : 'Giảm 10%'}
             </div>
           </div>
 
@@ -449,17 +585,19 @@ const DashboardPage: React.FC = () => {
             }}></div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
-              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>Người dùng online</h3>
-              <i className="fas fa-users" style={{ fontSize: '20px', opacity: 0.7 }}></i>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '500', opacity: 0.9 }}>
+                {isAdmin ? 'Doanh nghiệp hoạt động' : 'Người dùng online'}
+              </h3>
+              <i className={`fas ${isAdmin ? 'fa-building' : 'fa-users'}`} style={{ fontSize: '20px', opacity: 0.7 }}></i>
             </div>
             
             <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '15px' }}>
-              95.741
+              {isAdmin ? '2.456' : '95.741'}
             </div>
             
             <div style={{ fontSize: '14px', opacity: 0.9 }}>
               <i className="fas fa-arrow-up" style={{ marginRight: '5px' }}></i>
-              Tăng 5%
+              {isAdmin ? 'Tăng 12%' : 'Tăng 5%'}
             </div>
           </div>
 
@@ -468,38 +606,106 @@ const DashboardPage: React.FC = () => {
         {/* Charts Section */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 400px',
+          gridTemplateColumns: isAdmin ? '3fr 1fr' : '1fr 400px',
           gap: '20px',
           marginBottom: '30px'
         }}>
           
-          {/* Visit And Sales Statistics Chart */}
+          {/* Monthly Growth Area Chart (Admin) / Bar Chart (Others) */}
           <div style={{
             background: 'white',
             borderRadius: '15px',
             padding: '25px',
             boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
-              <h3 
-                className={isAnimated ? 'chart-title-animated' : ''}
-                style={{ 
-                  margin: 0, 
-                  fontSize: '18px', 
-                  fontWeight: '600', 
-                  color: '#2c3e50',
-                  animationDelay: '0.2s',
-                  opacity: isAnimated ? 1 : 0
-                }}
-              >
-                Thống kê truy cập và doanh số
-              </h3>
-              <div style={{ display: 'flex', gap: '15px', fontSize: '12px' }}>
-          </div>
-        </div>
+            {isAdmin ? (
+              // Admin Area Chart
+              <div>
+                <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ 
+                    margin: '0 0 5px 0', 
+                    fontSize: '16px', 
+                    fontWeight: '500', 
+                    color: '#64748b'
+                  }}>
+                    Tăng hàng tháng
+                  </h3>
+                  
+                  {/* Number and Legend on same line */}
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    marginBottom: '20px'
+                  }}>
+                    <div style={{ 
+                      fontSize: '32px', 
+                      fontWeight: 'bold', 
+                      color: '#1e293b'
+                    }}>
+                      67842
+                    </div>
+                    
+                    {/* Legend on the right */}
+                    <div style={{ display: 'flex', gap: '20px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          backgroundColor: '#8b5cf6'
+                        }}></div>
+                        <span style={{ fontSize: '14px', color: '#64748b' }}>
+                          Doanh nghiệp lớn
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '12px',
+                          height: '12px',
+                          borderRadius: '50%',
+                          backgroundColor: '#06b6d4'
+                        }}></div>
+                        <span style={{ fontSize: '14px', color: '#64748b' }}>
+                          Doanh nghiệp vừa
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Chart.js Bar Chart */}
-            <BarChart isAnimated={isAnimated} />
+                {/* Chart.js Area Chart */}
+                <div style={{ 
+                  width: '100%', 
+                  height: '300px', 
+                  position: 'relative'
+                }}>
+                  <canvas id="adminWaveChart"></canvas>
+                </div>
+              </div>
+            ) : (
+              // Regular users see bar chart
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '25px' }}>
+                  <h3 
+                    className={isAnimated ? 'chart-title-animated' : ''}
+                    style={{ 
+                      margin: 0, 
+                      fontSize: '18px', 
+                      fontWeight: '600', 
+                      color: '#2c3e50',
+                      animationDelay: '0.2s',
+                      opacity: isAnimated ? 1 : 0
+                    }}
+                  >
+                    Thống kê truy cập và doanh số
+                  </h3>
+                  <div style={{ display: 'flex', gap: '15px', fontSize: '12px' }}>
+                  </div>
+                </div>
+                <BarChart isAnimated={isAnimated} />
+              </div>
+            )}
         </div>
 
           {/* Traffic Sources Chart */}
@@ -520,7 +726,7 @@ const DashboardPage: React.FC = () => {
                 opacity: isAnimated ? 1 : 0
               }}
             >
-              Nguồn truy cập
+              {isAdmin ? 'Phân loại doanh nghiệp' : 'Nguồn truy cập'}
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -546,7 +752,9 @@ const DashboardPage: React.FC = () => {
                       borderRadius: '50%',
                       boxShadow: '0 0 8px rgba(155, 89, 182, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn chính</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+                      {isAdmin ? 'DN lớn' : 'Nguồn chính'}
+                    </span>
                   </div>
                   <span 
                     className={isAnimated ? 'legend-counter' : ''}
@@ -578,7 +786,9 @@ const DashboardPage: React.FC = () => {
                       borderRadius: '50%',
                       boxShadow: '0 0 8px rgba(243, 156, 18, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn phụ</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+                      {isAdmin ? 'DN vừa' : 'Nguồn phụ'}
+                    </span>
                   </div>
                   <span 
                     className={isAnimated ? 'legend-counter' : ''}
@@ -610,7 +820,9 @@ const DashboardPage: React.FC = () => {
                       borderRadius: '50%',
                       boxShadow: '0 0 8px rgba(46, 204, 113, 0.4)'
                     }}></div>
-                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>Nguồn khác</span>
+                    <span style={{ fontSize: '14px', color: '#2c3e50' }}>
+                      {isAdmin ? 'DN nhỏ' : 'Nguồn khác'}
+                    </span>
                   </div>
                   <span 
                     className={isAnimated ? 'legend-counter' : ''}

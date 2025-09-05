@@ -143,6 +143,60 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return
       }
 
+      // Check for custom user credentials (user/123456)
+      if (credentials.username === 'user' && credentials.password === '123456') {
+        const customUser: User = {
+          id: 'custom-001',
+          username: 'user',
+          email: 'user@example.com',
+          fullName: 'Người dùng tùy chỉnh',
+          companyName: 'Công ty tùy chỉnh',
+          taxCode: 'USER123456',
+          phone: '1900 1286',
+          address: 'TP. Hồ Chí Minh',
+          userType: 'custom',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        }
+
+        // Save to session storage
+        sessionStorage.setItem('user', JSON.stringify(customUser))
+        sessionStorage.setItem('isLoggedIn', 'true')
+        sessionStorage.setItem('loginTime', new Date().toISOString())
+        sessionStorage.setItem('userType', 'custom')
+
+        dispatch({ type: 'LOGIN_SUCCESS', payload: customUser })
+        return
+      }
+
+      // Check for admin user credentials (admin/123456)
+      if (credentials.username === 'admin' && credentials.password === '123456') {
+        const adminUser: User = {
+          id: 'admin-001',
+          username: 'admin',
+          email: 'admin@example.com',
+          fullName: 'Quản trị viên tùy chỉnh',
+          companyName: 'Công ty Quản trị',
+          taxCode: 'ADMIN123456',
+          phone: '1900 1286',
+          address: 'TP. Hồ Chí Minh',
+          userType: 'admin_custom',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          lastLoginAt: new Date().toISOString(),
+        }
+
+        // Save to session storage
+        sessionStorage.setItem('user', JSON.stringify(adminUser))
+        sessionStorage.setItem('isLoggedIn', 'true')
+        sessionStorage.setItem('loginTime', new Date().toISOString())
+        sessionStorage.setItem('userType', 'admin_custom')
+
+        dispatch({ type: 'LOGIN_SUCCESS', payload: adminUser })
+        return
+      }
+
       // For other credentials, simulate authentication
       if (credentials.username && credentials.password) {
         const user: User = {
