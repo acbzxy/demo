@@ -23,8 +23,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication(scanBasePackages={
-		"com.crm.**"})
-@MapperScan(basePackages = {"com.crm.**.mybatis" })
+		"com.pht.**"})
+@MapperScan(basePackages = {"com.pht.**.mybatis" })
 @EnableCaching
 @EnableScheduling
 @EnableConfigurationProperties
@@ -32,7 +32,7 @@ public class SpringBootWebApplication extends SpringBootServletInitializer {
 	public static final Logger logger = LoggerFactory.getLogger(SpringBootWebApplication.class);
 
 	public static void main(String[] args) {
-		logger.info("START TCS4 API");
+		logger.info("START API");
 		try {
 			disableSSLValidation();
 		} catch (Exception e) {

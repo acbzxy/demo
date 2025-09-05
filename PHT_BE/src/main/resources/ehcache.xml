@@ -15,7 +15,7 @@
 
         <listeners>
             <listener>
-                <class>com.crm.config.CacheEventLogger</class>
+                <class>com.pht.config.CacheEventLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>
@@ -44,7 +44,7 @@
 
         <listeners>
             <listener>
-                <class>com.crm.config.CacheEventLogger</class>
+                <class>com.pht.config.CacheEventLogger</class>
                 <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
                 <event-ordering-mode>UNORDERED</event-ordering-mode>
                 <events-to-fire-on>CREATED</events-to-fire-on>

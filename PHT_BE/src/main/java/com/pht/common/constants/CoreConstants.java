@@ -5,7 +5,7 @@ public class CoreConstants {
     public static final String SYSTEM_USER = "system";
     public static final String UUID_GENERATOR = "uuid2";
     public static final String CUSTOM_UUID = "custom-uuid";
-    public static final String CUSTOM_UUID_GENERATOR = "com.crm.bss.common.helper.UuidGenerator";
+    public static final String CUSTOM_UUID_GENERATOR = "com.pht.bss.common.helper.UuidGenerator";
     public static final String UUID_CHAR_TYPE = "uuid-char";
     public static final String SPRING_MODEL = "spring"; // for mapstruct componentModel
     public static final String THREAD_POOL_TASK_EXECUTOR = "threadPoolTaskExecutor";

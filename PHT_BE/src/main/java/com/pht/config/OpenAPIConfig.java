@@ -15,10 +15,10 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class OpenAPIConfig {
-    @Value("${crm.openapi.dev-url}")
+    @Value("${pht.openapi.dev-url}")
     private String devUrl;
 
-    @Value("${crm.openapi.prod-url}")
+    @Value("${pht.openapi.prod-url}")
     private String prodUrl;
 
     @Bean
