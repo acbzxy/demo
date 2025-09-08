@@ -2,20 +2,20 @@ package com.pht.service;
 
 import java.util.List;
 
+import com.pht.exception.BusinessException;
 import com.pht.model.request.KySoRequest;
 import com.pht.model.response.ChuKySoResponse;
 import com.pht.model.response.KySoResponse;
 
-public interface ChuKySoService {
+public interface DigitalSignatureService {
     
     /**
-     * Lấy danh sách chữ ký số có sẵn
+     * Lay danh sach chu ky so co san
      */
     List<ChuKySoResponse> layDanhSachChuKySo();
     
     /**
-     * Thực hiện ký số tờ khai
+     * Thuc hien ky so to khai
      */
-    KySoResponse kySo(KySoRequest request) throws com.pht.exception.BusinessException;
+    KySoResponse kySo(KySoRequest request) throws BusinessException;
 }
-

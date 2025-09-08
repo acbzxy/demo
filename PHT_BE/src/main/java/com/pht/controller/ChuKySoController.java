@@ -15,7 +15,7 @@ import com.pht.common.model.ApiDataResponse;
 import com.pht.model.request.KySoRequest;
 import com.pht.model.response.ChuKySoResponse;
 import com.pht.model.response.KySoResponse;
-import com.pht.service.ChuKySoService;
+import com.pht.service.DigitalSignatureService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -33,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "Chữ ký số", description = "API quản lý chữ ký số")
 public class ChuKySoController {
 
-    private final ChuKySoService chuKySoService;
+    private final DigitalSignatureService chuKySoService;
 
     @Operation(summary = "Lấy danh sách chữ ký số có sẵn")
     @ApiResponses({

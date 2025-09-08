@@ -38,6 +38,7 @@ public class ToKhaiThongTinServiceImpl extends BaseServiceImpl<ToKhaiThongTin, L
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ToKhaiThongTin getToKhaiThongTinById(Long id) throws BusinessException {
         return toKhaiThongTinRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy tờ khai thông tin với ID: " + id));

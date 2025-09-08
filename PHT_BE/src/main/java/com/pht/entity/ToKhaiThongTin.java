@@ -13,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -146,6 +145,13 @@ public class ToKhaiThongTin {
 
     @Column(name = "TrangThai", length = 50)
     private String trangThai;
+
+    // XML DATA FIELDS
+    @Column(name = "KYLAN1_XML", columnDefinition = "TEXT")
+    private String kylan1Xml;
+
+    @Column(name = "KYLAN2_XML", columnDefinition = "TEXT")
+    private String kylan2Xml;
 
     // Relationship
     @OneToMany(mappedBy = "toKhaiThongTin", cascade = CascadeType.ALL, orphanRemoval = true)
