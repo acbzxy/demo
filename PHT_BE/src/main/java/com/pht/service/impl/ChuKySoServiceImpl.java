@@ -14,7 +14,7 @@ import com.pht.model.request.KySoRequest;
 import com.pht.model.response.ChuKySoResponse;
 import com.pht.model.response.KySoResponse;
 import com.pht.repository.ToKhaiThongTinRepository;
-import com.pht.service.ChuKySoService;
+import com.pht.service.DigitalSignatureService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChuKySoServiceImpl implements ChuKySoService {
+public class ChuKySoServiceImpl implements DigitalSignatureService {
 
     private final ToKhaiThongTinRepository toKhaiThongTinRepository;
 
