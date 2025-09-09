@@ -112,6 +112,12 @@ public class ToKhaiThongTin {
     @Column(name = "SoThongBaoNopPhi", length = 50)
     private String soThongBaoNopPhi;
 
+    @Column(name = "SOTHONGBAO", length = 50)
+    private String soThongBao;
+
+    @Column(name = "MSGID", length = 50)
+    private String msgId;
+
     @Column(name = "TongTienPhi", precision = 18, scale = 2)
     private BigDecimal tongTienPhi;
 

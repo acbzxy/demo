@@ -16,3 +16,4 @@ public class DeleteInvoiceResponse {
     @Schema(description = "Dữ liệu trả về")
     private Object data;
 }
+

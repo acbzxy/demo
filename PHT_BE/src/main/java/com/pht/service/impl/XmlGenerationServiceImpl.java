@@ -54,14 +54,14 @@ public class XmlGenerationServiceImpl implements XmlGenerationService {
                 log.info("Lưu XML vào KYLAN1_XML và cập nhật trạng thái sang 01 cho tờ khai ID: {}", toKhaiId);
             } else {
                 toKhai.setKylan2Xml(xmlContent);
-                toKhai.setTrangThai("05");
-                log.info("Lưu XML vào KYLAN2_XML và cập nhật trạng thái sang 05 cho tờ khai ID: {}", toKhaiId);
+                toKhai.setTrangThai("03");
+                log.info("Lưu XML vào KYLAN2_XML và cập nhật trạng thái sang 03 cho tờ khai ID: {}", toKhaiId);
             }
             
             // Lưu vào database
             toKhaiThongTinRepository.save(toKhai);
             
-            String trangThaiMoi = (lanKy != null && lanKy == 1) ? "01" : "05";
+            String trangThaiMoi = (lanKy != null && lanKy == 1) ? "01" : "03";
             log.info("Tạo XML thành công cho tờ khai ID: {}, lần ký: {}, trạng thái mới: {}", toKhaiId, lanKy, trangThaiMoi);
             
             return xmlContent;

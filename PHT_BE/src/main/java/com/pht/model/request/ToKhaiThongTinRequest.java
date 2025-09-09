@@ -47,6 +47,8 @@ public class ToKhaiThongTinRequest {
 
     // THÔNG TIN THU PHÍ
     private String soThongBaoNopPhi;
+    private String soThongBao;
+    private String msgId;
     private BigDecimal tongTienPhi;
     private String trangThaiNganHang;
     private String soBienLai;
