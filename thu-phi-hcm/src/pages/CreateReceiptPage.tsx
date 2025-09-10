@@ -1329,7 +1329,7 @@ const CreateReceiptPage: React.FC = () => {
                   }}></span>
                   Đang lưu...
                 </>
-              ) : isSaved ? (
+              ) : (isSaved && currentTrangThaiPhatHanh === '01') ? (
                 '✅ Đã lưu'
               ) : (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01') ? (
                 '🚫 Không thể lưu'
