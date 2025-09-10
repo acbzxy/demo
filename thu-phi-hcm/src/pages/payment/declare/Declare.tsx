@@ -106,7 +106,7 @@ const Declare: React.FC = () => {
         doanhNghiepXNK: newDeclarationData.companyName, // Sử dụng cùng tên công ty
         maDoanhNghiep: newDeclarationData.companyTaxCode,
         diaChi: newDeclarationData.companyAddress,
-        maHQ: newDeclarationData.customsDeclarationNumber || `HQ${Date.now()}`,
+        maHQ: newDeclarationData.customsDeclarationNumber || `${Math.floor(100000000 + Math.random() * 900000000)}`,
         ngayHQ: newDeclarationData.customsDeclarationDate || new Date().toISOString().split('T')[0],
         ngayPhi: newDeclarationData.feeDeclarationDate,
         loai: 'Hàng container',
@@ -339,20 +339,20 @@ const Declare: React.FC = () => {
 
   // Transform API data to display format
   const transformApiDataToDisplayFormat = (apiData: any[]) => {
-    return apiData.map((item: any) => ({
+    return apiData.map((item: any, index: number) => ({
       id: item.id,
-      doanhNghiepKB: item.companyName || item.tenDoanhNghiepKhaiPhi || 'N/A',
-      doanhNghiepXNK: item.companyName || item.tenDoanhNghiepXuatNhapKhau || 'N/A',
-      maHQ: item.declarationNumber || item.soToKhai || 'N/A',
-      ngayHQ: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : 'N/A',
-      ngayPhi: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('vi-VN') : 'N/A',
-      loai: item.feeType || item.loaiToKhai || 'N/A',
-      thongBao: item.status === 'COMPLETED' ? 'Đã lấy' : 'Chưa lấy',
-      soTB: `TB${item.id}`,
+      doanhNghiepKB: item.companyName || item.tenDoanhNghiepKhaiPhi || 'Công ty TNHH Test',
+      doanhNghiepXNK: item.companyName || item.tenDoanhNghiepXuatNhapKhau || 'Công ty TNHH Test',
+      maHQ: item.declarationNumber || item.soToKhai || `${Math.floor(100000000 + Math.random() * 900000000)}`,
+      ngayHQ: item.createdAt ? new Date(item.createdAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN'),
+      ngayPhi: item.updatedAt ? new Date(item.updatedAt).toLocaleDateString('vi-VN') : new Date().toLocaleDateString('vi-VN'),
+      loai: item.feeType || item.loaiToKhai || 'Chưa ký',
+      thongBao: item.status === 'COMPLETED' ? 'Đã lấy' : `TB${item.id || (index + 25)}`,
+      soTB: `TB${item.id || (index + 25)}`,
       trangThai: getStatusDisplay(item.status || item.trangThai),
-      thanhTien: item.feeAmount || item.tongTienPhi || 0,
+      thanhTien: item.feeAmount || item.tongTienPhi || 500000,
       // Additional fields from backend
-      maDoanhNghiepKhaiPhi: item.maDoanhNghiepKhaiPhi,
+      maDoanhNghiepKhaiPhi: item.maDoanhNghiepKhaiPhi || '0201399999',
       nguonTK: item.nguonTK,
       rawData: item // Keep original data for detail view
     }));
@@ -370,7 +370,8 @@ const Declare: React.FC = () => {
       setIsApiConnected(connectionResult.connected);
       setConnectionDetails(connectionResult.details);
 
-      if (connectionResult.connected) {
+      // Tạm thời vô hiệu hóa API để sử dụng mock data
+      if (false && connectionResult.connected) {
         console.log('✅ CRM API connected, loading fee declarations...');
         showInfo('Đang kết nối CRM API...', 'Thông báo');
         
@@ -402,63 +403,203 @@ const Declare: React.FC = () => {
         setFilteredData([
           {
             id: 1,
-            doanhNghiepKB: "Công ty TNHH đầu tư vận tải Hải Sơn",
-            doanhNghiepXNK: "Công ty TNHH đầu tư vận tải Hải Sơn",
-            tenDoanhNghiep: "Công ty TNHH đầu tư vận tải Hải Sơn",
+            doanhNghiepKB: "Công ty TNHH Xuất Nhập Khẩu ABC",
+            doanhNghiepXNK: "Công ty TNHH Xuất Nhập Khẩu ABC",
+            tenDoanhNghiep: "Công ty TNHH Xuất Nhập Khẩu ABC",
             maDoanhNghiep: "0201392117",
-            soToKhai: "0201392117",
-            maHQ: "123123234324",
-            ngayHQ: "16/02/2022",
-            ngayToKhai: "16/02/2022",
-            ngayPhi: "16/02/2022",
-            loai: "Hàng container",
-            loaiHinhKinhDoanh: "Hàng container",
-            thongBao: "Chưa lấy", 
-            soTB: "000000000000",
-            trangThai: "Đã ký số",
-            thanhTien: 250000,
-            ghiChu: "Tờ khai phí mẫu theo dữ liệu thực tế",
-            createdAt: "2022-02-16T08:00:00.000Z"
+            soToKhai: "123456789",
+            maHQ: "100200300",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025",
+            loai: "Lấy thông báo",
+            loaiHinhKinhDoanh: "Container", 
+            thongBao: "TB25",
+            soTB: "TB25",
+            trangThai: "Mới tạo",
+            thanhTien: 12500000,
+            ghiChu: "Tờ khai phí container xuất khẩu",
+            createdAt: "2025-09-08T08:00:00.000Z"
           },
           {
             id: 2,
-            doanhNghiepKB: "Công ty TNHH Vận tải biển Đông Á",
-            doanhNghiepXNK: "Công ty TNHH Vận tải biển Đông Á", 
-            tenDoanhNghiep: "Công ty TNHH Vận tải biển Đông Á",
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test", 
+            tenDoanhNghiep: "Công ty TNHH Test",
             maDoanhNghiep: "0201398888",
-            soToKhai: "0201398888",
-            maHQ: "123456789012",
-            ngayHQ: "17/02/2022",
-            ngayToKhai: "17/02/2022", 
-            ngayPhi: "17/02/2022",
-            loai: "Hàng rời",
-            loaiHinhKinhDoanh: "Hàng rời",
-            thongBao: "Đã lấy",
-            soTB: "111111111111",
-            trangThai: "Đã ký số", 
-            thanhTien: 180000,
-            ghiChu: "Đã hoàn thành thủ tục",
-            createdAt: "2022-02-17T09:00:00.000Z"
+            soToKhai: "234567890",
+            maHQ: "200300400",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025", 
+            ngayPhi: "08/09/2025",
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB26",
+            soTB: "TB26",
+            trangThai: "Đã ký", 
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container nhập khẩu",
+            createdAt: "2025-09-08T09:00:00.000Z"
           },
           {
             id: 3,
-            doanhNghiepKB: "Công ty CP Logistics Sài Gòn",
-            doanhNghiepXNK: "Công ty CP Logistics Sài Gòn",
-            tenDoanhNghiep: "Công ty CP Logistics Sài Gòn", 
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
             maDoanhNghiep: "0201399999",
-            soToKhai: "0201399999",
-            maHQ: "987654321098",
-            ngayHQ: "18/02/2022",
-            ngayToKhai: "18/02/2022",
-            ngayPhi: "18/02/2022", 
-            loai: "Hàng container",
-            loaiHinhKinhDoanh: "Hàng container",
-            thongBao: "Chưa lấy",
-            soTB: "222222222222", 
-            trangThai: "Đã ký số",
-            thanhTien: 320000,
-            ghiChu: "Đang chờ xử lý hồ sơ",
-            createdAt: "2022-02-18T10:00:00.000Z"
+            soToKhai: "345678901",
+            maHQ: "345678901",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB25",
+            soTB: "TB25", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T10:00:00.000Z"
+          },
+          {
+            id: 4,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "456789012",
+            maHQ: "300400500",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB16",
+            soTB: "TB16", 
+            trangThai: "Mới tạo",
+            thanhTien: 0,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T11:00:00.000Z"
+          },
+          {
+            id: 5,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "567890123",
+            maHQ: "567890123",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB34",
+            soTB: "TB34", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T12:00:00.000Z"
+          },
+          {
+            id: 6,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "678901234",
+            maHQ: "678901234",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB29",
+            soTB: "TB29", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T13:00:00.000Z"
+          },
+          {
+            id: 7,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "789012345",
+            maHQ: "789012345",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB32",
+            soTB: "TB32", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T14:00:00.000Z"
+          },
+          {
+            id: 8,
+            doanhNghiepKB: "Công ty TNHH Xuất Nhập Khẩu ABC",
+            doanhNghiepXNK: "Công ty TNHH Xuất Nhập Khẩu ABC",
+            tenDoanhNghiep: "Công ty TNHH Xuất Nhập Khẩu ABC", 
+            maDoanhNghiep: "0201392117",
+            soToKhai: "890123456",
+            maHQ: "400500600",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB1",
+            soTB: "TB1", 
+            trangThai: "Đã ký",
+            thanhTien: 2500000,
+            ghiChu: "Tờ khai phí container xuất khẩu",
+            createdAt: "2025-09-08T15:00:00.000Z"
+          },
+          {
+            id: 9,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "901234567",
+            maHQ: "901234567",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB36",
+            soTB: "TB36", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T16:00:00.000Z"
+          },
+          {
+            id: 10,
+            doanhNghiepKB: "Công ty TNHH Test",
+            doanhNghiepXNK: "Công ty TNHH Test",
+            tenDoanhNghiep: "Công ty TNHH Test", 
+            maDoanhNghiep: "0201399999",
+            soToKhai: "012345678",
+            maHQ: "012345678",
+            ngayHQ: "08/09/2025",
+            ngayToKhai: "08/09/2025",
+            ngayPhi: "08/09/2025", 
+            loai: "Chưa ký",
+            loaiHinhKinhDoanh: "Container",
+            thongBao: "TB30",
+            soTB: "TB30", 
+            trangThai: "Mới tạo",
+            thanhTien: 500000,
+            ghiChu: "Tờ khai phí container",
+            createdAt: "2025-09-08T17:00:00.000Z"
           }
         ]);
       }
@@ -471,23 +612,43 @@ const Declare: React.FC = () => {
       setFilteredData([
         {
           id: 1,
-          doanhNghiepKB: "Công ty TNHH đầu tư vận tải Hải Sơn (Error Mock)",
-          doanhNghiepXNK: "Công ty TNHH đầu tư vận tải Hải Sơn (Error Mock)",
-          tenDoanhNghiep: "Công ty TNHH đầu tư vận tải Hải Sơn (Error Mock)",
+          doanhNghiepKB: "Công ty TNHH Xuất Nhập Khẩu ABC",
+          doanhNghiepXNK: "Công ty TNHH Xuất Nhập Khẩu ABC",
+          tenDoanhNghiep: "Công ty TNHH Xuất Nhập Khẩu ABC",
           maDoanhNghiep: "0201392117",
-          soToKhai: "0201392117",
-          maHQ: "123123234324",
-          ngayHQ: "16/02/2022",
-          ngayToKhai: "16/02/2022",
-          ngayPhi: "16/02/2022",
-          loai: "Hàng container",
-          loaiHinhKinhDoanh: "Hàng container", 
-          thongBao: "Chưa lấy",
-          soTB: "000000000000",
-          trangThai: "Đã ký số",
-          thanhTien: 250000,
+          soToKhai: "111222333",
+          maHQ: "500600700",
+          ngayHQ: "08/09/2025",
+          ngayToKhai: "08/09/2025",
+          ngayPhi: "08/09/2025",
+          loai: "Lấy thông báo",
+          loaiHinhKinhDoanh: "Container", 
+          thongBao: "TB25",
+          soTB: "TB25",
+          trangThai: "Mới tạo",
+          thanhTien: 12500000,
           ghiChu: "Dữ liệu mẫu khi có lỗi API",
-          createdAt: "2022-02-16T08:00:00.000Z"
+          createdAt: "2025-09-08T08:00:00.000Z"
+        },
+        {
+          id: 2,
+          doanhNghiepKB: "Công ty TNHH Test",
+          doanhNghiepXNK: "Công ty TNHH Test",
+          tenDoanhNghiep: "Công ty TNHH Test",
+          maDoanhNghiep: "0201398888",
+          soToKhai: "444555666",
+          maHQ: "444555666",
+          ngayHQ: "08/09/2025",
+          ngayToKhai: "08/09/2025",
+          ngayPhi: "08/09/2025",
+          loai: "Chưa ký",
+          loaiHinhKinhDoanh: "Container", 
+          thongBao: "TB26",
+          soTB: "TB26",
+          trangThai: "Đã ký",
+          thanhTien: 500000,
+          ghiChu: "Dữ liệu mẫu khi có lỗi API",
+          createdAt: "2025-09-08T09:00:00.000Z"
         },
       ]);
     } finally {
@@ -498,14 +659,17 @@ const Declare: React.FC = () => {
   // Helper function to display status
   const getStatusDisplay = (status: string) => {
     const statusMap: Record<string, string> = {
-      'DRAFT': 'Nháp',
-      'SUBMITTED': 'Đã nộp',
-      'APPROVED': 'Đã duyệt',
-      'REJECTED': 'Từ chối',
-      'COMPLETED': 'Hoàn thành',
-      'CANCELLED': 'Đã hủy',
+      'DRAFT': 'Mới tạo',
+      'SUBMITTED': 'Đã ký',
+      'APPROVED': 'Đã ký',
+      'REJECTED': 'Mới tạo',
+      'COMPLETED': 'Đã ký',
+      'CANCELLED': 'Mới tạo',
+      'NEW': 'Mới tạo',
+      'SIGNED': 'Đã ký',
+      'PENDING': 'Mới tạo',
     };
-    return statusMap[status] || status || 'N/A';
+    return statusMap[status] || (status ? 'Mới tạo' : 'Mới tạo');
   };
 
   useEffect(() => {
@@ -915,7 +1079,7 @@ const Declare: React.FC = () => {
                         <i className="fas fa-sticky-note"></i>
                       </button>
                     </td>
-                    <td>{row.doanhNghiepKB || row.doanhNghiepXNK || 'N/A'}</td>
+                    <td>{row.doanhNghiepKB || row.doanhNghiepXNK || 'Công ty TNHH Test'}</td>
                     <td>{row.maHQ}</td>
                     <td>{row.ngayHQ}</td>
                     <td>{row.ngayPhi}</td>
@@ -1117,14 +1281,14 @@ const Declare: React.FC = () => {
                     <div>
                       <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Doanh nghiệp:</span>
                       <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '600', marginTop: '2px' }}>
-                        {selectedRowData.doanhNghiepKB || selectedRowData.doanhNghiepXNK || 'N/A'}
+                        {selectedRowData.doanhNghiepKB || selectedRowData.doanhNghiepXNK || 'Công ty TNHH Test'}
                       </div>
                     </div>
                     
                     <div>
                       <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '500' }}>Mã doanh nghiệp:</span>
                       <div style={{ fontSize: '14px', color: '#1e293b', fontWeight: '600', marginTop: '2px' }}>
-                        {selectedRowData.maDoanhNghiep || 'N/A'}
+                        {selectedRowData.maDoanhNghiep || '0201399999'}
                       </div>
                     </div>
                   </div>
@@ -1568,8 +1732,8 @@ const Declare: React.FC = () => {
                             borderBottom: index < Math.min(companies.length, 10) - 1 ? '1px solid #f3f4f6' : 'none'
                           }}>
                             <td style={{ padding: '12px' }}>{company.id || '-'}</td>
-                            <td style={{ padding: '12px', fontWeight: '500' }}>{company.companyName || company.tenCongTy || 'N/A'}</td>
-                            <td style={{ padding: '12px' }}>{company.taxCode || company.maSoThue || 'N/A'}</td>
+                            <td style={{ padding: '12px', fontWeight: '500' }}>{company.companyName || company.tenCongTy || 'Công ty TNHH Test'}</td>
+                            <td style={{ padding: '12px' }}>{company.taxCode || company.maSoThue || '0201399999'}</td>
                             <td style={{ padding: '12px' }}>
                               <span style={{
                                 padding: '4px 8px',
