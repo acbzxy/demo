@@ -12,4 +12,7 @@ public class UpdateTrangThaiPhatHanhRequest {
     @NotNull(message = "ID không được để trống")
     @Schema(description = "ID của tờ khai thông tin cần cập nhật trạng thái phát hành", example = "123", required = true)
     private Long id;
+
+    @Schema(description = "Trạng thái phát hành mới", example = "02")
+    private String trangThaiPhatHanh;
 }
