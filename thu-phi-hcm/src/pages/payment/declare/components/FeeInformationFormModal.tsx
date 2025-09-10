@@ -10,8 +10,14 @@ import { useState } from "react";
 import FeeDeclarationForm from "./FeeDeclarationForm";
 import CargoTabs from "./FeeDeclaretionFooterTable";
 
-export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
+interface FeeInformationFormModalProps {
+  onClose: () => void;
+  onSave?: (data: any) => void;
+}
+
+export default function FeeInformationFormModal({ onClose, onSave }: FeeInformationFormModalProps) {
   const [showCancelConfirmModal, setShowCancelConfirmModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   
   const handleCancelDeclaration = () => {
     setShowCancelConfirmModal(true);
@@ -30,10 +36,65 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
     alert('Chức năng ký số tờ khai đang được xử lý...');
   };
 
-  const handleSave = () => {
-    // Handle save logic
-    console.log('Lưu lại');
-    alert('Đã lưu thông tin thành công!');
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      console.log('💾 Lưu thông tin tờ khai...');
+      
+      // Thu thập dữ liệu từ form elements
+      const formElement = document.querySelector('#feeDeclarationForm') as HTMLFormElement;
+      if (!formElement) {
+        throw new Error('Không tìm thấy form');
+      }
+      
+      const data = {
+        // Thông tin doanh nghiệp khai phí
+        companyTaxCode: (formElement.querySelector('input[name="companyTaxCode"]') as HTMLInputElement)?.value || '',
+        companyName: (formElement.querySelector('input[name="companyName"]') as HTMLInputElement)?.value || '',
+        companyAddress: (formElement.querySelector('input[name="companyAddress"]') as HTMLInputElement)?.value || '',
+        
+        // Thông tin doanh nghiệp XNK
+        importExportCompanyTaxCode: (formElement.querySelector('input[name="importExportCompanyTaxCode"]') as HTMLInputElement)?.value || '',
+        importExportCompanyName: (formElement.querySelector('input[name="importExportCompanyName"]') as HTMLInputElement)?.value || '',
+        importExportCompanyAddress: (formElement.querySelector('input[name="importExportCompanyAddress"]') as HTMLInputElement)?.value || '',
+        
+        // Thông tin tờ khai hải quan
+        customsDeclarationNumber: (formElement.querySelector('input[name="customsDeclarationNumber"]') as HTMLInputElement)?.value || '',
+        customsDeclarationDate: (formElement.querySelector('input[name="customsDeclarationDate"]') as HTMLInputElement)?.value || '',
+        
+        // Thông tin tờ khai phí
+        feeDeclarationReceiptNumber: (formElement.querySelector('input[name="feeDeclarationReceiptNumber"]') as HTMLInputElement)?.value || '',
+        feeDeclarationDate: (formElement.querySelector('input[name="feeDeclarationDate"]') as HTMLInputElement)?.value || '',
+        notes: (formElement.querySelector('textarea[name="notes"]') as HTMLTextAreaElement)?.value || '',
+        
+        // Metadata
+        id: Date.now(),
+        status: 'Thêm mới', // Trạng thái theo yêu cầu
+        createdAt: new Date().toISOString()
+      };
+      
+      console.log('📤 Dữ liệu thu thập được:', data);
+      
+      // Validation cơ bản
+      if (!data.companyTaxCode || !data.companyName) {
+        alert('Vui lòng nhập đầy đủ thông tin doanh nghiệp!');
+        return;
+      }
+      
+      // Gọi callback để thêm vào bảng
+      if (onSave) {
+        await onSave(data);
+      }
+      
+      alert('Đã lưu thông tin thành công!');
+      onClose();
+      
+    } catch (error: any) {
+      console.error('💥 Lỗi lưu dữ liệu:', error);
+      alert(`Lỗi: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
   };
   return (
     <motion.div
@@ -48,7 +109,7 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
         <h4 className="modal-title">
           <button
             onClick={onClose}
-            className="btn btn-default text-blue-500 me-4 rounded-none"
+            className="btn btn-default text-blue-500 me-4 rounded"
           >
             <ArrowLeftCircleIcon className="w-4 h-4" />
             Quay lại
@@ -58,24 +119,25 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
         <div className="flex items-center gap-2">
           <button 
             onClick={handleCancelDeclaration}
-            className="btn btn-default bg-red-600 text-white rounded-none hover:bg-red-700 transition-colors"
+            className="btn btn-default bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
           >
             <i className="fas fa-times w-4 h-4 me-1"></i>
             Hủy tờ khai
           </button>
           <button 
             onClick={handleSignDeclaration}
-            className="btn btn-default bg-green-600 text-white rounded-none hover:bg-green-700 transition-colors"
+            className="btn btn-default bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
           >
             <i className="fas fa-signature w-4 h-4 me-1"></i>
             Ký số tờ khai (khai báo nộp phí)
           </button>
           <button 
             onClick={handleSave}
-            className="btn btn-default bg-blue-800 text-white rounded-none hover:bg-blue-900 transition-colors"
+            disabled={loading}
+            className="btn btn-default bg-blue-800 text-white rounded hover:bg-blue-900 transition-colors disabled:bg-gray-400"
           >
             <WindowIcon className="w-4 h-4 me-1" />
-            Lưu lại
+            {loading ? 'Đang lưu...' : 'Lưu lại'}
           </button>
         </div>
       </div>
@@ -129,7 +191,7 @@ export default function FeeInformationFormModal({ onClose }: { onClose: any }) {
                 className="border h-[33px] w-[100px] me-1"
                 placeholder="Số tờ khai HQ"
               />
-              <button className="btn btn-primary w-[130px] font-normal bg-[#deecf9] text-[#005a9e] rounded-none pt-[4px] hover:text-white">
+              <button className="btn btn-primary w-[130px] font-normal bg-[#deecf9] text-[#005a9e] rounded pt-[4px] hover:text-white">
                 <MagnifyingGlassIcon className="w-3  h-3" />
                 &nbsp;Lấy thông tin
               </button>

@@ -838,7 +838,7 @@ function showConfirmDialog(title, message, onConfirm) {
                 gap: 10px;
             }
             .btn-secondary {
-                background: #6c757d;
+                background: rgb(40 129 255);
             }
             .btn-danger {
                 background: #dc3545;
