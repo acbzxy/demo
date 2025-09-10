@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 // import { ReceiptService } from '../utils/receiptApi';
-import { fptEInvoiceService, FPTEInvoiceRequest, FPTEInvoiceSearchRequest } from '../services/fptEInvoiceService';
+import { fptEInvoiceService, FPTEInvoiceRequest, FPTEInvoiceSearchRequest, FPTEInvoiceUpdateStatusRequest } from '../services/fptEInvoiceService';
 import { useNotification } from '../context/NotificationContext';
 
 const CreateReceiptPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedFeeDeclaration = location.state?.selectedItem;
-  const { showError, showSuccess } = useNotification();
+  const { showError, showSuccess, showInfo } = useNotification();
 
   // Add CSS for loading spinner animation
   React.useEffect(() => {
@@ -107,11 +107,17 @@ const CreateReceiptPage: React.FC = () => {
       if (updateForThisDeclaration) {
         console.log('Found existing receipt info in localStorage:', updateForThisDeclaration);
         
-          // Set receipt state based on localStorage data
-          setIsSaved(true);
-          console.log('✅ Set isSaved = true from localStorage update');
-          console.log('✅ New isSaved state:', true);
-          setSavedReceiptId(updateForThisDeclaration.receiptId || Date.now()); // Use stored receipt ID
+        // Set receipt state based on localStorage data
+        setIsSaved(true);
+        console.log('✅ Set isSaved = true from localStorage update');
+        console.log('✅ New isSaved state:', true);
+        setSavedReceiptId(updateForThisDeclaration.receiptId || Date.now()); // Use stored receipt ID
+        
+        // Load idPhatHanh from localStorage if available
+        // if (updateForThisDeclaration.idPhatHanh) {
+        //   setIdPhatHanh(updateForThisDeclaration.idPhatHanh);
+        //   console.log('✅ Loaded idPhatHanh from localStorage:', updateForThisDeclaration.idPhatHanh);
+        // }
         
         // Check if receipt was issued
         const hasIssuedReceipt = issuedReceipts.some((receipt: any) => 
@@ -228,8 +234,11 @@ const CreateReceiptPage: React.FC = () => {
   // const [receiptStatus, setReceiptStatus] = useState<'DRAFT' | 'ISSUED' | 'CANCELLED' | 'PAID'>('DRAFT');
   const [currentTrangThaiPhatHanh, setCurrentTrangThaiPhatHanh] = useState<string>('00');
   const [savedReceiptId, setSavedReceiptId] = useState<number | null>(null);
+  // const [idPhatHanh, setIdPhatHanh] = useState<string>('');
+  const [createdSid, setCreatedSid] = useState<string>('');
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [receiptImageBase64, setReceiptImageBase64] = useState<string>('');
 
   // Fee details - will be populated from selected fee declaration
   const [feeDetails, setFeeDetails] = useState([
@@ -345,13 +354,18 @@ const CreateReceiptPage: React.FC = () => {
           setIsSaved(true);
           console.log('✅ Set isSaved = true from E-Invoice success');
           setSavedReceiptId(parseInt(responseData.id) || Date.now());
+          // Lưu idPhatHanh từ response để sử dụng cho search-icr
+          // if (responseData.idPhatHanh) {
+          //   setIdPhatHanh(responseData.idPhatHanh);
+          //   console.log('✅ Saved idPhatHanh:', responseData.idPhatHanh);
+          // }
           // setReceiptStatus('DRAFT');
           // Only update to "Bản nháp" if currently "Mới"
           if (currentTrangThaiPhatHanh === '00') {
             setCurrentTrangThaiPhatHanh('01'); // Update to "Bản nháp" after successful save
           }
           console.log('🔔 Calling showSuccess with message: Lưu biên lai thành công!');
-          showSuccess('Lưu biên lai thành công!');
+          showSuccess('Lưu biên lai thành công!', 'Lưu biên lai');
           console.log('🔔 showSuccess called successfully');
           
           // Store E-Invoice data for later use
@@ -388,6 +402,11 @@ const CreateReceiptPage: React.FC = () => {
     const vatAmountValue = 0; // Will be calculated from items
     const grandTotal = totalAmountValue + vatAmountValue;
     
+    // Generate unique sid and save to state
+    const generatedSid = `FPTIDA${Date.now()}`;
+    setCreatedSid(generatedSid);
+    console.log('🔍 Generated sid:', generatedSid);
+    
     console.log('🔍 Mapping to FPT E-Invoice request:');
     console.log('🔍 selectedFeeDeclaration.id (toKhaiId):', selectedFeeDeclaration?.id);
     console.log('🔍 companyName:', companyName);
@@ -416,7 +435,7 @@ const CreateReceiptPage: React.FC = () => {
       },
       toKhaiId: selectedFeeDeclaration?.id || null, // Add toKhaiId from selected fee declaration
       inv: {
-        sid: `FPTIDA${Date.now()}`, // Generate unique ID
+        sid: generatedSid, // Use generated sid
         idt: "",
         type: "01/MTT",
         form: "1",
@@ -474,20 +493,52 @@ const CreateReceiptPage: React.FC = () => {
       return; // Prevent double-click
     }
     
-    // If not saved yet, save first
-    if (!isSaved) {
-      await handleSave();
+    // Determine which sid to use based on status
+    let sidToUse = '';
+    if (currentTrangThaiPhatHanh === '00' as string) {
+      // For 'Mới' status, use createdSid if exists (after save), otherwise generate new
+      if (createdSid) {
+        sidToUse = createdSid;
+        console.log('🔍 Using createdSid after save for status', currentTrangThaiPhatHanh, ':', createdSid);
+      } else {
+        const generatedSid = `FPTIDA${Date.now()}`;
+        setCreatedSid(generatedSid);
+        sidToUse = generatedSid;
+        console.log('🔍 Generated new sid for status', currentTrangThaiPhatHanh, ':', generatedSid);
+      }
+    } else if (currentTrangThaiPhatHanh === '01' as string) {
+      // For 'Bản nháp' status, use createdSid if exists (after save), otherwise use idPhatHanh from database
+      if (createdSid) {
+        sidToUse = createdSid;
+        console.log('🔍 Using createdSid after save for status', currentTrangThaiPhatHanh, ':', createdSid);
+      } else {
+        if (!selectedFeeDeclaration?.idPhatHanh) {
+          showError('Không tìm thấy thông tin phát hành từ database.');
+          return;
+        }
+        sidToUse = selectedFeeDeclaration.idPhatHanh;
+        console.log('🔍 Using idPhatHanh from database for status', currentTrangThaiPhatHanh, ':', selectedFeeDeclaration.idPhatHanh);
+      }
+    } else {
+      // For 'Phát hành' and 'Đã hủy' status, use idPhatHanh from database
+      if (!selectedFeeDeclaration?.idPhatHanh) {
+        showError('Không tìm thấy thông tin phát hành từ database.');
+        return;
+      }
+      sidToUse = selectedFeeDeclaration.idPhatHanh;
+      console.log('🔍 Using idPhatHanh from database for status', currentTrangThaiPhatHanh, ':', selectedFeeDeclaration.idPhatHanh);
     }
     
     try {
       setIsIssuing(true);
+      showInfo('Đang xử lý phát hành biên lai...', 'Phát hành biên lai');
       console.log('Phát hành biên lai...');
       
       // Create search ICR request
       const searchRequest: FPTEInvoiceSearchRequest = {
         stax: "0318680861",
         type: "pdf",
-        sid: receiptCode, // Use receipt code as sid
+        sid: sidToUse, // Use appropriate sid based on status
         user: {
           username: "0318680861.MPOS",
           password: "Admin@123"
@@ -501,40 +552,21 @@ const CreateReceiptPage: React.FC = () => {
       
       if (response.success && response.data) {
         console.log('✅ Search ICR successful:', response.data);
-        setCurrentTrangThaiPhatHanh('02'); // Update to "Phát hành"
-        showSuccess('Phát hành biên lai thành công!');
         
         // Store search response data
         localStorage.setItem('searchICRData', JSON.stringify(response.data));
         
-        // Update localStorage for backward compatibility
-        const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-        const issuedUpdate = {
-          id: selectedFeeDeclaration?.id,
-          newPaymentStatus: 'PAID',
-          newDeclarationStatus: 'APPROVED', 
-          receiptCreated: true,
-          receiptStatus: 'ISSUED',
-          receiptId: savedReceiptId,
-          timestamp: new Date().toISOString()
-        };
-        
-        const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration?.id);
-        filteredUpdates.push(issuedUpdate);
-        localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
-        
-        // Also update issuedReceipts for backward compatibility
-        const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
-        if (!issuedReceipts.includes(selectedFeeDeclaration?.id)) {
-          issuedReceipts.push(selectedFeeDeclaration?.id);
-          localStorage.setItem('issuedReceipts', JSON.stringify(issuedReceipts));
+        // Extract base64 PDF from response
+        if (response.data.base64Data || response.data.base64Image || response.data.image || response.data.pdf) {
+          const base64Data = response.data.base64Data || response.data.base64Image || response.data.image || response.data.pdf;
+          if (base64Data) {
+            setReceiptImageBase64(base64Data);
+            console.log('✅ Base64 PDF extracted from base64Data:', base64Data ? 'Yes' : 'No');
+            console.log('🔍 Base64 data length:', base64Data.length);
+          }
         }
         
-        console.log('localStorage updated:', {
-          feeDeclarationUpdates: JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]'),
-          issuedReceipts: JSON.parse(localStorage.getItem('issuedReceipts') || '[]')
-        });
-        
+        // Show receipt modal instead of changing status immediately
         setShowReceiptModal(true);
       } else {
         showError('Lỗi phát hành biên lai: ' + (response.error || 'Unknown error'));
@@ -552,64 +584,72 @@ const CreateReceiptPage: React.FC = () => {
     setShowReceiptModal(false);
   };
 
+
   const handleShowConfirmation = () => {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmIssue = () => {
+  const handleConfirmIssue = async () => {
     setShowConfirmModal(false);
     
-    // Lưu thông tin phát hành biên lai vào localStorage
-    if (selectedFeeDeclaration) {
-      const receiptData = {
-        feeDeclarationId: selectedFeeDeclaration.id,
-        receiptCode,
-        receiptNumber,
-        companyName,
-        companyCode,
-        companyAddress,
-        receiptDate,
-        customsDeclarationNumber,
-        customsDeclarationDate,
-        paymentMethod,
-        timestamp: new Date().toISOString()
+    try {
+      // Call API to update trang thai phat hanh
+      const updateRequest: FPTEInvoiceUpdateStatusRequest = {
+        id: selectedFeeDeclaration?.id || 0
       };
       
-      // Lưu thông tin biên lai đã phát hành
-      const existingReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
-      existingReceipts.push(receiptData);
-      localStorage.setItem('issuedReceipts', JSON.stringify(existingReceipts));
+      console.log('🔍 Update Status Request:', updateRequest);
       
-      // Update localStorage with ISSUED status
-      const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-      const issuedUpdate = {
-        id: selectedFeeDeclaration.id,
-        newPaymentStatus: 'PAID',
-        newDeclarationStatus: 'APPROVED', 
-        receiptCreated: true,
-        receiptStatus: 'ISSUED', // Mark as issued
-        receiptId: savedReceiptId,
-        timestamp: new Date().toISOString()
-      };
+      const response = await fptEInvoiceService.updateTrangThaiPhatHanh(updateRequest);
       
-      // Remove existing update for this fee declaration and add new one
-      const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
-      filteredUpdates.push(issuedUpdate);
-      localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
-      
-      // Keep backward compatibility
-      localStorage.setItem('feeDeclarationUpdated', JSON.stringify(issuedUpdate));
+      if (response.success && response.data) {
+        console.log('✅ Update Status successful:', response.data);
+        
+        // Update UI state
+        setCurrentTrangThaiPhatHanh('02'); // Update to "Phát hành"
+        
+        // Update localStorage for backward compatibility
+        if (selectedFeeDeclaration) {
+          const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+          const issuedUpdate = {
+            id: selectedFeeDeclaration.id,
+            newPaymentStatus: 'PAID',
+            newDeclarationStatus: 'APPROVED', 
+            receiptCreated: true,
+            receiptStatus: 'ISSUED',
+            receiptId: savedReceiptId,
+            timestamp: new Date().toISOString()
+          };
+          
+          const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
+          filteredUpdates.push(issuedUpdate);
+          localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
+          
+          // Also update issuedReceipts for backward compatibility
+          const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
+          if (!issuedReceipts.includes(selectedFeeDeclaration.id)) {
+            issuedReceipts.push(selectedFeeDeclaration.id);
+            localStorage.setItem('issuedReceipts', JSON.stringify(issuedReceipts));
+          }
+          
+          // Keep backward compatibility
+          localStorage.setItem('feeDeclarationUpdated', JSON.stringify(issuedUpdate));
+        }
+        
+        setShowReceiptModal(false);
+        showSuccess('Biên lai đã được phát hành thành công!', 'Phát hành biên lai');
+        
+        // Navigate về trang quản lý tờ khai
+        setTimeout(() => {
+          navigate('/fee-declaration/manage');
+        }, 1500); // Delay navigation để user có thể thấy thông báo
+      } else {
+        showError('Lỗi cập nhật trạng thái phát hành: ' + (response.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showError('Lỗi cập nhật trạng thái phát hành: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
-    
-    // Update UI state immediately
-    // setReceiptStatus('ISSUED');
-    console.log('Receipt status updated to ISSUED');
-    
-    setShowReceiptModal(false);
-    alert('Biên lai đã được phát hành thành công!');
-    
-    // Navigate về trang quản lý tờ khai
-    navigate('/fee-declaration/manage');
   };
 
   const handleCancelIssue = () => {
@@ -1454,240 +1494,39 @@ const CreateReceiptPage: React.FC = () => {
               backgroundColor: 'white'
             }}>
               {/* Receipt Header */}
-              <div style={{ marginBottom: '15px' }}>
-                <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '3px' }}>
-                      <strong>Đơn vị thu:</strong> Cảng vụ Đường
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '3px' }}>
-                      <strong>Cộng hòa xã hội chủ nghĩa Việt Nam</strong>
-                    </td>
-                    <td style={{ textAlign: 'right', paddingBottom: '3px' }}>
-                      <strong>Mẫu số:</strong>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '3px' }}>
-                      <strong>Thay cho Gia</strong>
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '3px' }}>
-                      <strong>Độc lập - Tự do - Hạnh phúc</strong>
-                    </td>
-                    <td style={{ textAlign: 'right', paddingBottom: '3px' }}>
-                      <strong>Ký hiệu:</strong>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '10px' }}>
-                      <strong>TPHCM</strong>
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '10px' }}></td>
-                    <td style={{ textAlign: 'right', paddingBottom: '10px' }}>
-                      <strong>Số:</strong> 0000000006
-                    </td>
-                  </tr>
-                </table>
-              </div>
+             
 
               {/* Title */}
-              <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <h2 style={{ 
-                  margin: '0 0 10px 0', 
-                  fontSize: '18px', 
-                  fontWeight: 'bold',
-                  letterSpacing: '1px'
-                }}>
-                  BIÊN LAI THU TIỀN PHÍ
-                </h2>
-                <div style={{ fontSize: '11px', lineHeight: '1.3' }}>
-                  Ngày 25 tháng 08 năm 2021
-                </div>
-                <div style={{ fontSize: '10px', fontStyle: 'italic', marginTop: '5px', lineHeight: '1.2' }}>
-                  (Ban hành theo thông tư liên tịch số 100/2017/TTLT-BTC-BGTVT ngày 06 tháng 12 năm 2017<br/>
-                  của BTC và BGTVT)
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>
-                  TP Hồ Chí Minh, ngày 21 tháng 08 năm 2021
-                </div>
-              </div>
+              
 
               {/* Company Info */}
-              <div style={{ 
-                border: '1px solid #000', 
-                padding: '12px', 
-                marginBottom: '15px', 
-                fontSize: '11px' 
-              }}>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Tên đơn vị:</strong> CÔNG TY TNHH DELNNEYS VIETNAM
-                </div>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Mã số thuế:</strong> 0314418553
-                </div>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Địa chỉ:</strong> Tầng 5, Cao Ốc Vạn Phong Số 26 Nguyễn Thị Diện - Phường 06 - Quận 3 - TP Hồ Chí Minh
-                </div>
 
-                <table style={{ width: '100%', marginTop: '10px', fontSize: '11px' }}>
-                  <tr>
-                    <td style={{ width: '50%', paddingBottom: '4px' }}>
-                      <strong>Số điện thoại:</strong> 312925420570
-                    </td>
-                    <td style={{ width: '50%', paddingBottom: '4px' }}>
-                      <strong>Ngày phát hành biên lai:</strong> 21.08.2021
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ paddingBottom: '4px' }}>
-                      <strong>Số tờ khai hải quan:</strong> 21499254570
-                    </td>
-                    <td style={{ paddingBottom: '4px' }}>
-                      <strong>Ngày tờ khai:</strong> 16.08.2021
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Nhóm loại hình:</strong> TP003
-                    </td>
-                    <td>
-                      <strong>Loại hình tờ khai:</strong> A31
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2} style={{ paddingTop: '4px' }}>
-                      <strong>Hình thức thanh toán:</strong> Chuyển khoản
-                    </td>
-                  </tr>
-                </table>
-              </div>
+                
 
               {/* Fee Details Table */}
-              <table style={{ 
-                width: '100%', 
-                borderCollapse: 'collapse', 
-                fontSize: '10px',
-                border: '1px solid #000',
-                marginBottom: '20px'
-              }}>
-                <thead>
-                  <tr>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px', 
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>STT</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Nội dung thu phí</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Đơn vị<br/>tính</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Mức thu<br/>phí (đồng)</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Số lượng</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Thành tiền (đồng)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>01</td>
-                    <td style={{ border: '1px solid #000', padding: '4px' }}>
-                      Phí
-                    </td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>Lần</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>(1)</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>(2)</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'right' }}>(1) x (2) = (3)</td>
-                  </tr>
-                  
-                  {/* Empty rows for spacing */}
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                  </tr>
-                  
-                  {/* Total row */}
-                  <tr>
-                    <td colSpan={5} style={{ 
-                      border: '1px solid #000', 
-                      padding: '4px', 
-                      textAlign: 'right',
-                      fontWeight: 'bold'
-                    }}>
-                      Tổng cộng:
-                    </td>
-                    <td style={{ 
-                      border: '1px solid #000', 
-                      padding: '4px', 
-                      textAlign: 'right',
-                      fontWeight: 'bold'
-                    }}>
-                      X Đồng
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+             
 
               {/* Footer signature area - as per image */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                marginTop: '20px',
-                fontSize: '10px'
-              }}>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Người nộp</div>
-                  <div>(Ký, ghi rõ họ tên)</div>
+
+              {/* Receipt PDF */}
+              {receiptImageBase64 && (
+                <div style={{ 
+                  marginTop: '20px',
+                  textAlign: 'center'
+                }}>
+                  <iframe
+                    src={receiptImageBase64.startsWith('data:') ? receiptImageBase64 : `data:application/pdf;base64,${receiptImageBase64}`}
+                    style={{
+                      width: '100%',
+                      height: '600px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }}
+                    title="Receipt PDF"
+                  />
                 </div>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Thủ quỹ</div>
-                  <div>(Ký, ghi rõ họ tên)</div>
-                </div>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Kế toán trưởng<br/>(Hoặc bộ phận có thẩm quyền)</div>
-                  <div>(Ký, ghi rõ họ tên, đóng dấu)</div>
-                </div>
-              </div>
+              )}
+              
             </div>
 
             {/* Modal Footer */}

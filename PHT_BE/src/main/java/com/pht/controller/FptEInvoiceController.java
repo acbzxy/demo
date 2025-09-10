@@ -24,10 +24,10 @@ import com.pht.model.request.CreateIcrRequest;
 import com.pht.model.request.DeleteInvoiceRequest;
 import com.pht.model.request.ReplaceInvoiceRequest;
 import com.pht.model.request.SearchInvoiceRequest;
+import com.pht.model.request.UpdateTrangThaiPhatHanhRequest;
 import com.pht.model.response.CancelInvoiceResponse;
 import com.pht.model.response.DeleteInvoiceResponse;
 import com.pht.model.response.ReplaceInvoiceResponse;
-import com.pht.model.response.SearchIcrFrontendResponse;
 import com.pht.service.ToKhaiThongTinService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -178,7 +178,7 @@ public class FptEInvoiceController {
     @Operation(summary = "Tìm kiếm hóa đơn")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Tìm kiếm hóa đơn thành công", content = {
-                    @Content(schema = @Schema(implementation = SearchIcrFrontendResponse.class), mediaType = "application/json")
+                    @Content(schema = @Schema(implementation = ApiDataResponse.class), mediaType = "application/json")
             }),
             @ApiResponse(responseCode = "400", description = "Dữ liệu request không hợp lệ", content = {
                     @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
@@ -209,9 +209,7 @@ public class FptEInvoiceController {
             }
             
             // Tạo response cho frontend với base64 và mã 0000
-            String frontendResponse = createFrontendResponse(response, processedBase64);
-            
-            log.info("Response cho frontend: {}", frontendResponse);
+            String frontendResponse = createFrontendResponse(processedBase64);
             
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
@@ -224,23 +222,34 @@ public class FptEInvoiceController {
         }
     }
 
-    @Operation(summary = "Test response format")
-    @PostMapping("/test-response")
-    public ResponseEntity<?> testResponse() {
+    @Operation(summary = "Cập nhật trạng thái phát hành", 
+               description = "Cập nhật trạng thái phát hành của tờ khai thông tin sang '02'. Request body chỉ cần truyền id của tờ khai.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật trạng thái phát hành thành công", content = {
+                    @Content(schema = @Schema(implementation = ApiDataResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu request không hợp lệ", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "500", description = "Lỗi hệ thống", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            })
+    })
+    @PostMapping("/update-trang-thai-phat-hanh")
+    public ResponseEntity<?> updateTrangThaiPhatHanh(@RequestBody UpdateTrangThaiPhatHanhRequest request) {
         try {
-            SearchIcrFrontendResponse testResponse = new SearchIcrFrontendResponse();
-            testResponse.setErrorCode("0000");
-            testResponse.setErrorMessage("Success");
-            testResponse.setBase64Data("test-base64-data");
+            log.info("Nhận yêu cầu cập nhật trạng thái phát hành cho tờ khai ID: {}", request.getId());
             
-            log.info("Test response: {}", objectMapper.writeValueAsString(testResponse));
+            // Cập nhật trạng thái phát hành sang "02"
+            updateTrangThaiPhatHanhTo02(request.getId());
             
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(testResponse);
-        } catch (Exception e) {
-            log.error("Lỗi test response: ", e);
-            return ResponseHelper.error(e);
+            log.info("Đã cập nhật trạng thái phát hành thành '02' cho tờ khai ID: {}", request.getId());
+            
+            return ResponseHelper.ok("Cập nhật trạng thái phát hành thành công");
+            
+        } catch (Exception ex) {
+            log.error("Lỗi khi cập nhật trạng thái phát hành cho ID {}: ", request.getId(), ex);
+            return ResponseHelper.error(ex);
         }
     }
 
@@ -548,31 +557,23 @@ public class FptEInvoiceController {
             ObjectMapper mapper = new ObjectMapper();
             Object responseObj = mapper.readValue(fptResponse, Object.class);
             
-            if (responseObj instanceof java.util.Map) {
-                @SuppressWarnings("unchecked")
-                java.util.Map<String, Object> responseMap = (java.util.Map<String, Object>) responseObj;
+            // Tìm base64 data trong response (có thể là array hoặc object)
+            String base64Data = extractBase64Data(responseObj);
+            
+            if (base64Data != null && !base64Data.isEmpty()) {
+                log.info("Tìm thấy base64 data, bắt đầu cắt dữ liệu sau 'base64,' cho tờ khai ID: {}", toKhaiId);
                 
-                // Tìm base64 data trong response
-                String base64Data = extractBase64Data(responseMap);
+                // Cắt dữ liệu sau 'base64,'
+                String processedBase64 = processBase64String(base64Data);
                 
-                if (base64Data != null && !base64Data.isEmpty()) {
-                    log.info("Tìm thấy base64 data, bắt đầu cắt dữ liệu sau 'base64,' cho tờ khai ID: {}", toKhaiId);
-                    
-                    // Cắt dữ liệu sau 'base64,'
-                    String processedBase64 = processBase64String(base64Data);
-                    
-                    // Lưu vào ToKhaiThongTin
-                    saveBase64ToToKhaiThongTin(toKhaiId, processedBase64);
-                    
-                    log.info("Đã lưu base64 data vào tờ khai ID: {}", toKhaiId);
-                    
-                    return processedBase64;
-                } else {
-                    log.warn("Không tìm thấy base64 data trong response cho tờ khai ID: {}", toKhaiId);
-                    return null;
-                }
+                // Lưu vào ToKhaiThongTin
+                saveBase64ToToKhaiThongTin(toKhaiId, processedBase64);
+                
+                log.info("Đã lưu base64 data cho tờ khai ID: {}", toKhaiId);
+                
+                return processedBase64;
             } else {
-                log.warn("Response không phải là JSON object cho tờ khai ID: {}", toKhaiId);
+                log.warn("Không tìm thấy base64 data trong response cho tờ khai ID: {}", toKhaiId);
                 return null;
             }
         } catch (Exception e) {
@@ -582,25 +583,66 @@ public class FptEInvoiceController {
     }
 
     /**
-     * Trích xuất base64 data từ response map
+     * Trích xuất base64 data từ response (có thể là array hoặc object)
      */
-    private String extractBase64Data(java.util.Map<String, Object> responseMap) {
-        // Tìm kiếm base64 data trong các field có thể có
-        String[] possibleFields = {"data", "content", "base64", "file", "document", "pdf"};
-        
-        for (String field : possibleFields) {
-            Object value = responseMap.get(field);
-            if (value != null) {
-                String stringValue = value.toString();
-                if (stringValue.contains("base64,")) {
-                    log.info("Tìm thấy base64 data trong field: {}", field);
-                    return stringValue;
+    private String extractBase64Data(Object responseObj) {
+        try {
+            // Nếu response là array
+            if (responseObj instanceof java.util.List) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Object> responseList = (java.util.List<Object>) responseObj;
+                
+                for (Object item : responseList) {
+                    if (item instanceof java.util.Map) {
+                        @SuppressWarnings("unchecked")
+                        java.util.Map<String, Object> itemMap = (java.util.Map<String, Object>) item;
+                        
+                        // Tìm kiếm trong field "pdf"
+                        Object pdfValue = itemMap.get("pdf");
+                        if (pdfValue != null) {
+                            String pdfString = pdfValue.toString();
+                            if (pdfString.contains("base64,")) {
+                                log.info("Tìm thấy base64 data trong field 'pdf' của array item");
+                                return pdfString;
+                            }
+                        }
+                        
+                        // Tìm kiếm trong các field khác
+                        String result = searchBase64InMap(itemMap);
+                        if (result != null) {
+                            return result;
+                        }
+                    }
                 }
             }
+            // Nếu response là object
+            else if (responseObj instanceof java.util.Map) {
+                @SuppressWarnings("unchecked")
+                java.util.Map<String, Object> responseMap = (java.util.Map<String, Object>) responseObj;
+                
+                // Tìm kiếm base64 data trong các field có thể có
+                String[] possibleFields = {"pdf", "data", "content", "base64", "file", "document"};
+                
+                for (String field : possibleFields) {
+                    Object value = responseMap.get(field);
+                    if (value != null) {
+                        String stringValue = value.toString();
+                        if (stringValue.contains("base64,")) {
+                            log.info("Tìm thấy base64 data trong field: {}", field);
+                            return stringValue;
+                        }
+                    }
+                }
+                
+                // Nếu không tìm thấy trong các field cụ thể, tìm kiếm trong toàn bộ response
+                return searchBase64InMap(responseMap);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.error("Lỗi khi trích xuất base64 data: ", e);
+            return null;
         }
-        
-        // Nếu không tìm thấy trong các field cụ thể, tìm kiếm trong toàn bộ response
-        return searchBase64InMap(responseMap);
     }
 
     /**
@@ -673,34 +715,56 @@ public class FptEInvoiceController {
             // Lưu vào database
             toKhaiThongTinService.save(toKhai);
             
-            log.info("Đã lưu base64 data vào imageBl field của tờ khai ID: {}, độ dài data: {}", toKhaiId, base64Data.length());
+            log.info("Đã lưu base64 data vào imageBl field cho tờ khai ID: {}, độ dài data: {}", 
+                    toKhaiId, base64Data.length());
         } catch (Exception e) {
-            log.error("Lỗi khi lưu base64 data vào tờ khai ID {}: ", toKhaiId, e);
+            log.error("Lỗi khi lưu base64 data cho tờ khai ID {}: ", toKhaiId, e);
             throw new RuntimeException("Lỗi khi lưu base64 data: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Cập nhật trạng thái phát hành sang "02"
+     */
+    private void updateTrangThaiPhatHanhTo02(Long toKhaiId) {
+        try {
+            // Lấy tờ khai hiện tại
+            com.pht.entity.ToKhaiThongTin toKhai = toKhaiThongTinService.getToKhaiThongTinById(toKhaiId);
+            
+            // Cập nhật trạng thái phát hành sang "02"
+            toKhai.setTrangThaiPhatHanh("02");
+            
+            // Lưu vào database
+            toKhaiThongTinService.save(toKhai);
+            
+            log.info("Đã cập nhật trangThaiPhatHanh = '02' cho tờ khai ID: {}", toKhaiId);
+        } catch (Exception e) {
+            log.error("Lỗi khi cập nhật trạng thái phát hành cho tờ khai ID {}: ", toKhaiId, e);
+            throw new RuntimeException("Lỗi khi cập nhật trạng thái phát hành: " + e.getMessage(), e);
         }
     }
 
     /**
      * Tạo response cho frontend với base64 và mã 0000
      */
-    private String createFrontendResponse(String fptResponse, String processedBase64) {
+    private String createFrontendResponse(String processedBase64) {
         try {
             log.info("Bắt đầu tạo response cho frontend - processedBase64: {}", 
                     processedBase64 != null ? "có data, độ dài: " + processedBase64.length() : "null");
             
             // Tạo response object cho frontend
-            SearchIcrFrontendResponse frontendResponse = new SearchIcrFrontendResponse();
+            java.util.Map<String, Object> frontendResponse = new java.util.HashMap<>();
             
             // Thêm mã 0000 (thành công)
-            frontendResponse.setErrorCode("0000");
-            frontendResponse.setErrorMessage("Success");
+            frontendResponse.put("errorCode", "0000");
+            frontendResponse.put("errorMessage", "Success");
             
             // Thêm base64 data nếu có
             if (processedBase64 != null && !processedBase64.isEmpty()) {
-                frontendResponse.setBase64Data(processedBase64);
+                frontendResponse.put("base64Data", processedBase64);
                 log.info("Đã thêm base64 data vào response cho frontend, độ dài: {}", processedBase64.length());
             } else {
-                frontendResponse.setBase64Data(null);
+                frontendResponse.put("base64Data", null);
                 log.info("Không có base64 data để trả về cho frontend");
             }
             
@@ -712,9 +776,9 @@ public class FptEInvoiceController {
             
         } catch (Exception e) {
             log.error("Lỗi khi tạo response cho frontend: ", e);
-            log.error("Fallback: trả về response gốc từ FPT");
-            // Fallback: trả về response gốc từ FPT
-            return fptResponse;
+            // Fallback: trả về response đơn giản
+            return "{\"errorCode\":\"0000\",\"errorMessage\":\"Success\",\"base64Data\":null}";
         }
     }
+
 }

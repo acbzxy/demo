@@ -62,6 +62,10 @@ export interface FPTEInvoiceResponse {
     id: string;
     status: number;
     message?: string;
+    base64Data?: string;
+    base64Image?: string;
+    image?: string;
+    pdf?: string;
   };
   error?: string;
 }
@@ -76,6 +80,11 @@ export interface FPTEInvoiceSearchRequest {
   };
   toKhaiId: number;
 }
+
+export interface FPTEInvoiceUpdateStatusRequest {
+  id: number;
+}
+
 
 class FPTEInvoiceService {
   private baseUrl = '/api';
@@ -119,6 +128,7 @@ class FPTEInvoiceService {
     }
   }
 
+
   async searchICR(request: FPTEInvoiceSearchRequest): Promise<FPTEInvoiceResponse> {
     try {
       console.log('🔍 FPT E-Invoice Search API Request:', request);
@@ -151,6 +161,45 @@ class FPTEInvoiceService {
       };
     } catch (error) {
       console.error('🔍 FPT E-Invoice Search API Exception:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+  }
+
+  async updateTrangThaiPhatHanh(request: FPTEInvoiceUpdateStatusRequest): Promise<FPTEInvoiceResponse> {
+    try {
+      console.log('🔍 FPT E-Invoice Update Status API Request:', request);
+      
+      const response = await fetch(`${this.baseUrl}/fpt-einvoice/update-trang-thai-phat-hanh`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+
+      console.log('🔍 FPT E-Invoice Update Status API Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('🔍 FPT E-Invoice Update Status API Error:', errorText);
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${errorText}`
+        };
+      }
+
+      const responseData = await response.json();
+      console.log('🔍 FPT E-Invoice Update Status API Response data:', responseData);
+
+      return {
+        success: true,
+        data: responseData
+      };
+    } catch (error) {
+      console.error('🔍 FPT E-Invoice Update Status API Exception:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
