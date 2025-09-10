@@ -322,16 +322,14 @@ export class FeeDeclarationApiService {
   }
 
   /**
-   * Sign fee declaration digitally
+   * Sign fee declaration digitally - ĐÃ XÓA, sẽ dùng CrmApiService
    */
   static async signFeeDeclaration(
-    id: number,
-    certificateSerial: string
+    _id: number,
+    _certificateSerial: string
   ): Promise<ApiResponse<FeeDeclaration>> {
-    const url = `${ENDPOINTS.FEE_DECLARATIONS}/${id}/sign?certificateSerial=${encodeURIComponent(certificateSerial)}`
-    return this.makeRequest(url, {
-      method: 'PATCH'
-    })
+    // TODO: Chuyển sang sử dụng CrmApiService.kyTenSoToKhai() cho trang khai báo nộp phí
+    throw new Error('Method này đã deprecated, sử dụng CrmApiService.kyTenSoToKhai() thay thế')
   }
 
   /**

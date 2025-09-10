@@ -24,7 +24,7 @@ async function testEndpoint(url) {
     const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
     const response = await fetch(url, {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'CRM-API-Test/1.0'

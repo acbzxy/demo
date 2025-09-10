@@ -85,8 +85,9 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
-        heading: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'SVN-Poppins', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        heading: ['Poppins', 'SVN-Poppins', 'system-ui', 'sans-serif'],
+        'poppins': ['Poppins', 'SVN-Poppins', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)',

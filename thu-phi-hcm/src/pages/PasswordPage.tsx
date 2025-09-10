@@ -130,195 +130,200 @@ const PasswordPage: React.FC = () => {
         </p>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Change Password Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <Card.Header className="bg-blue-50">
-              <div className="flex items-center gap-3">
-                <KeyIcon className="w-6 h-6 text-blue-600" />
-                <h2 className="text-xl font-semibold text-gray-800">Thay Đổi Mật Khẩu</h2>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Current Password */}
-                <div className="relative">
-                  <Input
-                    label="Mật khẩu hiện tại"
-                    name="currentPassword"
-                    type={showPasswords.current ? 'text' : 'password'}
-                    value={formData.currentPassword}
-                    onChange={handleInputChange}
-                    error={errors.currentPassword}
-                    placeholder="Nhập mật khẩu hiện tại"
-                    icon={<KeyIcon className="w-5 h-5" />}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('current')}
-                    className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.current ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
+      <div className="space-y-8">
+        {/* Top Row - Form and Security */}
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Change Password Form */}
+          <div className="lg:col-span-2">
+            <Card>
+              <Card.Header className="bg-blue-50">
+                <div className="flex items-center gap-3">
+                  <KeyIcon className="w-6 h-6 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-800">Thay Đổi Mật Khẩu</h2>
                 </div>
-
-                {/* New Password */}
-                <div className="relative">
-                  <Input
-                    label="Mật khẩu mới"
-                    name="newPassword"
-                    type={showPasswords.new ? 'text' : 'password'}
-                    value={formData.newPassword}
-                    onChange={handleInputChange}
-                    error={errors.newPassword}
-                    placeholder="Nhập mật khẩu mới"
-                    icon={<KeyIcon className="w-5 h-5" />}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('new')}
-                    className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.new ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-
-                {/* Password Strength Indicator */}
-                {formData.newPassword && (
-                  <div className="mt-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm text-gray-600">Độ mạnh mật khẩu:</span>
-                      <span className={`text-sm font-medium ${
-                        passwordStrength.strength <= 1 ? 'text-red-600' :
-                        passwordStrength.strength <= 2 ? 'text-yellow-600' :
-                        'text-green-600'
-                      }`}>
-                        {passwordStrength.text}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full ${passwordStrength.color} transition-all duration-300`}
-                        style={{ width: `${(passwordStrength.strength / 4) * 100}%` }}
-                      ></div>
-                    </div>
+              </Card.Header>
+              <Card.Body>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Current Password */}
+                  <div className="relative">
+                    <Input
+                      label="Mật khẩu hiện tại"
+                      name="currentPassword"
+                      type={showPasswords.current ? 'text' : 'password'}
+                      value={formData.currentPassword}
+                      onChange={handleInputChange}
+                      error={errors.currentPassword}
+                      placeholder="Nhập mật khẩu hiện tại"
+                      icon={<KeyIcon className="w-5 h-5" />}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('current')}
+                      className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.current ? (
+                        <EyeSlashIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
                   </div>
-                )}
 
-                {/* Confirm Password */}
-                <div className="relative">
-                  <Input
-                    label="Xác nhận mật khẩu mới"
-                    name="confirmPassword"
-                    type={showPasswords.confirm ? 'text' : 'password'}
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    error={errors.confirmPassword}
-                    placeholder="Nhập lại mật khẩu mới"
-                    icon={<KeyIcon className="w-5 h-5" />}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => togglePasswordVisibility('confirm')}
-                    className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPasswords.confirm ? (
-                      <EyeSlashIcon className="w-5 h-5" />
-                    ) : (
-                      <EyeIcon className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
+                  {/* New Password */}
+                  <div className="relative">
+                    <Input
+                      label="Mật khẩu mới"
+                      name="newPassword"
+                      type={showPasswords.new ? 'text' : 'password'}
+                      value={formData.newPassword}
+                      onChange={handleInputChange}
+                      error={errors.newPassword}
+                      placeholder="Nhập mật khẩu mới"
+                      icon={<KeyIcon className="w-5 h-5" />}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('new')}
+                      className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.new ? (
+                        <EyeSlashIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
 
-                {/* Submit Button */}
-                <div className="pt-4">
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    size="lg"
-                    loading={isSubmitting}
-                    fullWidth
-                  >
-                    <KeyIcon className="w-5 h-5 mr-2" />
-                    Đổi Mật Khẩu
-                  </Button>
+                  {/* Password Strength Indicator */}
+                  {formData.newPassword && (
+                    <div className="mt-2">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-sm text-gray-600">Độ mạnh mật khẩu:</span>
+                        <span className={`text-sm font-medium ${
+                          passwordStrength.strength <= 1 ? 'text-red-600' :
+                          passwordStrength.strength <= 2 ? 'text-yellow-600' :
+                          'text-green-600'
+                        }`}>
+                          {passwordStrength.text}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${passwordStrength.color} transition-all duration-300`}
+                          style={{ width: `${(passwordStrength.strength / 4) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Confirm Password */}
+                  <div className="relative">
+                    <Input
+                      label="Xác nhận mật khẩu mới"
+                      name="confirmPassword"
+                      type={showPasswords.confirm ? 'text' : 'password'}
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      error={errors.confirmPassword}
+                      placeholder="Nhập lại mật khẩu mới"
+                      icon={<KeyIcon className="w-5 h-5" />}
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('confirm')}
+                      className="absolute right-3 top-8 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPasswords.confirm ? (
+                        <EyeSlashIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-4">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      size="lg"
+                      loading={isSubmitting}
+                      fullWidth
+                    >
+                      <KeyIcon className="w-5 h-5 mr-2" />
+                      Đổi Mật Khẩu
+                    </Button>
+                  </div>
+                </form>
+              </Card.Body>
+            </Card>
+          </div>
+
+          {/* Security Tips */}
+          <div className="lg:col-span-1">
+            <Card>
+              <Card.Header className="bg-green-50">
+                <div className="flex items-center gap-3">
+                  <ShieldCheckIcon className="w-6 h-6 text-green-600" />
+                  <h3 className="text-lg font-semibold text-gray-800">Bảo Mật</h3>
                 </div>
-              </form>
-            </Card.Body>
-          </Card>
+              </Card.Header>
+              <Card.Body>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Mật khẩu mạnh nên có:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Ít nhất 8 ký tự
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Chữ hoa và chữ thường
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Ít nhất 1 số
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        Ký tự đặc biệt (@, #, $, ...)
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Lưu ý bảo mật:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li className="flex items-start">
+                        <span className="text-yellow-500 mr-2 mt-1">•</span>
+                        Không sử dụng thông tin cá nhân
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-yellow-500 mr-2 mt-1">•</span>
+                        Thay đổi mật khẩu định kỳ
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-yellow-500 mr-2 mt-1">•</span>
+                        Không chia sẻ với người khác
+                      </li>
+                      <li className="flex items-start">
+                        <span className="text-yellow-500 mr-2 mt-1">•</span>
+                        Đăng xuất sau khi sử dụng
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </Card.Body>
+            </Card>
+          </div>
         </div>
 
-        {/* Security Tips */}
-        <div className="space-y-6">
-          <Card>
-            <Card.Header className="bg-green-50">
-              <div className="flex items-center gap-3">
-                <ShieldCheckIcon className="w-6 h-6 text-green-600" />
-                <h3 className="text-lg font-semibold text-gray-800">Bảo Mật</h3>
-              </div>
-            </Card.Header>
-            <Card.Body>
-              <div className="space-y-4">
-                <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Mật khẩu mạnh nên có:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Ít nhất 8 ký tự
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Chữ hoa và chữ thường
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Ít nhất 1 số
-                    </li>
-                    <li className="flex items-center">
-                      <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                      Ký tự đặc biệt (@, #, $, ...)
-                    </li>
-                  </ul>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-800 mb-2">Lưu ý bảo mật:</h4>
-                  <ul className="text-sm text-gray-600 space-y-1">
-                    <li className="flex items-start">
-                      <span className="text-yellow-500 mr-2 mt-1">•</span>
-                      Không sử dụng thông tin cá nhân
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-500 mr-2 mt-1">•</span>
-                      Thay đổi mật khẩu định kỳ
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-500 mr-2 mt-1">•</span>
-                      Không chia sẻ với người khác
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-yellow-500 mr-2 mt-1">•</span>
-                      Đăng xuất sau khi sử dụng
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-
-          {/* Support Info */}
+        {/* Bottom Row - Support Info (Full Width) */}
+        <div>
           <Card>
             <Card.Header className="bg-blue-50">
               <div className="flex items-center gap-3">
@@ -329,7 +334,7 @@ const PasswordPage: React.FC = () => {
               </div>
             </Card.Header>
             <Card.Body>
-              <div className="space-y-3 text-sm">
+              <div className="grid md:grid-cols-4 gap-6 text-sm">
                 <div>
                   <p className="font-medium text-gray-800">Quên mật khẩu?</p>
                   <p className="text-gray-600">Liên hệ hotline để được hỗ trợ</p>
@@ -345,10 +350,9 @@ const PasswordPage: React.FC = () => {
                   <p className="text-blue-600">thuphihatang@tphcm.gov.vn</p>
                 </div>
 
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-gray-500">
-                    Thời gian hỗ trợ: 7:30 - 17:30 (T2-T6)
-                  </p>
+                <div>
+                  <p className="font-medium text-gray-800">Thời gian hỗ trợ:</p>
+                  <p className="text-gray-600">7:30 - 17:30 (T2-T6)</p>
                 </div>
               </div>
             </Card.Body>

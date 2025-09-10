@@ -1,7 +1,8 @@
-export default function FeeDeclarationForm() {
+export default function FeeDeclarationForm({ id }: { id?: string }) {
   return (
-    <div className="  min-h-screen">
-      <div className="grid grid-cols-4 gap-4">
+    <div className="min-h-screen">
+      <form id="feeDeclarationForm" className="w-full">
+        <div className="grid grid-cols-4 gap-4">
         <div className="col-span-3">
           <div className="grid grid-cols-2 gap-4">
             {/* DOANH NGHIỆP KHAI PHÍ */}
@@ -9,28 +10,34 @@ export default function FeeDeclarationForm() {
               <h3 className="font-bold mb-2">DOANH NGHIỆP KHAI PHÍ</h3>
               <div className="bg-white p-2">
                 <div className="mb-2">
-                  <label className="block text-sm  mb-1">
-                    Mã doanh nghiệp *
+                  <label className="block text-sm font-bold  mb-1">
+                    Mã doanh nghiệp <span className="text-red-500">*</span>
                   </label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="0109844160"
+                    name="companyTaxCode"
+                    defaultValue="0201392117"
+                    placeholder="VD: 0201392117"
                   />
                 </div>
                 <div className="mb-2">
-                  <label className="block text-sm   mb-1">
-                    Tên doanh nghiệp *
+                  <label className="block text-sm font-bold   mb-1">
+                    Tên doanh nghiệp <span className="text-red-500">*</span>
                   </label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ SPV"
+                    name="companyName"
+                    defaultValue="Công ty TNHH đầu tư vận tải Hải Sơn"
+                    placeholder="VD: Công ty TNHH đầu tư vận tải Hải Sơn"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm   mb-1">Địa chỉ *</label>
+                  <label className="block text-sm font-bold   mb-1">Địa chỉ <span className="text-red-500">*</span></label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="44 đường Lê Quang Đạo, Phường Từ Liêm, TP Hà Nội, Việt Nam"
+                    name="companyAddress"
+                    defaultValue="Số 123 Đường Hải Sơn, Phường 15, Quận 11, TP.HCM"
+                    placeholder="VD: Số 123 Đường Hải Sơn, Phường 15, Quận 11, TP.HCM"
                   />
                 </div>
               </div>
@@ -40,28 +47,31 @@ export default function FeeDeclarationForm() {
               <h3 className="font-bold mb-2">DOANH NGHIỆP XUẤT NHẬP KHẨU</h3>
               <div className="bg-white p-2">
                 <div className="mb-2">
-                  <label className="block text-sm   mb-1">
-                    Mã doanh nghiệp *
+                  <label className="block text-sm font-bold   mb-1">
+                    Mã doanh nghiệp <span className="text-red-500">*</span>
                   </label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="0109844160"
+                    name="importExportCompanyTaxCode"
+                    defaultValue="0201392117"
                   />
                 </div>
                 <div className="mb-2">
-                  <label className="block text-sm   mb-1">
-                    Tên doanh nghiệp *
+                  <label className="block text-sm font-bold   mb-1">
+                    Tên doanh nghiệp <span className="text-red-500">*</span>
                   </label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ SPV"
+                    name="importExportCompanyName"
+                    defaultValue="Công ty TNHH đầu tư vận tải Hải Sơn"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm   mb-1">Địa chỉ *</label>
+                  <label className="block text-sm font-bold   mb-1">Địa chỉ <span className="text-red-500">*</span></label>
                   <input
                     className="w-full border px-2 py-1"
-                    defaultValue="44 đường Lê Quang Đạo, Phường Từ Liêm, TP Hà Nội, Việt Nam"
+                    name="importExportCompanyAddress"
+                    defaultValue="Số 123 Đường Hải Sơn, Phường 15, Quận 11, TP.HCM"
                   />
                 </div>
               </div>
@@ -72,27 +82,37 @@ export default function FeeDeclarationForm() {
               <div className="bg-white p-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm ">Số tờ khai *</label>
-                    <input className="w-full border px-2 py-1 mb-1" />
+                    <label className="block text-sm font-bold ">Số tờ khai <span className="text-red-500">*</span></label>
+                    <input 
+                      className="w-full border px-2 py-1 mb-1" 
+                      name="customsDeclarationNumber"
+                      defaultValue="123123234324"
+                      placeholder="VD: 123123234324"
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm ">Ngày tờ khai *</label>
-                    <input type="date" className="w-full border px-2 py-1 " />
+                    <label className="block text-sm font-bold ">Ngày tờ khai <span className="text-red-500">*</span></label>
+                    <input 
+                      type="date" 
+                      className="w-full border px-2 py-1" 
+                      name="customsDeclarationDate"
+                      defaultValue="2022-02-16"
+                    />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm ">Mã Hải quan</label>
+                    <label className="block text-sm font-bold ">Mã Hải quan</label>
                     <select className="w-full border px-2 py-1">
                       <option>-- Chọn --</option>
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm ">Mã loại hình</label>
+                    <label className="block text-sm font-bold ">Mã loại hình</label>
                     <select className="w-full border px-2 py-1">
                       <option>-- Chọn --</option>
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm ">
+                    <label className="block text-sm font-bold ">
                       Mã lưu kho/ Dịch vụ
                     </label>
                     <select className="w-full border px-2 py-1">
@@ -100,7 +120,7 @@ export default function FeeDeclarationForm() {
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm ">Nước xuất khẩu</label>
+                    <label className="block text-sm font-bold ">Nước xuất khẩu</label>
                     <select className="w-full border px-2 py-1">
                       <option>-- Chọn --</option>
                     </select>
@@ -113,32 +133,35 @@ export default function FeeDeclarationForm() {
               <div className="bg-white p-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-sm   mb-1">
+                    <label className="block text-sm font-bold   mb-1">
                       Số tiếp nhận khai phí
                     </label>
                     <input
                       className="w-full border px-2 py-1"
-                      placeholder="..."
+                      name="feeDeclarationReceiptNumber"
+                      defaultValue="000000000000"
+                      placeholder="VD: 000000000000"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm  mb-1">
+                    <label className="block text-sm font-bold  mb-1">
                       Ngày khai phí (tự động)
                     </label>
                     <input
                       type="date"
                       className="w-full border px-2 py-1 h-[33px]"
-                      defaultValue="2025-08-27"
+                      name="feeDeclarationDate"
+                      defaultValue="2022-02-16"
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm ">Nhóm loại phí</label>
+                    <label className="block text-sm font-bold ">Nhóm loại phí</label>
                     <select className="w-full border px-2 py-1">
                       <option>-- Chọn --</option>
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm  mb-1">
+                    <label className="block text-sm font-bold  mb-1">
                       Loại thanh toán
                     </label>
                     <select className="w-full border px-2 py-1">
@@ -146,10 +169,13 @@ export default function FeeDeclarationForm() {
                     </select>
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-sm  mb-1">Ghi chú</label>
+                    <label className="block text-sm font-bold  mb-1">Ghi chú</label>
                     <textarea
                       className="w-full border px-2 py-1"
                       rows={3}
+                      name="notes"
+                      defaultValue="Tờ khai phí cho hàng container từ Hải Sơn"
+                      placeholder="VD: Tờ khai phí cho hàng container từ Hải Sơn"
                     ></textarea>
                   </div>
                 </div>
@@ -173,7 +199,7 @@ export default function FeeDeclarationForm() {
                 "Xem biên lai",
               ].map((label, idx) => (
                 <div className="mb-2" key={idx}>
-                  <label className="block text-sm ">{label}</label>
+                  <label className="block text-sm font-bold ">{label}</label>
                   <input
                     className="w-full border px-2 py-1"
                     placeholder="..."
@@ -192,7 +218,7 @@ export default function FeeDeclarationForm() {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="col-span-2">
-                <label className="block text-sm ">
+                <label className="block text-sm font-bold ">
                   Mã hiệu phương thức vận chuyển
                 </label>
                 <select className="w-full border px-2 py-1  h-[35px]">
@@ -200,25 +226,25 @@ export default function FeeDeclarationForm() {
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm ">Phương tiện vận chuyển</label>
+                <label className="block text-sm font-bold ">Phương tiện vận chuyển</label>
                 <select className="w-full border px-2 py-1  h-[35px]">
                   <option>-- Chọn --</option>
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm ">Mã địa điểm xếp hàng</label>
+                <label className="block text-sm font-bold ">Mã địa điểm xếp hàng</label>
                 <select className="w-full border px-2 py-1  h-[35px]">
                   <option>-- Chọn --</option>
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm ">Mã địa điểm dỡ hàng</label>
+                <label className="block text-sm font-bold ">Mã địa điểm dỡ hàng</label>
                 <select className="w-full border px-2 py-1  h-[35px]">
                   <option>-- Chọn --</option>
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm ">Mã phân loại hàng hóa</label>
+                <label className="block text-sm font-bold ">Mã phân loại hàng hóa</label>
                 <select
                   className="w-full border px-2 py-1 bg-[#eee] h-[35px]"
                   disabled
@@ -227,7 +253,7 @@ export default function FeeDeclarationForm() {
                 </select>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm ">Mục đích vận chuyển</label>
+                <label className="block text-sm font-bold ">Mục đích vận chuyển</label>
                 <select
                   className="w-full border px-2 py-1 bg-[#eee] h-[35px]"
                   disabled
@@ -350,6 +376,7 @@ export default function FeeDeclarationForm() {
           </div>
         </div>
       </div>
+      </form>
     </div>
   );
 }
