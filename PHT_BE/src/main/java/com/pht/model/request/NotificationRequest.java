@@ -13,3 +13,5 @@ public class NotificationRequest {
     @Schema(description = "ID của tờ khai thông tin", example = "123", required = true)
     private Long toKhaiId;
 }
+
+

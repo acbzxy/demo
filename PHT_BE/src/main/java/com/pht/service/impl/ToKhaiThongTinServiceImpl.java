@@ -17,6 +17,7 @@ import com.pht.model.request.NotificationRequest;
 import com.pht.model.request.ToKhaiThongTinChiTietRequest;
 import com.pht.model.request.ToKhaiThongTinRequest;
 import com.pht.model.request.UpdateTrangThaiRequest;
+import com.pht.model.request.UpdateTrangThaiPhatHanhRequest;
 import com.pht.model.response.NotificationResponse;
 import com.pht.repository.ToKhaiThongTinChiTietRepository;
 import com.pht.repository.ToKhaiThongTinRepository;
@@ -61,6 +62,11 @@ public class ToKhaiThongTinServiceImpl extends BaseServiceImpl<ToKhaiThongTin, L
             ToKhaiThongTin toKhaiThongTin = new ToKhaiThongTin();
             BeanUtils.copyProperties(request, toKhaiThongTin);
             
+            // Đảm bảo trangThaiPhatHanh có giá trị mặc định là "00"
+            if (toKhaiThongTin.getTrangThaiPhatHanh() == null || toKhaiThongTin.getTrangThaiPhatHanh().isEmpty()) {
+                toKhaiThongTin.setTrangThaiPhatHanh("00");
+            }
+            
             // Lưu entity chính trước
             ToKhaiThongTin savedToKhai = toKhaiThongTinRepository.save(toKhaiThongTin);
             
@@ -91,6 +97,36 @@ public class ToKhaiThongTinServiceImpl extends BaseServiceImpl<ToKhaiThongTin, L
         } catch (Exception e) {
             log.error("Lỗi khi cập nhật trạng thái tờ khai thông tin: ", e);
             throw new BusinessException("Lỗi khi cập nhật trạng thái: " + e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public ToKhaiThongTin updateTrangThaiPhatHanh(UpdateTrangThaiPhatHanhRequest request) throws BusinessException {
+        try {
+            log.info("Bắt đầu cập nhật trạng thái phát hành cho tờ khai ID: {}, trạng thái mới: {}", 
+                    request.getId(), request.getTrangThaiPhatHanh());
+            
+            ToKhaiThongTin toKhaiThongTin = getToKhaiThongTinById(request.getId());
+            
+            // Lưu trạng thái cũ để log
+            String trangThaiCu = toKhaiThongTin.getTrangThaiPhatHanh();
+            
+            // Cập nhật trạng thái phát hành mới
+            toKhaiThongTin.setTrangThaiPhatHanh(request.getTrangThaiPhatHanh());
+            
+            ToKhaiThongTin savedToKhai = toKhaiThongTinRepository.save(toKhaiThongTin);
+            
+            log.info("Cập nhật trạng thái phát hành thành công cho tờ khai ID: {}, từ '{}' sang '{}'", 
+                    request.getId(), trangThaiCu, request.getTrangThaiPhatHanh());
+            
+            return savedToKhai;
+        } catch (BusinessException e) {
+            log.error("Lỗi khi cập nhật trạng thái phát hành: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Lỗi không xác định khi cập nhật trạng thái phát hành: ", e);
+            throw new BusinessException("Lỗi hệ thống khi cập nhật trạng thái phát hành: " + e.getMessage());
         }
     }
 

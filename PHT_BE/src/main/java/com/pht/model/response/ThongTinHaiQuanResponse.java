@@ -62,6 +62,13 @@ public class ThongTinHaiQuanResponse {
     private String loaiHang;
     private String trangThai;
     
+    // XML DATA FIELDS
+    private String kylan1Xml;
+    private String kylan2Xml;
+    
+    // IMAGE DATA FIELD
+    private String imageBl;
+    
     // Danh sách chi tiết (ToKhaiThongTinChiTiet)
     private List<ChiTietHaiQuanResponse> chiTietList;
 }

@@ -118,6 +118,9 @@ public class ToKhaiThongTin {
     @Column(name = "MSGID", length = 50)
     private String msgId;
 
+    @Column(name = "IDPHATHANH", length = 100)
+    private String idPhatHanh;
+
     @Column(name = "TongTienPhi", precision = 18, scale = 2)
     private BigDecimal tongTienPhi;
 
@@ -152,12 +155,19 @@ public class ToKhaiThongTin {
     @Column(name = "TrangThai", length = 50)
     private String trangThai;
 
+    @Column(name = "TrangThaiPhatHanh", length = 50)
+    private String trangThaiPhatHanh = "00";
+
     // XML DATA FIELDS
     @Column(name = "KYLAN1_XML", columnDefinition = "TEXT")
     private String kylan1Xml;
 
     @Column(name = "KYLAN2_XML", columnDefinition = "TEXT")
     private String kylan2Xml;
+
+    // IMAGE DATA FIELD
+    @Column(name = "IMAGEBL", columnDefinition = "TEXT")
+    private String imageBl;
 
     // Relationship
     @OneToMany(mappedBy = "toKhaiThongTin", cascade = CascadeType.ALL, orphanRemoval = true)

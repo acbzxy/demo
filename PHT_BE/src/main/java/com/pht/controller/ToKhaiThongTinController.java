@@ -18,6 +18,7 @@ import com.pht.entity.ToKhaiThongTin;
 import com.pht.model.request.NotificationRequest;
 import com.pht.model.request.ToKhaiThongTinRequest;
 import com.pht.model.request.UpdateTrangThaiRequest;
+import com.pht.model.request.UpdateTrangThaiPhatHanhRequest;
 import com.pht.model.response.NotificationResponse;
 import com.pht.service.ToKhaiThongTinService;
 
@@ -124,6 +125,38 @@ public class ToKhaiThongTinController {
             return ResponseHelper.ok(result);
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
+            return ResponseHelper.error(ex);
+        }
+    }
+
+    @Operation(summary = "Cập nhật trạng thái phát hành tờ khai thông tin")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công", content = {
+                    @Content(schema = @Schema(implementation = ApiDataResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tờ khai", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu request không hợp lệ", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "500", description = "Lỗi hệ thống", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            })
+    })
+    @PutMapping("/update-publication-status")
+    public ResponseEntity<?> updateTrangThaiPhatHanh(@RequestBody UpdateTrangThaiPhatHanhRequest request) {
+        try {
+            log.info("Nhận yêu cầu cập nhật trạng thái phát hành cho tờ khai ID: {}, trạng thái: {}", 
+                    request.getId(), request.getTrangThaiPhatHanh());
+            
+            ToKhaiThongTin result = toKhaiThongTinService.updateTrangThaiPhatHanh(request);
+            
+            log.info("Cập nhật trạng thái phát hành thành công cho tờ khai ID: {}", request.getId());
+            
+            return ResponseHelper.ok(result);
+        } catch (Exception ex) {
+            log.error("Lỗi khi cập nhật trạng thái phát hành cho tờ khai ID {}: ", request.getId(), ex);
             return ResponseHelper.error(ex);
         }
     }

@@ -80,6 +80,7 @@ export interface FeeDeclaration {
   remainingAmount: number
   paymentStatus: 'PENDING' | 'PARTIAL' | 'PAID' | 'OVERDUE'
   declarationStatus: 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  trangThaiPhatHanh?: string // '00' = Mới, '01' = Bản nháp, '02' = Phát hành, '03' = Đã hủy
   dueDate?: string
   paymentDate?: string
   notes?: string

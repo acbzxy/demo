@@ -1,16 +1,71 @@
 import type { FeeDeclaration, ApiResponse } from '../types'
 import { sleep } from './helpers'
 
-// API Base URL - legacy API (kept for backward compatibility)
-const API_BASE_URL = 'http://localhost:8080/api'
+// API Response wrapper structure
+export interface ApiResponseWrapper<T> {
+  status: string
+  timestamp: string
+  message: string
+  data: T
+}
+
+// New API response structure for tokhai-thongtin endpoint
+export interface TokhaiThongtinResponse {
+  id: number
+  nguonTK: number
+  maDoanhNghiepKhaiPhi: string
+  tenDoanhNghiepKhaiPhi: string
+  diaChiKhaiPhi: string
+  maDoanhNghiepXNK: string
+  tenDoanhNghiepXNK: string
+  diaChiXNK: string
+  soToKhai: string
+  ngayToKhai: string
+  maHaiQuan: string
+  maLoaiHinh: string
+  maLuuKho: string
+  nuocXuatKhau: string
+  maPhuongThucVC: string
+  phuongTienVC: string
+  maDiaDiemXepHang: string
+  maDiaDiemDoHang: string
+  maPhanLoaiHangHoa: string
+  mucDichVC: string
+  soTiepNhanKhaiPhi: string
+  ngayKhaiPhi: string
+  nhomLoaiPhi: string
+  loaiThanhToan: string
+  ghiChuKhaiPhi: string
+  soThongBaoNopPhi: string
+  soThongBao: string | null
+  msgId: string | null
+  tongTienPhi: number
+  trangThaiNganHang: string
+  soBienLai: string
+  ngayBienLai: string
+  kyHieuBienLai: string
+  mauBienLai: string
+  maTraCuuBienLai: string
+  xemBienLai: string
+  loaiHangMienPhi: string
+  loaiHang: string
+  trangThai: string
+  trangThaiPhatHanh?: string // '00' = Mới, '01' = Bản nháp, '02' = Phát hành, '03' = Đã hủy
+  kylan1Xml: string | null
+  kylan2Xml: string | null
+  chiTietList: any[]
+}
+
+// API Base URL - Updated to use the new backend API with proxy
+const API_BASE_URL = '/api'
 // For new CRM API, use crmApi.ts
 
 // Fee Declaration API endpoints
 const ENDPOINTS = {
-  FEE_DECLARATIONS: `${API_BASE_URL}/fee-declarations`,
-  SEARCH: `${API_BASE_URL}/fee-declarations/search`,
-  STATISTICS: `${API_BASE_URL}/fee-declarations/statistics`,
-  NEEDING_NOTIFICATION: `${API_BASE_URL}/fee-declarations/needing-notification`,
+  FEE_DECLARATIONS: `${API_BASE_URL}/tokhai-thongtin/all`,
+  SEARCH: `${API_BASE_URL}/tokhai-thongtin/search`,
+  STATISTICS: `${API_BASE_URL}/tokhai-thongtin/statistics`,
+  NEEDING_NOTIFICATION: `${API_BASE_URL}/tokhai-thongtin/needing-notification`,
 }
 
 // Fee Declaration Status mapping from backend to frontend
@@ -31,6 +86,77 @@ export const PAYMENT_METHOD_MAP = {
   'QR_CODE': 'Thanh toán bằng mã QR',
   'ECOM': 'Thanh toán bằng tài khoản ngân hàng',
   'CASH': 'Tiền mặt'
+}
+
+// Helper function to map TokhaiThongtinResponse to FeeDeclaration
+export const mapTokhaiToFeeDeclaration = (tokhai: TokhaiThongtinResponse): FeeDeclaration => {
+  // Skip records with placeholder data
+  if (tokhai.soToKhai === 'string' || tokhai.tenDoanhNghiepKhaiPhi === 'string' || tokhai.maDoanhNghiepKhaiPhi === 'string') {
+    console.log('🚫 Skipping record with placeholder data:', tokhai.id, tokhai.soToKhai, tokhai.tenDoanhNghiepKhaiPhi);
+    return null; // Will be filtered out
+  }
+  
+  return {
+    id: tokhai.id,
+    declarationNumber: tokhai.soToKhai || 'N/A',
+    companyId: 1, // Default company ID
+    company: {
+      id: 1,
+      companyName: tokhai.tenDoanhNghiepKhaiPhi || 'N/A',
+      taxCode: tokhai.maDoanhNghiepKhaiPhi || 'N/A'
+    },
+    vesselName: tokhai.phuongTienVC || 'N/A',
+    voyageNumber: tokhai.maHaiQuan || '',
+    arrivalDate: tokhai.ngayToKhai || new Date().toISOString().split('T')[0],
+    departureDate: undefined,
+    portOfOrigin: tokhai.maDiaDiemXepHang,
+    portOfDestination: tokhai.maDiaDiemDoHang,
+    grossTonnage: 0,
+    netTonnage: 0,
+    totalFeeAmount: tokhai.tongTienPhi || 0,
+    paidAmount: tokhai.trangThaiNganHang === 'Đã thanh toán' ? (tokhai.tongTienPhi || 0) : 0,
+    remainingAmount: tokhai.trangThaiNganHang === 'Đã thanh toán' ? 0 : (tokhai.tongTienPhi || 0),
+    paymentStatus: tokhai.trangThaiNganHang === 'Đã thanh toán' ? 'PAID' : 'PENDING',
+    declarationStatus: mapTrangThaiToDeclarationStatus(tokhai.trangThai),
+    trangThaiPhatHanh: tokhai.trangThaiPhatHanh || '00', // Default to '00' (Mới)
+    dueDate: undefined,
+    paymentDate: tokhai.trangThaiNganHang === 'Đã thanh toán' ? tokhai.ngayBienLai : undefined,
+    notes: tokhai.ghiChuKhaiPhi || '',
+    createdAt: tokhai.ngayKhaiPhi || new Date().toISOString(),
+    updatedAt: tokhai.ngayBienLai || new Date().toISOString()
+  }
+}
+
+// Helper function to map Vietnamese status to English declaration status
+const mapTrangThaiToDeclarationStatus = (trangThai: string): 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED' => {
+  if (!trangThai) return 'DRAFT';
+  
+  switch (trangThai.toLowerCase()) {
+    case 'mới tạo':
+    case 'mới':
+    case 'draft':
+    case '01':
+    case 'new':
+      return 'DRAFT'
+    case 'đã nộp':
+    case 'submitted':
+    case '02':
+      return 'SUBMITTED'
+    case 'đã duyệt':
+    case 'approved':
+    case '03':
+      return 'APPROVED'
+    case 'bị từ chối':
+    case 'rejected':
+    case '04':
+      return 'REJECTED'
+    case 'đã hủy':
+    case 'cancelled':
+    case '05':
+      return 'CANCELLED'
+    default:
+      return 'DRAFT'
+  }
 }
 
 // Fee Declaration Search Parameters
@@ -173,12 +299,63 @@ export class FeeDeclarationApiService {
    */
   static async getAllFeeDeclarations(
     page = 0, 
-    size = 10, 
-    sortBy = 'createdAt', 
-    sortDir = 'desc'
+    size = 10
   ): Promise<PageResponse<FeeDeclaration>> {
-    const url = `${ENDPOINTS.FEE_DECLARATIONS}?page=${page}&size=${size}&sortBy=${sortBy}&sortDir=${sortDir}`
-    return this.makeRequest(url)
+    try {
+      // Use the new API endpoint directly
+      const url = `${API_BASE_URL}/tokhai-thongtin/all`
+      console.log('Fetching data from:', url)
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const responseData: ApiResponseWrapper<TokhaiThongtinResponse[]> = await response.json()
+      console.log('Raw API response:', responseData)
+      
+      // Extract data from the wrapped response
+      const data: TokhaiThongtinResponse[] = responseData.data || []
+      console.log('Extracted data:', data)
+      
+      // Map the new API response to FeeDeclaration format and filter out nulls
+      const mappedData = data.map(mapTokhaiToFeeDeclaration).filter(item => item !== null)
+      console.log('🔄 Mapped data length:', mappedData.length)
+      console.log('🔄 Sample mapped data:', mappedData.slice(0, 2))
+      
+      // Create a PageResponse structure
+      const pageResponse: PageResponse<FeeDeclaration> = {
+        content: mappedData,
+        pageable: {
+          pageNumber: page,
+          pageSize: size,
+          sort: { sorted: true, unsorted: false, empty: false }
+        },
+        totalElements: mappedData.length,
+        totalPages: Math.ceil(mappedData.length / size),
+        last: true,
+        first: true,
+        numberOfElements: mappedData.length,
+        size: size,
+        number: page,
+        sort: { sorted: true, unsorted: false, empty: false },
+        empty: mappedData.length === 0
+      }
+      
+      console.log('Mapped data:', pageResponse)
+      return pageResponse
+      
+    } catch (error) {
+      console.error('Error fetching fee declarations:', error)
+      throw error
+    }
   }
 
   /**
@@ -187,23 +364,101 @@ export class FeeDeclarationApiService {
   static async searchFeeDeclarations(
     searchParams: FeeDeclarationSearchParams
   ): Promise<PageResponse<FeeDeclaration>> {
-    // Build query parameters
-    const queryParams = new URLSearchParams()
-    
-    if (searchParams.fromDate) queryParams.append('fromDate', searchParams.fromDate)
-    if (searchParams.toDate) queryParams.append('toDate', searchParams.toDate)
-    if (searchParams.companyId) queryParams.append('companyId', searchParams.companyId.toString())
-    if (searchParams.declarationNumber) queryParams.append('declarationNumber', searchParams.declarationNumber)
-    if (searchParams.vesselName) queryParams.append('vesselName', searchParams.vesselName)
-    if (searchParams.paymentStatus) queryParams.append('paymentStatus', searchParams.paymentStatus)
-    if (searchParams.declarationStatus) queryParams.append('declarationStatus', searchParams.declarationStatus)
-    if (searchParams.page !== undefined) queryParams.append('page', searchParams.page.toString())
-    if (searchParams.size !== undefined) queryParams.append('size', searchParams.size.toString())
-    if (searchParams.sortBy) queryParams.append('sortBy', searchParams.sortBy)
-    if (searchParams.sortDir) queryParams.append('sortDir', searchParams.sortDir)
-    
-    const url = `${ENDPOINTS.FEE_DECLARATIONS}?${queryParams.toString()}`
-    return this.makeRequest(url)
+    try {
+      // For now, use the same endpoint as getAllFeeDeclarations
+      // In the future, you can implement search parameters if the API supports them
+      const url = `${API_BASE_URL}/tokhai-thongtin/all`
+      console.log('Searching with params:', searchParams)
+      console.log('Fetching data from:', url)
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const responseData: ApiResponseWrapper<TokhaiThongtinResponse[]> = await response.json()
+      console.log('Raw API response for search:', responseData)
+      
+      // Extract data from the wrapped response
+      const data: TokhaiThongtinResponse[] = responseData.data || []
+      console.log('Extracted data for search:', data)
+      
+      // Apply client-side filtering if needed
+      let filteredData = data
+      console.log('🔄 Starting with', data.length, 'records');
+      
+      // Filter by date range if provided - DISABLED FOR DEBUG
+      // if (searchParams.fromDate || searchParams.toDate) {
+      //   console.log('🔄 Filtering by date range:', searchParams.fromDate, 'to', searchParams.toDate);
+      //   filteredData = filteredData.filter(item => {
+      //     const itemDate = new Date(item.ngayToKhai)
+      //     const fromDate = searchParams.fromDate ? new Date(searchParams.fromDate) : null
+      //     const toDate = searchParams.toDate ? new Date(searchParams.toDate) : null
+      //     
+      //     if (fromDate && itemDate < fromDate) return false
+      //     if (toDate && itemDate > toDate) return false
+      //     return true
+      //   })
+      //   console.log('🔄 After date filtering:', filteredData.length, 'records remain');
+      // }
+      
+      // Filter by company tax code if provided - DISABLED FOR DEBUG
+      // if (searchParams.companyTaxCode) {
+      //   console.log('🔄 Filtering by company tax code:', searchParams.companyTaxCode);
+      //   filteredData = filteredData.filter(item => 
+      //     item.maDoanhNghiepKhaiPhi.includes(searchParams.companyTaxCode!)
+      //   )
+      //   console.log('🔄 After company tax code filtering:', filteredData.length, 'records remain');
+      // }
+      
+      // Filter by declaration number if provided - DISABLED FOR DEBUG
+      // if (searchParams.declarationNumber) {
+      //   console.log('🔄 Filtering by declaration number:', searchParams.declarationNumber);
+      //   filteredData = filteredData.filter(item => 
+      //     item.soToKhai.includes(searchParams.declarationNumber!)
+      //   )
+      //   console.log('🔄 After declaration number filtering:', filteredData.length, 'records remain');
+      // }
+      
+      // Map the filtered data to FeeDeclaration format and filter out nulls
+      console.log('🔄 Mapping', filteredData.length, 'records...');
+      const mappedData = filteredData.map(mapTokhaiToFeeDeclaration).filter(item => item !== null)
+      console.log('🔄 Search mapped data length:', mappedData.length)
+      console.log('🔄 Search sample mapped data:', mappedData.slice(0, 2))
+      
+      // Create a PageResponse structure
+      const pageResponse: PageResponse<FeeDeclaration> = {
+        content: mappedData,
+        pageable: {
+          pageNumber: searchParams.page || 0,
+          pageSize: searchParams.size || 10,
+          sort: { sorted: true, unsorted: false, empty: false }
+        },
+        totalElements: mappedData.length,
+        totalPages: Math.ceil(mappedData.length / (searchParams.size || 10)),
+        last: true,
+        first: true,
+        numberOfElements: mappedData.length,
+        size: searchParams.size || 10,
+        number: searchParams.page || 0,
+        sort: { sorted: true, unsorted: false, empty: false },
+        empty: mappedData.length === 0
+      }
+      
+      console.log('Filtered and mapped data:', pageResponse)
+      return pageResponse
+      
+    } catch (error) {
+      console.error('Error searching fee declarations:', error)
+      throw error
+    }
   }
 
   /**
