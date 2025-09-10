@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
             <i className="fas fa-bars"></i>
           </button>
           
-          <h1>HỆ THỐNG THU PHÍ THÀNH PHỐ HỒ CHÍ MINH</h1>
+          <h1>HỆ THỐNG THU PHÍ HTCB - TPHCM</h1>
         </div>
         
         {/* Right side */}
