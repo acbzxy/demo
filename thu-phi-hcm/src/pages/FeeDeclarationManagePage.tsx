@@ -34,77 +34,34 @@ const getStatusText = (status: string): string => {
   }
 }
 
-// Helper function to determine display status based on fee declaration and receipt status
+// Helper function to determine display status based on trangThaiPhatHanh
 const getDisplayStatus = (item: FeeDeclaration): string => {
   console.log(`Status debug for ID ${item.id}:`, {
+    trangThaiPhatHanh: item.trangThaiPhatHanh,
     declarationStatus: item.declarationStatus,
     paymentStatus: item.paymentStatus,
     declarationNumber: item.declarationNumber
   });
   
-  // Check localStorage for receipt status updates
-  try {
-    const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
-    const feeDeclarationUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-    
-    // Check if this fee declaration has an issued receipt
-    const hasIssuedReceipt = issuedReceipts.some((receipt: any) => 
-      receipt.feeDeclarationId === item.id
-    );
-    
-    if (hasIssuedReceipt) {
-      console.log(`ID ${item.id}: Showing "Đã phát hành"`);
-      return 'Đã phát hành';
-    }
-    
-    // Find update for this specific fee declaration
-    const updateForThisDeclaration = feeDeclarationUpdates.find((update: any) => 
-      update.id === item.id && update.receiptCreated
-    );
-    
-    if (updateForThisDeclaration) {
-      if (updateForThisDeclaration.receiptStatus === 'ISSUED') {
-        console.log(`ID ${item.id}: Showing "Đã phát hành"`);
-        return 'Đã phát hành';
-      } else if (updateForThisDeclaration.receiptStatus === 'DRAFT') {
-        console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp"`);
-        return 'Đã tạo biên lai nháp';
-      }
-    }
-    
-    // Fallback: Check legacy single-record format
-    const legacyUpdate = JSON.parse(localStorage.getItem('feeDeclarationUpdated') || '{}');
-    if (legacyUpdate.id === item.id && legacyUpdate.receiptCreated) {
-      if (legacyUpdate.receiptStatus === 'ISSUED') {
-        console.log(`ID ${item.id}: Showing "Đã phát hành" (legacy)`);
-        return 'Đã phát hành';
-      } else if (legacyUpdate.receiptStatus === 'DRAFT') {
-        console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp" (legacy)`);
-        return 'Đã tạo biên lai nháp';
-      }
-    }
-    
-    // Check paymentStatus for existing receipts
-    if (item.paymentStatus === 'PARTIAL' && item.declarationStatus === 'APPROVED') {
-      console.log(`ID ${item.id}: Showing "Đã tạo biên lai nháp"`);
-      return 'Đã tạo biên lai nháp';
-    }
-  } catch (error) {
-    console.warn('Error reading localStorage for receipt status:', error);
-  }
-  
-  // Default mapping based on declaration status
+  // Use trangThaiPhatHanh to determine status
   let displayStatus: string;
-  switch (item.declarationStatus) {
-    case 'DRAFT': displayStatus = 'Mới'; break;
-    case 'SUBMITTED': displayStatus = 'Mới'; break; // Changed: SUBMITTED should show as "Mới" until receipt is created
-    case 'APPROVED': displayStatus = 'Mới'; break; // Changed: APPROVED should show as "Mới" until receipt is created
-    case 'REJECTED': displayStatus = 'Bị từ chối'; break;
-    case 'CANCELLED': displayStatus = 'Đã hủy'; break;
-    default: displayStatus = 'Mới'; break; // Default to "Mới"
+  switch (item.trangThaiPhatHanh) {
+    case '02': 
+      displayStatus = 'Phát hành'; 
+      break;
+    case '01': 
+      displayStatus = 'Bản nháp'; 
+      break;
+    case '03': 
+      displayStatus = 'Đã hủy'; 
+      break;
+    case '00': 
+    default: 
+      displayStatus = 'Mới'; 
+      break;
   }
   
-  console.log(`ID ${item.id}: Showing "${displayStatus}"`);
+  console.log(`ID ${item.id}: Showing "${displayStatus}" (trangThaiPhatHanh: ${item.trangThaiPhatHanh})`);
   return displayStatus;
 };
 
@@ -241,11 +198,12 @@ const FeeDeclarationManagePage: React.FC = () => {
       // Try to call the real API first
       try {
         const response = await FeeDeclarationService.searchFeeDeclarations(searchParams);
-        console.log('API Response:', response);
+        console.log('📡 API Response received 1:', response);
         
         // Backend returns PageResponse directly, not wrapped in ApiResponse
-        if (response && response.content) {
-          console.log('API data received:', response);
+        if (response ) {
+          console.log('✅ API data received:', response);
+          console.log('📊 Content length:', response.content.length);
           const apiDeclarations = response.content || [];
           setFeeDeclarations(apiDeclarations);
           
@@ -266,14 +224,25 @@ const FeeDeclarationManagePage: React.FC = () => {
             tongTien: Number(item.totalFeeAmount)
           }));
 
+          console.log('🔄 Mapped data:', mappedData);
           setDisplayDeclarations(mappedData);
           setTotalElements(response.totalElements);
           setTotalPages(response.totalPages);
-          showSuccess('Tải dữ liệu thành công');
+          console.log('✅ Data set successfully. Total elements:', response.totalElements);
+          console.log('✅ displayDeclarations set to:', mappedData.length, 'items');
+          showSuccess('Tải dữ liệu thành công từ API mới');
           return;
+        } else {
+          console.log('❌ No content in response');
+          console.log('❌ Response structure:', response);
+          setFeeDeclarations([]);
+          setTotalElements(0);
+          setTotalPages(0);
         }
       } catch (apiError) {
-        console.warn('API call failed, falling back to mock data:', apiError);
+        console.error('💥 API call failed:', apiError);
+        console.error('💥 Error message:', apiError.message);
+        console.error('💥 Error stack:', apiError.stack);
         showError('Không thể kết nối đến server. Sử dụng dữ liệu demo.');
       }
 
@@ -281,12 +250,15 @@ const FeeDeclarationManagePage: React.FC = () => {
       console.log('Using mock data...');
       const mockResponse = await FeeDeclarationService.getAllFeeDeclarations();
       console.log('Mock response:', mockResponse);
+      console.log('Mock response content:', mockResponse.content);
       
       if (mockResponse && mockResponse.content) {
         const apiDeclarations = mockResponse.content || [];
+        console.log('Mock API declarations:', apiDeclarations);
         setFeeDeclarations(apiDeclarations);
         
         // Map mock data to display format
+        console.log('Mapping mock data to display format...');
         const mappedData = apiDeclarations.map((item: FeeDeclaration, index: number) => ({
           id: String(item.id),
           kyso: String(index + 1),
@@ -303,28 +275,50 @@ const FeeDeclarationManagePage: React.FC = () => {
           tongTien: Number(item.totalFeeAmount)
         }));
         
+        console.log('🔄 Mapped mock data:', mappedData);
         setDisplayDeclarations(mappedData);
         setTotalElements(mockResponse.totalElements || mappedData.length);
         setTotalPages(mockResponse.totalPages || 1);
+        console.log('✅ Mock data set successfully. Total elements:', mockResponse.totalElements || mappedData.length);
+        console.log('✅ Mock displayDeclarations set to:', mappedData.length, 'items');
         showSuccess('Sử dụng dữ liệu demo');
       } else {
         showError('Không thể tải dữ liệu');
       }
     } catch (error) {
-      console.error('Error loading fee declarations:', error);
+      console.error('💥 Error loading fee declarations:', error);
+      console.error('💥 Error message:', error.message);
+      console.error('💥 Error stack:', error.stack);
       showError('Có lỗi xảy ra khi tải dữ liệu: ' + (error as Error).message);
       
       // Set empty data if all fails
       setFeeDeclarations([]);
+      setDisplayDeclarations([]);
       setTotalElements(0);
       setTotalPages(0);
     } finally {
       setLoading(false);
+      console.log('🔄 Loading finished, loading state set to false');
     }
   };
 
   // Calculate total amount
   const totalAmount = displayDeclarations.reduce((sum, item) => sum + item.tongTien, 0);
+  console.log('🔄 Total amount calculated:', totalAmount);
+  
+  // Debug logging
+  console.log('🔍 Component state:', {
+    loading,
+    feeDeclarationsLength: feeDeclarations.length,
+    displayDeclarationsLength: displayDeclarations.length,
+    totalElements,
+    totalPages,
+    currentPage
+  });
+  
+  // Force re-render debug
+  console.log('🔄 Component render - displayDeclarations:', displayDeclarations);
+  console.log('🔄 Component render - displayDeclarations.length:', displayDeclarations.length);
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -381,6 +375,7 @@ const FeeDeclarationManagePage: React.FC = () => {
 
   const handleCreateReceipt = (item: FeeDeclaration) => {
     console.log('Tạo biên lai cho:', item.id);
+    console.log('FeeDeclaration data:', item);
     // Navigate to create receipt page with selectedItem
     navigate('/receipt-management/create', { state: { selectedItem: item } });
   };
@@ -721,10 +716,12 @@ const FeeDeclarationManagePage: React.FC = () => {
                   fontSize: '14px', 
                   color: '#666' 
                 }}>
-                  Không có dữ liệu
+                  Không có dữ liệu (Debug: displayDeclarations.length = {displayDeclarations.length})
                 </td>
               </tr>
-            ) : displayDeclarations.map((item, index) => (
+            ) : displayDeclarations.map((item, index) => {
+              console.log(`🔄 Rendering item ${index}:`, item);
+              return (
               <tr key={item.id} style={{ 
                 borderBottom: '1px solid #eee',
                 backgroundColor: index % 2 === 0 ? '#fff' : '#f9f9f9'
@@ -770,7 +767,7 @@ const FeeDeclarationManagePage: React.FC = () => {
                       fontSize: '11px',
                       fontWeight: 'bold'
                     }}>
-                      ✓ Lý thông báo
+                      ✓ Lấy thông báo
                     </span>
                   ) : (
                     <span style={{
@@ -827,7 +824,15 @@ const FeeDeclarationManagePage: React.FC = () => {
                        fontSize: '11px',
                        fontWeight: '500'
                      }}
-                     onClick={() => handleCreateReceipt(feeDeclarations[displayDeclarations.indexOf(item)])}
+                     onClick={() => {
+                       // Find the corresponding FeeDeclaration object
+                       const feeDeclaration = feeDeclarations.find(fd => String(fd.id) === item.id);
+                       if (feeDeclaration) {
+                         handleCreateReceipt(feeDeclaration);
+                       } else {
+                         console.error('Could not find FeeDeclaration for item:', item);
+                       }
+                     }}
                      title="Tạo biên lai"
                    >
                      Tạo biên lai
@@ -837,7 +842,8 @@ const FeeDeclarationManagePage: React.FC = () => {
                   {formatCurrency(item.tongTien)}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -1027,7 +1033,15 @@ const FeeDeclarationManagePage: React.FC = () => {
                      fontWeight: '500',
                      marginLeft: '8px'
                    }}
-                   onClick={() => handleCreateReceipt(feeDeclarations[displayDeclarations.indexOf(selectedItem)])}
+                   onClick={() => {
+                     // Find the corresponding FeeDeclaration object
+                     const feeDeclaration = feeDeclarations.find(fd => String(fd.id) === selectedItem.id);
+                     if (feeDeclaration) {
+                       handleCreateReceipt(feeDeclaration);
+                     } else {
+                       console.error('Could not find FeeDeclaration for selectedItem:', selectedItem);
+                     }
+                   }}
                  >
                    Tạo biên lai
                  </button>

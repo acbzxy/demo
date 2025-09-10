@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ReceiptService, type Receipt, type ReceiptDetail } from '../utils/receiptApi';
-import { FeeDeclarationService } from '../utils/feeDeclarationApi';
+// import { ReceiptService } from '../utils/receiptApi';
+import { fptEInvoiceService, FPTEInvoiceRequest, FPTEInvoiceSearchRequest, FPTEInvoiceUpdateStatusRequest } from '../services/fptEInvoiceService';
 import { useNotification } from '../context/NotificationContext';
 
 const CreateReceiptPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const selectedFeeDeclaration = location.state?.selectedItem;
-  const { showError, showSuccess } = useNotification();
+  const { showError, showSuccess, showInfo } = useNotification();
 
   // Add CSS for loading spinner animation
   React.useEffect(() => {
@@ -27,10 +27,23 @@ const CreateReceiptPage: React.FC = () => {
 
   // Map data from selected fee declaration
   React.useEffect(() => {
-    if (selectedFeeDeclaration) {
-      console.log('Mapping data from selected fee declaration:', selectedFeeDeclaration);
-      
-      // Map company information
+      if (selectedFeeDeclaration) {
+        console.log('Mapping data from selected fee declaration:', selectedFeeDeclaration);
+        console.log('🔍 toKhaiId (selectedFeeDeclaration.id):', selectedFeeDeclaration.id);
+        console.log('🔍 trangThaiPhatHanh value:', selectedFeeDeclaration.trangThaiPhatHanh);
+        console.log('🔍 trangThaiPhatHanh type:', typeof selectedFeeDeclaration.trangThaiPhatHanh);
+        console.log('🔍 trangThaiPhatHanh === "01":', selectedFeeDeclaration.trangThaiPhatHanh === '01');
+        console.log('🔍 trangThaiPhatHanh === "02":', selectedFeeDeclaration.trangThaiPhatHanh === '02');
+        console.log('🔍 trangThaiPhatHanh === "03":', selectedFeeDeclaration.trangThaiPhatHanh === '03');
+        console.log('🔍 trangThaiPhatHanh === "00":', selectedFeeDeclaration.trangThaiPhatHanh === '00');
+        console.log('Current isSaved state:', isSaved);
+        
+        // Set current trangThaiPhatHanh
+        const newTrangThaiPhatHanh = selectedFeeDeclaration.trangThaiPhatHanh || '00';
+        console.log('🔍 Setting currentTrangThaiPhatHanh to:', newTrangThaiPhatHanh);
+        setCurrentTrangThaiPhatHanh(newTrangThaiPhatHanh);
+        
+        // Map company information
       if (selectedFeeDeclaration.company) {
         setCompanyCode(selectedFeeDeclaration.company.taxCode || '');
         setCompanyName(selectedFeeDeclaration.company.companyName || '');
@@ -96,7 +109,15 @@ const CreateReceiptPage: React.FC = () => {
         
         // Set receipt state based on localStorage data
         setIsSaved(true);
+        console.log('✅ Set isSaved = true from localStorage update');
+        console.log('✅ New isSaved state:', true);
         setSavedReceiptId(updateForThisDeclaration.receiptId || Date.now()); // Use stored receipt ID
+        
+        // Load idPhatHanh from localStorage if available
+        // if (updateForThisDeclaration.idPhatHanh) {
+        //   setIdPhatHanh(updateForThisDeclaration.idPhatHanh);
+        //   console.log('✅ Loaded idPhatHanh from localStorage:', updateForThisDeclaration.idPhatHanh);
+        // }
         
         // Check if receipt was issued
         const hasIssuedReceipt = issuedReceipts.some((receipt: any) => 
@@ -104,10 +125,10 @@ const CreateReceiptPage: React.FC = () => {
         );
         
         if (hasIssuedReceipt || updateForThisDeclaration.receiptStatus === 'ISSUED') {
-          setReceiptStatus('ISSUED');
+          // setReceiptStatus('ISSUED');
           console.log('Receipt already issued - showing issued state');
         } else {
-          setReceiptStatus('DRAFT');
+          // setReceiptStatus('DRAFT');
           console.log('Draft receipt found - showing issue receipt button');
         }
         
@@ -120,7 +141,7 @@ const CreateReceiptPage: React.FC = () => {
         console.log('Found legacy receipt info:', legacyUpdate);
         setIsSaved(true);
         setSavedReceiptId(legacyUpdate.receiptId || Date.now());
-        setReceiptStatus(legacyUpdate.receiptStatus || 'DRAFT');
+        // setReceiptStatus(legacyUpdate.receiptStatus || 'DRAFT');
         return;
       }
       
@@ -131,52 +152,52 @@ const CreateReceiptPage: React.FC = () => {
   };
 
   // Function to check and load existing receipts (API version - disabled)
-  const checkExistingReceipts = async (feeDeclarationId: number) => {
-    try {
-      console.log('Checking existing receipts for fee declaration:', feeDeclarationId);
-      const response = await ReceiptService.getReceiptsByFeeDeclarationId(feeDeclarationId);
-      
-      if (response.success && response.data && response.data.length > 0) {
-        const existingReceipt = response.data[0]; // Get the first (latest) receipt
-        console.log('Found existing receipt:', existingReceipt);
-        
-        // Load receipt data into form
-        setReceiptCode(existingReceipt.receiptCode || '');
-        setReceiptNumber(existingReceipt.receiptNumber || '');
-        setReceiptDate(existingReceipt.receiptDate || '');
-        setPayerName(existingReceipt.payerName || '');
-        setPayerEmail(existingReceipt.payerEmail || '');
-        setPayerPhone(existingReceipt.payerPhone || '');
-        setPayerIdNumber(existingReceipt.payerIdNumber || '');
-        setPaymentMethod(existingReceipt.paymentMethod || 'CASH');
-        setNotes(existingReceipt.notes || '');
-        
-        // Load receipt details
-        if (existingReceipt.receiptDetails) {
-          setFeeDetails(existingReceipt.receiptDetails.map((detail, index) => ({
-            id: index + 1,
-            content: detail.content || '',
-            quantity: detail.quantity || 0,
-            unit: detail.unit || '',
-            price: detail.unitPrice || 0,
-            total: detail.totalAmount || 0
-          })));
-        }
-        
-        // Set receipt state
-        setIsSaved(true);
-        setSavedReceiptId(existingReceipt.id!);
-        setReceiptStatus(existingReceipt.status || 'DRAFT');
-        
-        console.log('Loaded existing receipt with status:', existingReceipt.status);
-      } else {
-        console.log('No existing receipts found for fee declaration:', feeDeclarationId);
-      }
-    } catch (error) {
-      console.error('Error checking existing receipts:', error);
-      // Don't show error to user as this is just a check
-    }
-  };
+  // const checkExistingReceipts = async (_feeDeclarationId: number) => {
+  //   try {
+  //     console.log('Checking existing receipts for fee declaration:', _feeDeclarationId);
+  //     const response = await ReceiptService.getReceiptsByFeeDeclarationId(_feeDeclarationId);
+  //     
+  //     if (response.success && response.data && response.data.length > 0) {
+  //       const existingReceipt = response.data[0]; // Get the first (latest) receipt
+  //       console.log('Found existing receipt:', existingReceipt);
+  //       
+  //       // Load receipt data into form
+  //       setReceiptCode(existingReceipt.receiptCode || '');
+  //       setReceiptNumber(existingReceipt.receiptNumber || '');
+  //       setReceiptDate(existingReceipt.receiptDate || '');
+  //       setPayerName(existingReceipt.payerName || '');
+  //       setPayerEmail(existingReceipt.payerEmail || '');
+  //       // setPayerPhone(existingReceipt.payerPhone || '');
+  //       setPayerIdNumber(existingReceipt.payerIdNumber || '');
+  //       setPaymentMethod(existingReceipt.paymentMethod || 'CASH');
+  //       setNotes(existingReceipt.notes || '');
+  //       
+  //       // Load receipt details
+  //       if (existingReceipt.receiptDetails) {
+  //         setFeeDetails(existingReceipt.receiptDetails.map((detail, index) => ({
+  //           id: index + 1,
+  //           content: detail.content || '',
+  //           quantity: detail.quantity || 0,
+  //           unit: detail.unit || '',
+  //           price: detail.unitPrice || 0,
+  //           total: detail.totalAmount || 0
+  //         })));
+  //       }
+  //       
+  //       // Set receipt state
+  //       setIsSaved(true);
+  //       setSavedReceiptId(existingReceipt.id!);
+  //       setReceiptStatus(existingReceipt.status || 'DRAFT');
+  //       
+  //       console.log('Loaded existing receipt with status:', existingReceipt.status);
+  //     } else {
+  //       console.log('No existing receipts found for fee declaration:', _feeDeclarationId);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking existing receipts:', error);
+  //     // Don't show error to user as this is just a check
+  //   }
+  // };
 
   // Form states
   const [receiptCode, setReceiptCode] = useState('');
@@ -198,7 +219,6 @@ const CreateReceiptPage: React.FC = () => {
   const [receivingCompanyName, setReceivingCompanyName] = useState('CÔNG TY TNHH DELVNETS VIETNAM');
   const [payerName, setPayerName] = useState('0314308153');
   const [payerEmail, setPayerEmail] = useState('logistics.hq@delvnetsvietnam.com');
-  const [payerPhone, setPayerPhone] = useState('');
   const [payerIdNumber, setPayerIdNumber] = useState('036734867');
 
   // Checkbox states
@@ -211,10 +231,14 @@ const CreateReceiptPage: React.FC = () => {
   const [isSaved, setIsSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isIssuing, setIsIssuing] = useState(false);
-  const [receiptStatus, setReceiptStatus] = useState<'DRAFT' | 'ISSUED' | 'CANCELLED' | 'PAID'>('DRAFT');
+  // const [receiptStatus, setReceiptStatus] = useState<'DRAFT' | 'ISSUED' | 'CANCELLED' | 'PAID'>('DRAFT');
+  const [currentTrangThaiPhatHanh, setCurrentTrangThaiPhatHanh] = useState<string>('00');
   const [savedReceiptId, setSavedReceiptId] = useState<number | null>(null);
+  // const [idPhatHanh, setIdPhatHanh] = useState<string>('');
+  const [createdSid, setCreatedSid] = useState<string>('');
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [receiptImageBase64, setReceiptImageBase64] = useState<string>('');
 
   // Fee details - will be populated from selected fee declaration
   const [feeDetails, setFeeDetails] = useState([
@@ -278,6 +302,14 @@ const CreateReceiptPage: React.FC = () => {
     try {
       setIsSaving(true);
       
+      // Validate status - allow save when status is '00' (Mới) or '01' (Bản nháp)
+      if (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01') {
+        console.log('Validation failed: currentTrangThaiPhatHanh is not "00" or "01"', currentTrangThaiPhatHanh);
+        showError('Chỉ có thể lưu biên lai ở trạng thái "Mới" hoặc "Bản nháp"');
+        return;
+      }
+      console.log('Validation passed: currentTrangThaiPhatHanh =', currentTrangThaiPhatHanh);
+      
       // Validate required fields
       if (!receiptCode.trim()) {
         console.log('Validation failed: receiptCode is empty');
@@ -302,106 +334,53 @@ const CreateReceiptPage: React.FC = () => {
       }
       console.log('Validation passed: payerEmail =', payerEmail);
 
-      // Convert fee details to ReceiptDetail format
-      const receiptDetails: ReceiptDetail[] = feeDetails.map(detail => ({
-        content: detail.content,
-        unit: detail.unit,
-        quantity: detail.quantity,
-        unitPrice: detail.price,
-        totalAmount: detail.total,
-        notes: `Chi tiết ${detail.id}`
-      }));
-
-      // Create receipt object
-      const receiptData: Receipt = {
-        receiptCode: receiptCode.trim(),
-        receiptNumber: receiptNumber.trim(),
-        feeDeclarationId: selectedFeeDeclaration?.id || 1, // Use selected fee declaration ID - fallback to 1
-        companyId: selectedFeeDeclaration?.company?.id || 1, // Use company ID from selected fee declaration
-        payerName: payerName.trim(),
-        payerEmail: payerEmail.trim(),
-        payerIdNumber: payerIdNumber.trim(),
-        payerPhone: payerIdNumber.trim(), // Using same as ID number for now
-        receiptDate: receiptDate,
-        paymentMethod: paymentMethod === 'Chuyển khoản' ? 'BANK_TRANSFER' : 'CASH',
-        totalAmount: totalAmount,
-        status: 'DRAFT',
-        storageLocationCode: storageLocationCode,
-        stbNumber: stbNumber,
-        declarationDate: declarationDate,
-        customsDeclarationNumber: customsDeclarationNumber,
-        customsDeclarationDate: customsDeclarationDate,
-        notes: notes,
-        samePayment: samePayment,
-        containerList: containerList,
-        commonContainerDeclaration: commonContainerDeclaration,
-        attached: attached,
-        receiptDetails: receiptDetails
-      };
+      // Call Backend E-Invoice API directly
+      console.log('🔍 Calling Backend E-Invoice API...');
+      const eInvoiceRequest = mapToFPTEInvoiceRequest();
+      console.log('🔍 Backend E-Invoice request:', eInvoiceRequest);
       
-      console.log('Saving receipt data:', receiptData);
-      console.log('selectedFeeDeclaration:', selectedFeeDeclaration);
-      console.log('selectedFeeDeclaration?.id:', selectedFeeDeclaration?.id);
+      const eInvoiceResponse = await fptEInvoiceService.createICR(eInvoiceRequest);
+      console.log('🔍 Backend E-Invoice response:', eInvoiceResponse);
+      console.log('🔍 eInvoiceResponse.success:', eInvoiceResponse.success);
+      console.log('🔍 eInvoiceResponse.data:', eInvoiceResponse.data);
       
-      // Call API to save receipt
-      console.log('Calling ReceiptService.createReceipt...');
-      const response = await ReceiptService.createReceipt(receiptData);
-      console.log('API Response:', response);
-      
-      if (response.success && response.data) {
-        console.log('Setting states - isSaved: true, receiptId:', response.data.id, 'status:', response.data.status);
-        setIsSaved(true);
-        setSavedReceiptId(response.data.id || null);
-        setReceiptStatus(response.data.status);
-        showSuccess('Biên lai đã được lưu thành công!');
+      if (eInvoiceResponse.success && eInvoiceResponse.data) {
+        const responseData = eInvoiceResponse.data;
+        console.log('✅ E-Invoice created successfully, status:', responseData.status);
         
-        // Update fee declaration status after successful receipt creation
-        if (selectedFeeDeclaration?.id) {
-          try {
-            console.log('Updating fee declaration status for ID:', selectedFeeDeclaration.id);
-            const updatedDeclaration = {
-              ...selectedFeeDeclaration,
-              paymentStatus: 'PARTIAL', // Update to indicate receipt has been created
-              declarationStatus: 'APPROVED' // Update declaration status
-            };
-            
-            await FeeDeclarationService.updateFeeDeclaration(selectedFeeDeclaration.id, updatedDeclaration);
-            console.log('Fee declaration status updated successfully');
-            
-            // Store update info for the fee declaration management page
-            const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-            const newUpdate = {
-              id: selectedFeeDeclaration.id,
-              newPaymentStatus: 'PARTIAL',
-              newDeclarationStatus: 'APPROVED',
-              receiptCreated: true,
-              receiptStatus: 'DRAFT', // Track receipt status
-              receiptId: response.data.id, // Store receipt ID
-              timestamp: new Date().toISOString()
-            };
-            
-            // Remove existing update for this fee declaration and add new one
-            const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
-            filteredUpdates.push(newUpdate);
-            localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
-            
-            // Keep backward compatibility
-            localStorage.setItem('feeDeclarationUpdated', JSON.stringify(newUpdate));
-            
-          } catch (updateError) {
-            console.warn('Failed to update fee declaration status:', updateError);
-            // Don't show error to user since receipt was created successfully
+        if (responseData.status === 6) {
+          // Success - set states
+          console.log('🎉 SUCCESS: responseData.status === 6, showing success message');
+          setIsSaved(true);
+          console.log('✅ Set isSaved = true from E-Invoice success');
+          setSavedReceiptId(parseInt(responseData.id) || Date.now());
+          // Lưu idPhatHanh từ response để sử dụng cho search-icr
+          // if (responseData.idPhatHanh) {
+          //   setIdPhatHanh(responseData.idPhatHanh);
+          //   console.log('✅ Saved idPhatHanh:', responseData.idPhatHanh);
+          // }
+          // setReceiptStatus('DRAFT');
+          // Only update to "Bản nháp" if currently "Mới"
+          if (currentTrangThaiPhatHanh === '00') {
+            setCurrentTrangThaiPhatHanh('01'); // Update to "Bản nháp" after successful save
           }
-        }
-        
-        // Auto-generate receipt code for next time
-        if (response.data.id) {
-          const nextNumber = parseInt(receiptNumber) + 1;
-          setReceiptNumber(String(nextNumber).padStart(7, '0'));
+          console.log('🔔 Calling showSuccess with message: Lưu biên lai thành công!');
+          showSuccess('Lưu biên lai thành công!', 'Lưu biên lai');
+          console.log('🔔 showSuccess called successfully');
+          
+          // Store E-Invoice data for later use
+          localStorage.setItem('eInvoiceData', JSON.stringify(responseData));
+          
+          // Auto-generate receipt code for next time
+          if (responseData.id) {
+            const nextNumber = parseInt(receiptNumber) + 1;
+            setReceiptNumber(String(nextNumber).padStart(7, '0'));
+          }
+        } else {
+          showError('Tạo hóa đơn điện tử thất bại. Status: ' + responseData.status);
         }
       } else {
-        console.log('API call failed - response:', response);
-        showError('Có lỗi xảy ra khi lưu biên lai: ' + (response.message || 'Unknown error'));
+        showError('Lỗi tạo hóa đơn điện tử: ' + (eInvoiceResponse.error || 'Unknown error'));
       }
       
     } catch (error) {
@@ -417,13 +396,94 @@ const CreateReceiptPage: React.FC = () => {
     navigate(-1); // Go back to previous page
   };
 
-  const handleIssueReceipt = async () => {
-    if (!savedReceiptId) {
-      showError('Vui lòng lưu biên lai trước khi phát hành');
-      return;
-    }
+  // Map form data to FPT E-Invoice format
+  const mapToFPTEInvoiceRequest = (): FPTEInvoiceRequest => {
+    const totalAmountValue = totalAmount || 0;
+    const vatAmountValue = 0; // Will be calculated from items
+    const grandTotal = totalAmountValue + vatAmountValue;
     
-    if (receiptStatus !== 'DRAFT') {
+    // Generate unique sid and save to state
+    const generatedSid = `FPTIDA${Date.now()}`;
+    setCreatedSid(generatedSid);
+    console.log('🔍 Generated sid:', generatedSid);
+    
+    console.log('🔍 Mapping to FPT E-Invoice request:');
+    console.log('🔍 selectedFeeDeclaration.id (toKhaiId):', selectedFeeDeclaration?.id);
+    console.log('🔍 companyName:', companyName);
+    console.log('🔍 totalAmountValue:', totalAmountValue);
+    
+    // Convert number to Vietnamese words (simplified)
+    const numberToWords = (num: number): string => {
+      // This is a simplified version - you might want to use a proper library
+      const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+      const tens = ['', '', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+      const hundreds = ['', 'một trăm', 'hai trăm', 'ba trăm', 'bốn trăm', 'năm trăm', 'sáu trăm', 'bảy trăm', 'tám trăm', 'chín trăm'];
+      
+      if (num === 0) return 'không';
+      if (num < 10) return units[num];
+      if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + units[num % 10] : '');
+      if (num < 1000) return hundreds[Math.floor(num / 100)] + (num % 100 ? ' ' + numberToWords(num % 100) : '');
+      
+      return num.toString() + ' đồng';
+    };
+
+    return {
+      lang: "vi",
+      user: {
+        username: "0318680861.MPOS",
+        password: "Admin@123"
+      },
+      toKhaiId: selectedFeeDeclaration?.id || null, // Add toKhaiId from selected fee declaration
+      inv: {
+        sid: generatedSid, // Use generated sid
+        idt: "",
+        type: "01/MTT",
+        form: "1",
+        serial: "C25MAA",
+        seq: "",
+        ma_cqthu: "",
+        bname: companyName,
+        btax: '0318680861',
+        btel: '',
+        bmail: '',
+        idnumber: '',
+        note: notes,
+        sumv: totalAmountValue,
+        sum: totalAmountValue,
+        vatv: vatAmountValue,
+        vat: vatAmountValue,
+        word: numberToWords(grandTotal),
+        totalv: grandTotal,
+        total: grandTotal,
+        tradeamount: 0,
+        discount: "",
+        type_ref: 1,
+        notsendmail: 1,
+        sendfile: 1,
+        sec: "",
+        paym: "TM",
+        items: feeDetails.map((detail, index) => ({
+          line: index + 1,
+          type: "",
+          vrt: "10", // 10% VAT
+          code: `HH${index + 1}`,
+          name: detail.content,
+          unit: detail.unit,
+          price: detail.price,
+          quantity: detail.quantity,
+          perdiscount: 0,
+          amtdiscount: 0,
+          amount: detail.total,
+          vat: Math.round(detail.total * 0.1), // 10% VAT
+          total: detail.total + Math.round(detail.total * 0.1)
+        })),
+        stax: '0318680861'
+      }
+    };
+  };
+
+  const handleIssueReceipt = async () => {
+    if (currentTrangThaiPhatHanh !== '01') {
       showError('Chỉ có thể phát hành biên lai ở trạng thái bản nháp');
       return;
     }
@@ -433,60 +493,88 @@ const CreateReceiptPage: React.FC = () => {
       return; // Prevent double-click
     }
     
+    // Determine which sid to use based on status
+    let sidToUse = '';
+    if (currentTrangThaiPhatHanh === '00' as string) {
+      // For 'Mới' status, use createdSid if exists (after save), otherwise generate new
+      if (createdSid) {
+        sidToUse = createdSid;
+        console.log('🔍 Using createdSid after save for status', currentTrangThaiPhatHanh, ':', createdSid);
+      } else {
+        const generatedSid = `FPTIDA${Date.now()}`;
+        setCreatedSid(generatedSid);
+        sidToUse = generatedSid;
+        console.log('🔍 Generated new sid for status', currentTrangThaiPhatHanh, ':', generatedSid);
+      }
+    } else if (currentTrangThaiPhatHanh === '01' as string) {
+      // For 'Bản nháp' status, use createdSid if exists (after save), otherwise use idPhatHanh from database
+      if (createdSid) {
+        sidToUse = createdSid;
+        console.log('🔍 Using createdSid after save for status', currentTrangThaiPhatHanh, ':', createdSid);
+      } else {
+        if (!selectedFeeDeclaration?.idPhatHanh) {
+          showError('Không tìm thấy thông tin phát hành từ database.');
+          return;
+        }
+        sidToUse = selectedFeeDeclaration.idPhatHanh;
+        console.log('🔍 Using idPhatHanh from database for status', currentTrangThaiPhatHanh, ':', selectedFeeDeclaration.idPhatHanh);
+      }
+    } else {
+      // For 'Phát hành' and 'Đã hủy' status, use idPhatHanh from database
+      if (!selectedFeeDeclaration?.idPhatHanh) {
+        showError('Không tìm thấy thông tin phát hành từ database.');
+        return;
+      }
+      sidToUse = selectedFeeDeclaration.idPhatHanh;
+      console.log('🔍 Using idPhatHanh from database for status', currentTrangThaiPhatHanh, ':', selectedFeeDeclaration.idPhatHanh);
+    }
+    
     try {
       setIsIssuing(true);
+      showInfo('Đang xử lý phát hành biên lai...', 'Phát hành biên lai');
       console.log('Phát hành biên lai...');
       
-      const response = await ReceiptService.issueReceipt(savedReceiptId);
+      // Create search ICR request
+      const searchRequest: FPTEInvoiceSearchRequest = {
+        stax: "0318680861",
+        type: "pdf",
+        sid: sidToUse, // Use appropriate sid based on status
+        user: {
+          username: "0318680861.MPOS",
+          password: "Admin@123"
+        },
+        toKhaiId: selectedFeeDeclaration?.id || 0
+      };
+      
+      console.log('🔍 Search ICR Request:', searchRequest);
+      
+      const response = await fptEInvoiceService.searchICR(searchRequest);
       
       if (response.success && response.data) {
-        // Update receipt status immediately to prevent UI issues
-        setReceiptStatus('ISSUED');
-        console.log('Receipt status updated to ISSUED');
+        console.log('✅ Search ICR successful:', response.data);
         
-        showSuccess('Biên lai đã được phát hành thành công!');
+        // Store search response data
+        localStorage.setItem('searchICRData', JSON.stringify(response.data));
         
-        // Update localStorage immediately
-        const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-        const issuedUpdate = {
-          id: selectedFeeDeclaration?.id,
-          newPaymentStatus: 'PAID',
-          newDeclarationStatus: 'APPROVED', 
-          receiptCreated: true,
-          receiptStatus: 'ISSUED',
-          receiptId: savedReceiptId,
-          timestamp: new Date().toISOString()
-        };
-        
-        const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration?.id);
-        filteredUpdates.push(issuedUpdate);
-        localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
-        
-        // Also update issuedReceipts for backward compatibility
-        const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
-        if (!issuedReceipts.includes(selectedFeeDeclaration?.id)) {
-          issuedReceipts.push(selectedFeeDeclaration?.id);
-          localStorage.setItem('issuedReceipts', JSON.stringify(issuedReceipts));
+        // Extract base64 PDF from response
+        if (response.data.base64Data || response.data.base64Image || response.data.image || response.data.pdf) {
+          const base64Data = response.data.base64Data || response.data.base64Image || response.data.image || response.data.pdf;
+          if (base64Data) {
+            setReceiptImageBase64(base64Data);
+            console.log('✅ Base64 PDF extracted from base64Data:', base64Data ? 'Yes' : 'No');
+            console.log('🔍 Base64 data length:', base64Data.length);
+          }
         }
         
-        console.log('localStorage updated:', {
-          feeDeclarationUpdates: JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]'),
-          issuedReceipts: JSON.parse(localStorage.getItem('issuedReceipts') || '[]')
-        });
-        
+        // Show receipt modal instead of changing status immediately
         setShowReceiptModal(true);
       } else {
-        showError('Có lỗi xảy ra khi phát hành biên lai');
+        showError('Lỗi phát hành biên lai: ' + (response.error || 'Unknown error'));
       }
       
     } catch (error) {
       console.error('Error issuing receipt:', error);
-      if (error instanceof Error && error.message.includes('trạng thái bản nháp')) {
-        showError('Biên lai này đã được phát hành rồi');
-        setReceiptStatus('ISSUED'); // Update UI to reflect current state
-      } else {
-        showError('Có lỗi xảy ra khi phát hành biên lai: ' + (error as Error).message);
-      }
+      showError('Lỗi phát hành biên lai: ' + (error instanceof Error ? error.message : 'Unknown error'));
     } finally {
       setIsIssuing(false);
     }
@@ -496,64 +584,72 @@ const CreateReceiptPage: React.FC = () => {
     setShowReceiptModal(false);
   };
 
+
   const handleShowConfirmation = () => {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmIssue = () => {
+  const handleConfirmIssue = async () => {
     setShowConfirmModal(false);
     
-    // Lưu thông tin phát hành biên lai vào localStorage
-    if (selectedFeeDeclaration) {
-      const receiptData = {
-        feeDeclarationId: selectedFeeDeclaration.id,
-        receiptCode,
-        receiptNumber,
-        companyName,
-        companyCode,
-        companyAddress,
-        receiptDate,
-        customsDeclarationNumber,
-        customsDeclarationDate,
-        paymentMethod,
-        timestamp: new Date().toISOString()
+    try {
+      // Call API to update trang thai phat hanh
+      const updateRequest: FPTEInvoiceUpdateStatusRequest = {
+        id: selectedFeeDeclaration?.id || 0
       };
       
-      // Lưu thông tin biên lai đã phát hành
-      const existingReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
-      existingReceipts.push(receiptData);
-      localStorage.setItem('issuedReceipts', JSON.stringify(existingReceipts));
+      console.log('🔍 Update Status Request:', updateRequest);
       
-      // Update localStorage with ISSUED status
-      const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
-      const issuedUpdate = {
-        id: selectedFeeDeclaration.id,
-        newPaymentStatus: 'PAID',
-        newDeclarationStatus: 'APPROVED', 
-        receiptCreated: true,
-        receiptStatus: 'ISSUED', // Mark as issued
-        receiptId: savedReceiptId,
-        timestamp: new Date().toISOString()
-      };
+      const response = await fptEInvoiceService.updateTrangThaiPhatHanh(updateRequest);
       
-      // Remove existing update for this fee declaration and add new one
-      const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
-      filteredUpdates.push(issuedUpdate);
-      localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
-      
-      // Keep backward compatibility
-      localStorage.setItem('feeDeclarationUpdated', JSON.stringify(issuedUpdate));
+      if (response.success && response.data) {
+        console.log('✅ Update Status successful:', response.data);
+        
+        // Update UI state
+        setCurrentTrangThaiPhatHanh('02'); // Update to "Phát hành"
+        
+        // Update localStorage for backward compatibility
+        if (selectedFeeDeclaration) {
+          const existingUpdates = JSON.parse(localStorage.getItem('feeDeclarationUpdates') || '[]');
+          const issuedUpdate = {
+            id: selectedFeeDeclaration.id,
+            newPaymentStatus: 'PAID',
+            newDeclarationStatus: 'APPROVED', 
+            receiptCreated: true,
+            receiptStatus: 'ISSUED',
+            receiptId: savedReceiptId,
+            timestamp: new Date().toISOString()
+          };
+          
+          const filteredUpdates = existingUpdates.filter((update: any) => update.id !== selectedFeeDeclaration.id);
+          filteredUpdates.push(issuedUpdate);
+          localStorage.setItem('feeDeclarationUpdates', JSON.stringify(filteredUpdates));
+          
+          // Also update issuedReceipts for backward compatibility
+          const issuedReceipts = JSON.parse(localStorage.getItem('issuedReceipts') || '[]');
+          if (!issuedReceipts.includes(selectedFeeDeclaration.id)) {
+            issuedReceipts.push(selectedFeeDeclaration.id);
+            localStorage.setItem('issuedReceipts', JSON.stringify(issuedReceipts));
+          }
+          
+          // Keep backward compatibility
+          localStorage.setItem('feeDeclarationUpdated', JSON.stringify(issuedUpdate));
+        }
+        
+        setShowReceiptModal(false);
+        showSuccess('Biên lai đã được phát hành thành công!', 'Phát hành biên lai');
+        
+        // Navigate về trang quản lý tờ khai
+        setTimeout(() => {
+          navigate('/fee-declaration/manage');
+        }, 1500); // Delay navigation để user có thể thấy thông báo
+      } else {
+        showError('Lỗi cập nhật trạng thái phát hành: ' + (response.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error updating status:', error);
+      showError('Lỗi cập nhật trạng thái phát hành: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
-    
-    // Update UI state immediately
-    setReceiptStatus('ISSUED');
-    console.log('Receipt status updated to ISSUED');
-    
-    setShowReceiptModal(false);
-    alert('Biên lai đã được phát hành thành công!');
-    
-    // Navigate về trang quản lý tờ khai
-    navigate('/fee-declaration/manage');
   };
 
   const handleCancelIssue = () => {
@@ -1092,47 +1188,69 @@ const CreateReceiptPage: React.FC = () => {
           {/* Left side - Status and Issue Receipt button */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
             {/* Status indicator */}
-            {isSaved && (
+            {(() => {
+              console.log('🔍 Debug Status indicator:', { 
+                isSaved, 
+                currentTrangThaiPhatHanh,
+                'isSaved condition': isSaved
+              });
+              return null;
+            })()}
+            {(
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
                 padding: '8px 12px',
                 borderRadius: '4px',
-                backgroundColor: receiptStatus === 'DRAFT' ? '#fff3cd' : 
-                                receiptStatus === 'ISSUED' ? '#d4edda' : '#f8d7da',
-                color: receiptStatus === 'DRAFT' ? '#856404' : 
-                       receiptStatus === 'ISSUED' ? '#155724' : '#721c24',
+                backgroundColor: currentTrangThaiPhatHanh === '01' ? '#fef3c7' : 
+                                currentTrangThaiPhatHanh === '02' ? '#d1fae5' : 
+                                currentTrangThaiPhatHanh === '03' ? '#fee2e2' : '#f3f4f6',
+                color: currentTrangThaiPhatHanh === '01' ? '#92400e' : 
+                       currentTrangThaiPhatHanh === '02' ? '#065f46' : 
+                       currentTrangThaiPhatHanh === '03' ? '#991b1b' : '#374151',
                 fontSize: '12px',
                 fontWeight: '500',
-                border: `1px solid ${receiptStatus === 'DRAFT' ? '#ffeeba' : 
-                                   receiptStatus === 'ISSUED' ? '#c3e6cb' : '#f5c6cb'}`
+                border: `1px solid ${currentTrangThaiPhatHanh === '01' ? '#fbbf24' : 
+                                   currentTrangThaiPhatHanh === '02' ? '#10b981' : 
+                                   currentTrangThaiPhatHanh === '03' ? '#ef4444' : '#9ca3af'}`
               }}>
                 <span style={{
                   width: '8px',
                   height: '8px',
                   borderRadius: '50%',
-                  backgroundColor: receiptStatus === 'DRAFT' ? '#ffc107' : 
-                                  receiptStatus === 'ISSUED' ? '#28a745' : '#dc3545'
+                  backgroundColor: currentTrangThaiPhatHanh === '01' ? '#f59e0b' : 
+                                  currentTrangThaiPhatHanh === '02' ? '#10b981' : 
+                                  currentTrangThaiPhatHanh === '03' ? '#ef4444' : '#6b7280'
                 }}></span>
-                Trạng thái: {receiptStatus === 'DRAFT' ? 'Bản nháp' : 
-                           receiptStatus === 'ISSUED' ? 'Đã phát hành' : 
-                           receiptStatus === 'CANCELLED' ? 'Đã hủy' : 'Đã thanh toán'}
+                Trạng thái: {currentTrangThaiPhatHanh === '02' ? 'Phát hành' : 
+                           currentTrangThaiPhatHanh === '01' ? 'Bản nháp' : 
+                           currentTrangThaiPhatHanh === '03' ? 'Đã hủy' : 'Mới'}
               </div>
             )}
             
             {/* Issue Receipt button */}
-            {isSaved && receiptStatus === 'DRAFT' && (
+            {(() => {
+              console.log('🔍 Debug Issue Receipt button:', { 
+                isSaved, 
+                currentTrangThaiPhatHanh, 
+                'currentTrangThaiPhatHanh === "01"': currentTrangThaiPhatHanh === '01',
+                'isSaved && currentTrangThaiPhatHanh === "01"': isSaved && currentTrangThaiPhatHanh === '01'
+              });
+              return null;
+            })()}
+            {(currentTrangThaiPhatHanh === '00' || currentTrangThaiPhatHanh === '01') && (
               <button
                 onClick={handleIssueReceipt}
-                disabled={isIssuing}
+                disabled={isIssuing || currentTrangThaiPhatHanh === '00'}
                 style={{
-                  backgroundColor: isIssuing ? '#6c757d' : '#28a745',
+                  backgroundColor: isIssuing ? '#9ca3af' : 
+                                 currentTrangThaiPhatHanh === '00' ? '#9ca3af' : '#10b981',
                   color: 'white',
                   border: 'none',
                   padding: '10px 20px',
                   borderRadius: '4px',
-                  cursor: isIssuing ? 'not-allowed' : 'pointer',
+                  cursor: (isIssuing || currentTrangThaiPhatHanh === '00') ? 'not-allowed' : 'pointer',
                   fontSize: '13px',
                   fontWeight: '500',
                   display: 'flex',
@@ -1152,6 +1270,8 @@ const CreateReceiptPage: React.FC = () => {
                     }}></span>
                     Đang phát hành...
                   </>
+                ) : currentTrangThaiPhatHanh === '00' ? (
+                  <>🚫 Phát hành biên lai</>
                 ) : (
                   <>📄 Phát hành biên lai</>
                 )}
@@ -1159,7 +1279,7 @@ const CreateReceiptPage: React.FC = () => {
             )}
             
             {/* Show success message when receipt is issued */}
-            {receiptStatus === 'ISSUED' && (
+            {currentTrangThaiPhatHanh === '02' && (
               <div style={{
                 backgroundColor: '#d4edda',
                 color: '#155724',
@@ -1181,15 +1301,15 @@ const CreateReceiptPage: React.FC = () => {
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={handleSave}
-              disabled={isSaving || (isSaved && receiptStatus !== 'DRAFT')}
+              disabled={isSaving || (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01')}
               style={{
-                backgroundColor: isSaving ? '#6c757d' : 
-                               (isSaved && receiptStatus !== 'DRAFT') ? '#6c757d' : '#343a40',
+                backgroundColor: isSaving ? '#9ca3af' : 
+                               (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01') ? '#9ca3af' : '#3b82f6',
                 color: 'white',
                 border: 'none',
                 padding: '10px 20px',
                 borderRadius: '4px',
-                cursor: (isSaving || (isSaved && receiptStatus !== 'DRAFT')) ? 'not-allowed' : 'pointer',
+                cursor: (isSaving || (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01')) ? 'not-allowed' : 'pointer',
                 fontSize: '13px',
                 fontWeight: '500',
                 display: 'flex',
@@ -1209,8 +1329,10 @@ const CreateReceiptPage: React.FC = () => {
                   }}></span>
                   Đang lưu...
                 </>
-              ) : isSaved ? (
-                receiptStatus === 'DRAFT' ? '💾 Cập nhật' : '✅ Đã lưu'
+              ) : (isSaved && currentTrangThaiPhatHanh === '01') ? (
+                '✅ Đã lưu'
+              ) : (currentTrangThaiPhatHanh !== '00' && currentTrangThaiPhatHanh !== '01') ? (
+                '🚫 Không thể lưu'
               ) : (
                 '💾 Lưu lại'
               )}
@@ -1219,7 +1341,7 @@ const CreateReceiptPage: React.FC = () => {
             <button
               onClick={handleClose}
               style={{
-                backgroundColor: '#6c757d',
+                backgroundColor: '#6b7280',
                 color: 'white',
                 border: 'none',
                 padding: '10px 20px',
@@ -1372,240 +1494,39 @@ const CreateReceiptPage: React.FC = () => {
               backgroundColor: 'white'
             }}>
               {/* Receipt Header */}
-              <div style={{ marginBottom: '15px' }}>
-                <table style={{ width: '100%', fontSize: '11px', borderCollapse: 'collapse' }}>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '3px' }}>
-                      <strong>Đơn vị thu:</strong> Cảng vụ Đường
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '3px' }}>
-                      <strong>Cộng hòa xã hội chủ nghĩa Việt Nam</strong>
-                    </td>
-                    <td style={{ textAlign: 'right', paddingBottom: '3px' }}>
-                      <strong>Mẫu số:</strong>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '3px' }}>
-                      <strong>Thay cho Gia</strong>
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '3px' }}>
-                      <strong>Độc lập - Tự do - Hạnh phúc</strong>
-                    </td>
-                    <td style={{ textAlign: 'right', paddingBottom: '3px' }}>
-                      <strong>Ký hiệu:</strong>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ textAlign: 'left', paddingBottom: '10px' }}>
-                      <strong>TPHCM</strong>
-                    </td>
-                    <td style={{ textAlign: 'center', paddingBottom: '10px' }}></td>
-                    <td style={{ textAlign: 'right', paddingBottom: '10px' }}>
-                      <strong>Số:</strong> 0000000006
-                    </td>
-                  </tr>
-                </table>
-              </div>
+             
 
               {/* Title */}
-              <div style={{ textAlign: 'center', marginBottom: '15px' }}>
-                <h2 style={{ 
-                  margin: '0 0 10px 0', 
-                  fontSize: '18px', 
-                  fontWeight: 'bold',
-                  letterSpacing: '1px'
-                }}>
-                  BIÊN LAI THU TIỀN PHÍ
-                </h2>
-                <div style={{ fontSize: '11px', lineHeight: '1.3' }}>
-                  Ngày 25 tháng 08 năm 2021
-                </div>
-                <div style={{ fontSize: '10px', fontStyle: 'italic', marginTop: '5px', lineHeight: '1.2' }}>
-                  (Ban hành theo thông tư liên tịch số 100/2017/TTLT-BTC-BGTVT ngày 06 tháng 12 năm 2017<br/>
-                  của BTC và BGTVT)
-                </div>
-                <div style={{ fontSize: '11px', fontWeight: 'bold', marginTop: '8px' }}>
-                  TP Hồ Chí Minh, ngày 21 tháng 08 năm 2021
-                </div>
-              </div>
+              
 
               {/* Company Info */}
-              <div style={{ 
-                border: '1px solid #000', 
-                padding: '12px', 
-                marginBottom: '15px', 
-                fontSize: '11px' 
-              }}>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Tên đơn vị:</strong> CÔNG TY TNHH DELNNEYS VIETNAM
-                </div>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Mã số thuế:</strong> 0314418553
-                </div>
-                <div style={{ marginBottom: '6px' }}>
-                  <strong>Địa chỉ:</strong> Tầng 5, Cao Ốc Vạn Phong Số 26 Nguyễn Thị Diện - Phường 06 - Quận 3 - TP Hồ Chí Minh
-                </div>
 
-                <table style={{ width: '100%', marginTop: '10px', fontSize: '11px' }}>
-                  <tr>
-                    <td style={{ width: '50%', paddingBottom: '4px' }}>
-                      <strong>Số điện thoại:</strong> 312925420570
-                    </td>
-                    <td style={{ width: '50%', paddingBottom: '4px' }}>
-                      <strong>Ngày phát hành biên lai:</strong> 21.08.2021
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ paddingBottom: '4px' }}>
-                      <strong>Số tờ khai hải quan:</strong> 21499254570
-                    </td>
-                    <td style={{ paddingBottom: '4px' }}>
-                      <strong>Ngày tờ khai:</strong> 16.08.2021
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <strong>Nhóm loại hình:</strong> TP003
-                    </td>
-                    <td>
-                      <strong>Loại hình tờ khai:</strong> A31
-                    </td>
-                  </tr>
-                  <tr>
-                    <td colSpan={2} style={{ paddingTop: '4px' }}>
-                      <strong>Hình thức thanh toán:</strong> Chuyển khoản
-                    </td>
-                  </tr>
-                </table>
-              </div>
+                
 
               {/* Fee Details Table */}
-              <table style={{ 
-                width: '100%', 
-                borderCollapse: 'collapse', 
-                fontSize: '10px',
-                border: '1px solid #000',
-                marginBottom: '20px'
-              }}>
-                <thead>
-                  <tr>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px', 
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>STT</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Nội dung thu phí</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Đơn vị<br/>tính</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Mức thu<br/>phí (đồng)</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Số lượng</th>
-                    <th style={{ 
-                      border: '1px solid #000', 
-                      padding: '6px 4px',
-                      textAlign: 'center',
-                      backgroundColor: '#f0f0f0',
-                      fontWeight: 'bold'
-                    }}>Thành tiền (đồng)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>01</td>
-                    <td style={{ border: '1px solid #000', padding: '4px' }}>
-                      Phí
-                    </td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>Lần</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>(1)</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'center' }}>(2)</td>
-                    <td style={{ border: '1px solid #000', padding: '4px', textAlign: 'right' }}>(1) x (2) = (3)</td>
-                  </tr>
-                  
-                  {/* Empty rows for spacing */}
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                  </tr>
-                  <tr>
-                    <td style={{ border: '1px solid #000', padding: '8px', textAlign: 'center' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                    <td style={{ border: '1px solid #000', padding: '8px' }}></td>
-                  </tr>
-                  
-                  {/* Total row */}
-                  <tr>
-                    <td colSpan={5} style={{ 
-                      border: '1px solid #000', 
-                      padding: '4px', 
-                      textAlign: 'right',
-                      fontWeight: 'bold'
-                    }}>
-                      Tổng cộng:
-                    </td>
-                    <td style={{ 
-                      border: '1px solid #000', 
-                      padding: '4px', 
-                      textAlign: 'right',
-                      fontWeight: 'bold'
-                    }}>
-                      X Đồng
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+             
 
               {/* Footer signature area - as per image */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                marginTop: '20px',
-                fontSize: '10px'
-              }}>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Người nộp</div>
-                  <div>(Ký, ghi rõ họ tên)</div>
+
+              {/* Receipt PDF */}
+              {receiptImageBase64 && (
+                <div style={{ 
+                  marginTop: '20px',
+                  textAlign: 'center'
+                }}>
+                  <iframe
+                    src={receiptImageBase64.startsWith('data:') ? receiptImageBase64 : `data:application/pdf;base64,${receiptImageBase64}`}
+                    style={{
+                      width: '100%',
+                      height: '600px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px'
+                    }}
+                    title="Receipt PDF"
+                  />
                 </div>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Thủ quỹ</div>
-                  <div>(Ký, ghi rõ họ tên)</div>
-                </div>
-                <div style={{ textAlign: 'center', width: '30%' }}>
-                  <div style={{ fontWeight: 'bold', marginBottom: '40px' }}>Kế toán trưởng<br/>(Hoặc bộ phận có thẩm quyền)</div>
-                  <div>(Ký, ghi rõ họ tên, đóng dấu)</div>
-                </div>
-              </div>
+              )}
+              
             </div>
 
             {/* Modal Footer */}

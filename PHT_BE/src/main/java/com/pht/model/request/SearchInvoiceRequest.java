@@ -27,6 +27,9 @@ public class SearchInvoiceRequest {
     @Schema(description = "Thông tin user", required = true)
     private UserInfo user;
 
+    @Schema(description = "ID của tờ khai thông tin để lưu base64 response", example = "123")
+    private Long toKhaiId;
+
     @Data
     @Schema(description = "Thông tin user")
     public static class UserInfo {

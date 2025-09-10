@@ -15,8 +15,11 @@ import com.pht.common.OrderBy;
 import com.pht.common.helper.ResponseHelper;
 import com.pht.common.model.ApiDataResponse;
 import com.pht.entity.ToKhaiThongTin;
+import com.pht.model.request.NotificationRequest;
 import com.pht.model.request.ToKhaiThongTinRequest;
 import com.pht.model.request.UpdateTrangThaiRequest;
+import com.pht.model.request.UpdateTrangThaiPhatHanhRequest;
+import com.pht.model.response.NotificationResponse;
 import com.pht.service.ToKhaiThongTinService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -122,6 +125,71 @@ public class ToKhaiThongTinController {
             return ResponseHelper.ok(result);
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
+            return ResponseHelper.error(ex);
+        }
+    }
+
+    @Operation(summary = "Cập nhật trạng thái phát hành tờ khai thông tin")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công", content = {
+                    @Content(schema = @Schema(implementation = ApiDataResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tờ khai", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu request không hợp lệ", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "500", description = "Lỗi hệ thống", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            })
+    })
+    @PutMapping("/update-publication-status")
+    public ResponseEntity<?> updateTrangThaiPhatHanh(@RequestBody UpdateTrangThaiPhatHanhRequest request) {
+        try {
+            log.info("Nhận yêu cầu cập nhật trạng thái phát hành cho tờ khai ID: {}, trạng thái: {}", 
+                    request.getId(), request.getTrangThaiPhatHanh());
+            
+            ToKhaiThongTin result = toKhaiThongTinService.updateTrangThaiPhatHanh(request);
+            
+            log.info("Cập nhật trạng thái phát hành thành công cho tờ khai ID: {}", request.getId());
+            
+            return ResponseHelper.ok(result);
+        } catch (Exception ex) {
+            log.error("Lỗi khi cập nhật trạng thái phát hành cho tờ khai ID {}: ", request.getId(), ex);
+            return ResponseHelper.error(ex);
+        }
+    }
+
+    @Operation(summary = "Tạo thông báo và thay đổi trạng thái sang 02")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Tạo thông báo thành công", content = {
+                    @Content(schema = @Schema(implementation = ApiDataResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy tờ khai", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "400", description = "Trạng thái tờ khai không hợp lệ hoặc dữ liệu request không hợp lệ", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            }),
+            @ApiResponse(responseCode = "500", description = "Lỗi hệ thống", content = {
+                    @Content(schema = @Schema(implementation = OrderBy.ApiErrorResponse.class), mediaType = "application/json")
+            })
+    })
+    @PostMapping("/notification")
+    public ResponseEntity<?> createNotification(@RequestBody NotificationRequest request) {
+        try {
+            log.info("Nhận yêu cầu tạo thông báo cho tờ khai ID: {}", request.getToKhaiId());
+            
+            NotificationResponse result = toKhaiThongTinService.createNotification(request);
+            
+            log.info("Tạo thông báo thành công cho tờ khai ID: {}, số thông báo: {}, msgId: {}", 
+                    request.getToKhaiId(), result.getSoThongBao(), result.getMsgId());
+            
+            return ResponseHelper.ok(result);
+            
+        } catch (Exception ex) {
+            log.error("Lỗi khi tạo thông báo cho tờ khai ID {}: ", request.getToKhaiId(), ex);
             return ResponseHelper.error(ex);
         }
     }

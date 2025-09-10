@@ -12,5 +12,12 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true,
+    proxy: {
+      '/api': {
+        target: 'http://10.14.122.24:8081',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/PHT_BE/api')
+      }
+    }
   },
 });

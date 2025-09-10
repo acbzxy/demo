@@ -47,6 +47,9 @@ public class ToKhaiThongTinRequest {
 
     // THÔNG TIN THU PHÍ
     private String soThongBaoNopPhi;
+    private String soThongBao;
+    private String msgId;
+    private String idPhatHanh;
     private BigDecimal tongTienPhi;
     private String trangThaiNganHang;
     private String soBienLai;
@@ -60,6 +63,14 @@ public class ToKhaiThongTinRequest {
     private String loaiHangMienPhi;
     private String loaiHang;
     private String trangThai;
+    private String trangThaiPhatHanh;
+
+    // XML DATA FIELDS
+    private String kylan1Xml;
+    private String kylan2Xml;
+
+    // IMAGE DATA FIELD
+    private String imageBl;
 
     // Chi tiết
     private List<ToKhaiThongTinChiTietRequest> chiTietList;
