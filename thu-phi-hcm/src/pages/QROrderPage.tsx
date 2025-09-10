@@ -989,7 +989,7 @@ const QROrderPage: React.FC = () => {
                         borderRadius: '4px',
                         fontSize: '14px',
                         resize: 'vertical',
-                        fontFamily: 'inherit'
+                        fontFamily: "'Inter', 'Open Sans', 'Poppins', 'SVN-Poppins', 'Segoe UI', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Arial Unicode MS', Arial, sans-serif"
                       }}
                       placeholder="Nhập ghi chú..."
                     />

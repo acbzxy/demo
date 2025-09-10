@@ -314,7 +314,7 @@ const ReceiptManagePage: React.FC = () => {
       padding: '20px', 
       backgroundColor: '#f8f9fa', 
       minHeight: 'calc(100vh - 60px)',
-      fontFamily: 'Arial, sans-serif'
+      fontFamily: "'Inter', 'Open Sans', 'Poppins', 'SVN-Poppins', 'Segoe UI', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Arial Unicode MS', Arial, sans-serif"
     }}>
       <style>{`
         @keyframes spin {

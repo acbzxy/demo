@@ -170,15 +170,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return
       }
 
-      // Check for admin user credentials (admin/123456)
-      if (credentials.username === 'admin' && credentials.password === '123456') {
+      // Check for admin user credentials (1234567890/123456)
+      if (credentials.username === '1234567890' && credentials.password === '123456') {
         const adminUser: User = {
           id: 'admin-001',
-          username: 'admin',
+          username: '1234567890',
           email: 'admin@example.com',
-          fullName: 'Quản trị viên tùy chỉnh',
-          companyName: 'Công ty Quản trị',
-          taxCode: 'ADMIN123456',
+          fullName: 'Công ty TNHH Quản trị Cảng vụ',
+          companyName: 'Công ty TNHH Quản trị Cảng vụ',
+          taxCode: '1234567890',
           phone: '1900 1286',
           address: 'TP. Hồ Chí Minh',
           userType: 'admin_custom',

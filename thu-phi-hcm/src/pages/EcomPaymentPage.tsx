@@ -16,7 +16,7 @@ const EcomPaymentPage: React.FC = () => {
       minHeight: '100vh',
       backgroundColor: '#f5f5f5',
       padding: '40px 20px',
-      fontFamily: 'Arial, sans-serif'
+      fontFamily: "'Inter', 'Open Sans', 'Poppins', 'SVN-Poppins', 'Segoe UI', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Arial Unicode MS', Arial, sans-serif"
     }}>
       <div style={{
         maxWidth: '900px',

@@ -1256,7 +1256,7 @@ const CreateReceiptPage: React.FC = () => {
             width: '90%',
             maxHeight: '90vh',
             overflow: 'auto',
-            fontFamily: 'Times New Roman, serif'
+            fontFamily: "'Inter', 'Open Sans', 'Poppins', 'SVN-Poppins', 'Segoe UI', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Arial Unicode MS', Arial, sans-serif"
           }}>
             {/* Modal Header */}
             <div style={{ backgroundColor: 'white' }}>
@@ -1654,7 +1654,7 @@ const CreateReceiptPage: React.FC = () => {
             padding: '0',
             width: '450px',
             maxWidth: '90%',
-            fontFamily: 'Arial, sans-serif',
+            fontFamily: "'Inter', 'Open Sans', 'Poppins', 'SVN-Poppins', 'Segoe UI', 'Helvetica Neue', Helvetica, 'Lucida Grande', 'Arial Unicode MS', Arial, sans-serif",
             border: '2px solid #000'
           }}>
             {/* Header */}

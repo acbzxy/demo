@@ -78,10 +78,18 @@ const WelcomePage: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16 animate-fade-in-up stagger-2">
             <Link 
               to="/login" 
+              className="group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center space-x-2 min-w-[200px]"
+            >
+              <span className="text-xl">🛡️</span>
+              <span>Admin Portal</span>
+            </Link>
+            
+            <Link 
+              to="/user-login" 
               className="group bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center space-x-2 min-w-[200px]"
             >
-              <span className="text-xl">🔐</span>
-              <span>Đăng Nhập</span>
+              <span className="text-xl">🏢</span>
+              <span>User Portal</span>
             </Link>
             
             <Link 

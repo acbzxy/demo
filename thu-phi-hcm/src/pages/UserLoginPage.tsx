@@ -7,7 +7,7 @@ import { useNotification } from '../context/NotificationContext'
 const backgroundImage = '/tphcm-bkg.jpg'
 const cangvuLogo = '/cangvu-hcm-logo.png'
 
-const LoginPage: React.FC = () => {
+const UserLoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -51,15 +51,15 @@ const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, navigate])
 
-  // Auto-fill admin credentials on double-click
+  // Auto-fill user credentials on double-click
   const handleUsernameDblClick = () => {
     setFormData(prev => ({
       ...prev,
-      username: '1234567890',
+      username: 'user',
       password: '123456',
       captcha: captchaCode
     }))
-    showSuccess('Admin credentials auto-filled!')
+    showSuccess('User credentials auto-filled!')
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,9 +79,7 @@ const LoginPage: React.FC = () => {
     const newErrors: Record<string, string> = {}
     
     if (!formData.username.trim()) {
-      newErrors.username = 'Vui lòng nhập mã số thuế'
-    } else if (!/^\d{10}$/.test(formData.username.trim())) {
-      newErrors.username = 'Mã số thuế phải là 10 số'
+      newErrors.username = 'Vui lòng nhập tên đăng nhập'
     }
     
     if (!formData.password.trim()) {
@@ -151,9 +149,7 @@ const LoginPage: React.FC = () => {
     const newErrors: Record<string, string> = {}
     
     if (!forgotPasswordData.companyCode.trim()) {
-      newErrors.companyCode = 'Vui lòng nhập mã số thuế'
-    } else if (!/^\d{10}$/.test(forgotPasswordData.companyCode.trim())) {
-      newErrors.companyCode = 'Mã số thuế phải là 10 số'
+      newErrors.companyCode = 'Vui lòng nhập tên đăng nhập'
     }
     
     if (!forgotPasswordData.email.trim()) {
@@ -206,9 +202,7 @@ const LoginPage: React.FC = () => {
     const newErrors: Record<string, string> = {}
     
     if (!registerData.username.trim()) {
-      newErrors.username = 'Vui lòng nhập mã số thuế'
-    } else if (!/^\d{10}$/.test(registerData.username.trim())) {
-      newErrors.username = 'Mã số thuế phải là 10 số'
+      newErrors.username = 'Vui lòng nhập tên đăng nhập'
     }
     
     if (!registerData.password.trim()) {
@@ -528,7 +522,6 @@ const LoginPage: React.FC = () => {
               boxShadow: '0 40px 100px rgba(0, 0, 0, 0.25)',
               maxWidth: '1200px',
               width: '100%',
-
               animation: 'fadeInUp 1s ease-out',
               position: 'relative',
               overflow: 'hidden'
@@ -618,7 +611,7 @@ const LoginPage: React.FC = () => {
                   letterSpacing: '1px',
                   textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                 }}>
-                  ĐĂNG NHẬP DOANH NGHIỆP
+                  ĐĂNG NHẬP QUẢN TRỊ
                 </h3>
                 <p style={{
                   fontSize: '14px',
@@ -626,7 +619,7 @@ const LoginPage: React.FC = () => {
                   margin: '0',
                   fontStyle: 'italic'
                 }}>
-                  Cổng thông tin doanh nghiệp
+                  Portal dành cho quản trị viên
                 </p>
               </div>
               
@@ -635,10 +628,10 @@ const LoginPage: React.FC = () => {
               <form onSubmit={handleSubmit}>
                 {/* Username */}
                 <div style={{ marginBottom: '5px', fontSize: '14px', color: '#2c3e50' }}>
-                  Mã số thuế<span style={{ fontStyle: 'italic' }}>(10 số)</span>
+                  Tên đăng nhập
                 </div>
                 <div style={{ position: 'relative', marginBottom: '10px' }}>
-                  <i className="fas fa-hashtag" style={{
+                  <i className="fas fa-user" style={{
                     position: 'absolute',
                     left: '12px',
                     top: '50%',
@@ -651,7 +644,7 @@ const LoginPage: React.FC = () => {
                     value={formData.username}
                     onChange={handleInputChange}
                     onDoubleClick={handleUsernameDblClick}
-                    placeholder="Nhập mã số thuế 10 số..."
+                    placeholder="Nhập tên đăng nhập..."
                     style={{
                       width: '100%',
                       height: '40px',
@@ -662,9 +655,7 @@ const LoginPage: React.FC = () => {
                       boxSizing: 'border-box',
                       outline: 'none'
                     }}
-                    title="Double-click để auto-fill admin credentials"
-                    maxLength={10}
-                    pattern="\d{10}"
+                    title="Double-click để auto-fill user credentials"
                   />
                 </div>
                 {errors.username && (
@@ -911,11 +902,11 @@ const LoginPage: React.FC = () => {
                 {/* User Login Link */}
                 <div style={{ textAlign: 'center', marginTop: '15px', fontSize: '14px', color: '#2c3e50' }}>
                   <a 
-                    href="/user-login" 
+                    href="/login" 
                     style={{ color: '#0db14b', fontWeight: 'bold', textDecoration: 'none' }}
                   >
                     <i className="fas fa-building" style={{ marginRight: '5px' }}></i>
-                    Chuyển sang Đăng nhập Quản trị
+                    Chuyển sang Đăng nhập Doanh nghiệp
                   </a>
                 </div>
               </div>
@@ -1278,7 +1269,7 @@ const LoginPage: React.FC = () => {
                 color: '#6b7280',
                 lineHeight: '1.5'
               }}>
-                Vui lòng điền Mã số thuế và Email đã đăng ký. Hệ thống sẽ gửi xác nhận qua email của bạn.
+                Vui lòng điền Tên đăng nhập và Email đã đăng ký. Hệ thống sẽ gửi xác nhận qua email của bạn.
               </div>
 
               <form onSubmit={handleForgotPasswordSubmit}>
@@ -1291,7 +1282,7 @@ const LoginPage: React.FC = () => {
                     color: '#374151',
                     fontWeight: '500'
                   }}>
-                    Mã số thuế<span style={{ fontStyle: 'italic' }}>(Tài khoản đăng nhập)</span>
+                    Tên đăng nhập<span style={{ fontStyle: 'italic' }}>(Tài khoản đăng nhập)</span>
                     <span style={{ color: '#ef4444', marginLeft: '2px' }}>*</span>
                   </label>
                   <input
@@ -1309,7 +1300,7 @@ const LoginPage: React.FC = () => {
                       boxSizing: 'border-box',
                       outline: 'none'
                     }}
-                    placeholder="Nhập mã số thuế (10 số)"
+                    placeholder="Nhập tên đăng nhập"
                   />
                   {forgotPasswordErrors.companyCode && (
                     <div style={{ color: '#ef4444', fontSize: '12px', marginTop: '4px' }}>
@@ -1518,7 +1509,7 @@ const LoginPage: React.FC = () => {
                         color: '#374151',
                         fontWeight: '500'
                       }}>
-                        Mã số thuế <span style={{ fontStyle: 'italic' }}>(10 số):</span>
+                        Tên đăng nhập:
                         <span style={{ color: '#ef4444', marginLeft: '2px' }}>*</span>
                       </label>
                       <input
@@ -1526,7 +1517,7 @@ const LoginPage: React.FC = () => {
                         name="username"
                         value={registerData.username}
                         onChange={handleRegisterInputChange}
-                        placeholder="Nhập mã số thuế (10 số)..."
+                        placeholder="Nhập tên đăng nhập..."
                         style={{
                           width: '100%',
                           height: '40px',
@@ -1929,4 +1920,4 @@ const LoginPage: React.FC = () => {
   )
 }
 
-export default LoginPage
+export default UserLoginPage

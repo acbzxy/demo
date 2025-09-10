@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ui/ErrorBoundary'
 
 // Lazy load components for better performance
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const UserLoginPage = lazy(() => import('./pages/UserLoginPage'))
 const DashboardPage = lazy(() => import('./pages/DashboardPage'))
 const PaymentPage = lazy(() => import('./pages/PaymentPage'))
 const AccountPage = lazy(() => import('./pages/AccountPage'))
@@ -77,6 +78,7 @@ function App() {
           {/* Public routes */}
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/user-login" element={<UserLoginPage />} />
           <Route path="/receipt-lookup" element={<ReceiptLookupPage />} />
           <Route path="/ecom-payment" element={<EcomPaymentPage />} />
           
